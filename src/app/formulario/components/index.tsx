@@ -74,33 +74,85 @@ export function FomularioComponente() {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
 
-  const [imagem, setImagem] = useState<File | null>(null)
+  // const [imagem, setImagem] = useState<File | null>(null)
+
+  function converterParaISO(data: string): string {
+    const [dia, mes, ano] = data.split("/");
+    return `${ano}-${mes}-${dia}`;
+  }
 
   async function enviarFormulario(e: React.FormEvent) {
+
     e.preventDefault()
-    if (!nome.trim()) return alert("Digite o nome do cliente")
-    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso) return alert("Envie todas as 4 imagens")
+
+    if (!nome.trim()) return toast.error("Digite o seu nome!");
+    if (!email.trim()) return toast.error("Digite o seu email!");
+    if (!cpf.trim()) return toast.error("Digite o seu cpf!");
+    if (!rg.trim()) return toast.error("Digite o seu rg!");
+    if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
+    if (!orgaoExpedidor.trim()) return toast.error("Digite o seu Orgão Expedidor!");
+    if (!sexo.trim()) return toast.error("Selecione o seu sexo!");
+    if (!estadoCivil.trim()) return toast.error("Selecione seu estado civil!");
+    if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
+    if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
+    if (!cep.trim()) return toast.error("Digite o seu cep!");
+    if (!bairro.trim()) return toast.error("Digite o seu bairro!");
+    if (!rua.trim()) return toast.error("Digite a sua rua!");
+    if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
+    if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
+    if (!estado.trim()) return toast.error("Selecione o seu estado!");
+    if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
+    if (!pix.trim()) return toast.error("Digite a sua chave pix!");
+    if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
+    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso) return toast.error("Envie todas as 4 imagens")
+
+    const dataNascimentoISO = converterParaISO(dataNascimento);
+    const dataRgISO = converterParaISO(dataRg);
+
 
     const { data: clienteData, error: insertError } = await supabase
       .from("clientes")
-      .insert({ nome: nome.trim() })
+      .insert({ 
+        nome_completo: nome.trim(),
+        email: email.trim(),
+        cpf: cpf.trim(),
+        rg: rg.trim(),
+        data_emissao_rg: dataRg,
+        orgao_expedidor: orgaoExpedidor.trim(),
+        sexo,
+        estado_civil: estadoCivil,
+        data_nascimento: dataNascimento,
+        whatsapp,
+        telefone_reserva: telefoneReserva,
+        cep,
+        bairro: bairro.trim(),
+        rua: rua.trim(),
+        numero_casa: Ncasa.trim(),
+        moradia,
+        estado,
+        cidade,
+        pix: pix.trim(),
+        valor_solicitado: valorSolicitado
+      })
       .select()
 
     if (insertError || !clienteData || clienteData.length === 0) {
-      console.error(insertError)
-      return alert("Erro ao criar cliente")
+      console.error("Erro ao criar cliente:", insertError)
+      return toast.error("Erro ao criar cliente")
     }
 
     const idCliente = clienteData[0].id
     const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso]
-    const campos = ["renda", "endereco", "identidade_frente", "identidade_verso"]
+    const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso"]
     const urls: Record<string, string> = {}
 
     for (let i = 0; i < arquivos.length; i++) {
+
       const arquivo = arquivos[i]
       const nomeCampo = campos[i]
 
       try {
+
         const imagemConvertida = await converterImagemParaWebP(arquivo!)
         const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
 
@@ -251,8 +303,8 @@ export function FomularioComponente() {
         <label className="text-sm sm:text-base"> Email </label>
         <Input 
           type="text" 
-          value={nome}
-          onChange={ (e) => setNome(e.target.value)}
+          value={email}
+          onChange={ (e) => setEmail(e.target.value)}
         />
         
       </div>
@@ -289,6 +341,8 @@ export function FomularioComponente() {
         <input 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
+          value={dataRg}
+          onChange={ (e) => setDataRg(e.target.value)}
         />
         
       </div>
@@ -298,6 +352,8 @@ export function FomularioComponente() {
         <label className="text-sm sm:text-base"> Orgão Expedidor </label>
         <Input 
           type="text"
+          value={orgaoExpedidor}
+          onChange={ (e) => setOrgaoExpedidor(e.target.value)}
         />
         
       </div>
@@ -341,6 +397,8 @@ export function FomularioComponente() {
         <input 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
+          value={dataNascimento}
+          onChange={ (e) => setDataNascimento(e.target.value)}
         />
         
       </div>
@@ -501,7 +559,6 @@ export function FomularioComponente() {
           type="file" 
           accept="image/*"
           onChange={e => setComprovanteRenda(e.target.files?.[0] || null)}
-          required
         />
 
       </div>
@@ -514,7 +571,6 @@ export function FomularioComponente() {
           type="file" 
           accept="image/*"
           onChange={e => setComprovanteEndereco(e.target.files?.[0] || null)}
-          required
         />
 
       </div>
@@ -527,7 +583,6 @@ export function FomularioComponente() {
           type="file" 
           accept="image/*"
           onChange={e => setDocumentoFrente(e.target.files?.[0] || null)}
-          required
         />
 
       </div>
@@ -540,18 +595,9 @@ export function FomularioComponente() {
           type="file" 
           accept="image/*"
           onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
-          required
         />
 
       </div>
-
-{/*       
-      <input
-        type="file"
-        accept="image/*"
-        onChange={e => setImagem(e.target.files?.[0] || null)}
-        required
-      /> */}
 
       <div className="mt-[-12px] mx-2">
 
