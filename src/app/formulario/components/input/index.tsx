@@ -11,9 +11,11 @@ interface Props {
   pattern?: string;
   maxLength?: number;
   onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  aceept?: string;
+  required?: boolean;
 }
 
-export function Input({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur }: Props) {
+export function Input({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
   return (
     <div className="mb-4">
       <label className="block font-semibold mb-1">{label}</label>
