@@ -208,7 +208,6 @@ export function FomularioComponente() {
     setDocumentoVerso(null);
   }
 
-
   async function buscarCep(cep: string) {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)

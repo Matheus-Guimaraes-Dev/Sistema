@@ -30,9 +30,9 @@ export function Menu() {
 
 
   return(
-    <div>
+    <div className="min-h-screen">
 
-      <div className={`transition-all duration-200 whitespace-nowrap bg-[#002956] h-screen ${menu ? 'w-80' : 'w-20'}`} >
+      <div className={`transition-all duration-200 whitespace-nowrap bg-[#002956] h-full ${menu ? 'w-80' : 'w-20'}`} >
 
         <div className='flex items-center justify-between gap-2 px-4 pt-4'>
 
@@ -111,8 +111,6 @@ export function Menu() {
           </span>
         </div>
 
-
-
         <div>
 
         </div>
@@ -120,5 +118,6 @@ export function Menu() {
       </div>
 
     </div>
+    
   )
 }

@@ -24,7 +24,7 @@ export default async function Clientes() {
 
   return(
 
-    <div className="flex">
+    <div className="flex min-h-screen">
 
       <Menu />
 
