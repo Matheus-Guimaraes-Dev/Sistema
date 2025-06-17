@@ -9,18 +9,23 @@ import { GrUserManager } from "react-icons/gr";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { CgNotes } from "react-icons/cg";
 import { GrMoney } from "react-icons/gr";
-import { TbReportSearch } from "react-icons/tb";
 import { RiDashboard3Line } from "react-icons/ri";
-
+import { useRouter } from "next/navigation";
 
 export function Menu() {
 
-  const [menu, setMenu] = useState(true);
+  const [menu, setMenu] = useState(false);
+
+  const router = useRouter();
 
   function abrirMenu() {
     
     setMenu(!menu)
 
+  }
+
+  function paginaClientes(){
+    router.push("/clientes");
   }
 
 
@@ -47,6 +52,7 @@ export function Menu() {
         <div className="flex items-center text-white gap-2 px-4 mt-8">
           <BsFillPeopleFill size={34} color="#fff" className="cursor-pointer"  />
           <span
+            onClick={paginaClientes}
             className={`transition-all duration-300 text-lg cursor-pointer ${
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}

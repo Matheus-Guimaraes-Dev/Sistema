@@ -1,4 +1,4 @@
-import { updateSession } from '@/lib/session' // ✅ agora vindo de outro arquivo
+import { updateSession } from '@/lib/session' 
 import { type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {

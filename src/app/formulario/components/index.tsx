@@ -5,7 +5,8 @@ import { useState } from "react"
 import toast from 'react-hot-toast'
 
 import { converterImagemParaWebP } from "./conversao";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/client";
+import { useRouter } from "next/navigation";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -74,12 +75,9 @@ export function FomularioComponente() {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
 
-  // const [imagem, setImagem] = useState<File | null>(null)
+  const supabase = createClient();
 
-  function converterParaISO(data: string): string {
-    const [dia, mes, ano] = data.split("/");
-    return `${ano}-${mes}-${dia}`;
-  }
+  const router = useRouter();
 
   async function enviarFormulario(e: React.FormEvent) {
 
@@ -106,9 +104,7 @@ export function FomularioComponente() {
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
     if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso) return toast.error("Envie todas as 4 imagens")
 
-    const dataNascimentoISO = converterParaISO(dataNascimento);
-    const dataRgISO = converterParaISO(dataRg);
-
+    const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
 
     const { data: clienteData, error: insertError } = await supabase
       .from("clientes")
@@ -132,7 +128,7 @@ export function FomularioComponente() {
         estado,
         cidade,
         pix: pix.trim(),
-        valor_solicitado: valorSolicitado
+        valor_solicitado: valorMonetarioCorreto
       })
       .select()
 
@@ -181,22 +177,41 @@ export function FomularioComponente() {
       }
     }
 
-    const { error: updateError } = await supabase
-      .from("clientes")
-      .update(urls)
-      .eq("id", idCliente)
+    // const { error: updateError } = await supabase
+    //   .from("clientes")
+    //   .update(urls)
+    //   .eq("id", idCliente)
 
-    if (updateError) {
-      console.error(updateError)
-      return alert("Erro ao salvar URLs no cadastro")
-    }
+    // if (updateError) {
+    //   console.error(updateError)
+    //   return alert("Erro ao salvar URLs no cadastro")
+    // }
 
-    alert("Cliente cadastrado com sucesso!")
-    setNome("")
-    setComprovanteRenda(null)
-    setComprovanteEndereco(null)
-    setDocumentoFrente(null)
-    setDocumentoVerso(null)
+    router.push("/formulario/obrigado");
+    setNome("");
+    setEmail("");
+    setCpf("");
+    setRg("");
+    setDataRg("");
+    setOrgaoExpedidor("");
+    setSexo("");
+    setEstadoCivil("");
+    setDataNascimento("");
+    setWhatsapp("");
+    setTelefoneReserva("");
+    setCep("");
+    setBairro("");
+    setRua("");
+    setNcasa("");
+    setMoradia("");
+    setEstado("");
+    setCidade("");
+    setPix("");
+    setValorSolicitado("");
+    setComprovanteRenda(null);
+    setComprovanteEndereco(null);
+    setDocumentoFrente(null);
+    setDocumentoVerso(null);
   }
 
 
@@ -216,6 +231,16 @@ export function FomularioComponente() {
       console.log("Deu errado!");
     }
 
+  }
+
+  function limparValorMonetario(valor: string): number {
+    return parseFloat(
+      valor
+      .replace("R$", "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim()
+    );
   }
 
 
@@ -367,8 +392,8 @@ export function FomularioComponente() {
           onChange={ (e) => setSexo(e.target.value)}
         >
           <option value="" disabled> Selecionar... </option>
-          <option value="opcao1"> Masculino </option>
-          <option value="opcao2"> Feminino </option>
+          <option value="Masculino"> Masculino </option>
+          <option value="Feminino"> Feminino </option>
         </select>
         
       </div>
@@ -382,11 +407,11 @@ export function FomularioComponente() {
           onChange={ (e) => setEstadoCivil(e.target.value)}
         > 
           <option value="" disabled> Selecionar... </option>
-          <option value="opcao1"> Solteiro </option>
-          <option value="opcao2"> Casado </option>
-          <option value="opcao2"> Seperado(a) </option>
-          <option value="opcao2"> Divorciado(a) </option>
-          <option value="opcao2"> Viúvo(a) </option>
+          <option value="Solteiro"> Solteiro </option>
+          <option value="Casado"> Casado </option>
+          <option value="Separado"> Seperado(a) </option>
+          <option value="Divorciado"> Divorciado(a) </option>
+          <option value="Viuvo"> Viúvo(a) </option>
         </select>
         
       </div>
@@ -484,10 +509,10 @@ export function FomularioComponente() {
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
         >
           <option value="" disabled> Selecionar... </option>
-          <option value="opcao1"> Casa </option>
-          <option value="opcao2"> Apartamento </option>
-          <option value="opcao2"> Aluguel </option>
-          <option value="opcao2"> Área rural </option>
+          <option value="Casa"> Casa </option>
+          <option value="Apartamento"> Apartamento </option>
+          <option value="Aluguel"> Aluguel </option>
+          <option value="Area rural"> Área rural </option>
         </select>
         
       </div>

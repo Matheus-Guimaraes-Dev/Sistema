@@ -1,0 +1,33 @@
+import React from 'react';
+
+interface Props {
+  label?: string;
+  type?: string;
+  name?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  inputMode?: string;
+  pattern?: string;
+  maxLength?: number;
+  onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  aceept?: string;
+  required?: boolean;
+}
+
+export function InputCliente({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
+  return (
+    <div className="mb-4">
+      <label className="block font-semibold mb-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        onBlur={onBlur}
+        className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base px-1 mt-[-4px]"
+      />
+    </div>
+  );
+}

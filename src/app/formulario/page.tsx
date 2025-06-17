@@ -10,7 +10,6 @@ export default function Formulario() {
 
       </section>
 
-
     </div>
   )
 }

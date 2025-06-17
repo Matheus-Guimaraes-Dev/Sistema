@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 
 export function LogoutButton() {
+
   const router = useRouter()
 
   const logout = async () => {
@@ -14,4 +15,5 @@ export function LogoutButton() {
   }
 
   return <Button onClick={logout}>Logout</Button>
+  
 }

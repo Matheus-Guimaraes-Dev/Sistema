@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +25,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
+
     e.preventDefault()
     const supabase = createClient()
     setIsLoading(true)
@@ -35,24 +37,25 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         password,
       })
       if (error) throw error
-      // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push('/')
     } catch (error: unknown) {
       setError(error instanceof Error ? "Credenciais de login inválidas" : 'An error occurred')
     } finally {
       setIsLoading(false)
     }
-  }
 
-  // error.message
+  }
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className=''>
+
+      <Card>
+
         <CardHeader>
           <CardTitle className="text-3xl text-center mb-4"> ENTRAR </CardTitle>
           <CardDescription>Digite seu e-mail abaixo para acessar sua conta </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
@@ -93,7 +96,9 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
           </form>
         </CardContent>
+        
       </Card>
+      
     </div>
   )
 }

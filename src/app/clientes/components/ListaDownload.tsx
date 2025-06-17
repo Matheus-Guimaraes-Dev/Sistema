@@ -1,0 +1,194 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/client";
+import { FaTrashAlt } from "react-icons/fa";
+
+interface Props {
+  clienteId: string;
+}
+
+interface Arquivo {
+  name: string;
+}
+
+export default function ListaDownloads({ clienteId }: Props) {
+
+  const supabase = createClient();
+  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [arquivoSelecionado, setArquivoSelecionado] = useState<string | null>(null);
+
+  const abrirModalExcluir = (nomeArquivo: string) => {
+    setArquivoSelecionado(nomeArquivo);
+    setMostrarModal(true);
+  };
+
+  const confirmarExclusao = async () => {
+    if (!arquivoSelecionado) return;
+
+    const caminho = `clientes/${clienteId}/${arquivoSelecionado}`;
+    const { error } = await supabase.storage.from("clientes").remove([caminho]);
+
+    if (error) {
+      alert("Não foi possível excluir o arquivo.");
+      console.error("Erro ao excluir arquivo:", error.message);
+    } else {
+      setArquivos((prev) => prev.filter((a) => a.name !== arquivoSelecionado));
+      setMostrarModal(false);
+      setArquivoSelecionado(null);
+    }
+  };
+
+  useEffect(() => {
+    const buscarArquivos = async () => {
+      const { data, error } = await supabase.storage
+        .from("clientes")
+        .list(`clientes/${clienteId}`);
+
+      if (error) {
+        console.error("Erro ao listar arquivos:", error.message);
+        setErro("Não foi possível carregar os arquivos.");
+      } else {
+        setArquivos(data || []);
+      }
+    };
+
+    buscarArquivos();
+
+  }, [clienteId]);
+
+  function formatarNomeAmigavel(nome: string) {
+    const mapa: Record<string, string> = {
+      "foto_comprovante_endereco": "Comprovante (Endereço)",
+      "foto_comprovante_renda": "Comprovante (Renda)",
+      "foto_identidade_frente": "Identidade (Frente)",
+      "foto_identidade_verso": "Identidade (Verso)",
+    };
+
+    const chave = nome.split("-")[0];
+    return mapa[chave] || nome; 
+  }
+
+  const excluirArquivo = async (nomeArquivo: string) => {
+  const caminho = `clientes/${clienteId}/${nomeArquivo}`;
+
+  const { error } = await supabase.storage.from("clientes").remove([caminho]);
+
+  if (error) {
+    console.error("Erro ao excluir arquivo:", error.message);
+    alert("Não foi possível excluir o arquivo.");
+    return;
+  }
+
+  // Atualiza a lista de arquivos removendo o excluído
+  setArquivos((prevArquivos) =>
+    prevArquivos.filter((arquivo) => arquivo.name !== nomeArquivo)
+  );
+};
+
+const baixar = async (nomeArquivo: string) => {
+  const caminho = `clientes/${clienteId}/${nomeArquivo}`;
+  const { data } = supabase.storage.from("clientes").getPublicUrl(caminho);
+  const url = data?.publicUrl;
+  if (!url) return;
+
+  // Verifica a extensão do arquivo
+  const extensao = nomeArquivo.split(".").pop()?.toLowerCase();
+
+  if (extensao === "webp") {
+    // Se for imagem .webp, converte para JPEG antes de baixar
+    const resposta = await fetch(url);
+    const blob = await resposta.blob();
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const urlObject = URL.createObjectURL(blob);
+    img.src = urlObject;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blobJPEG) => {
+        if (!blobJPEG) return;
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blobJPEG);
+        link.download = nomeArquivo.replace(".webp", ".jpeg");
+        link.click();
+      }, "image/jpeg");
+    };
+  } else {
+    // Qualquer outro tipo de arquivo (ex: PDF), faz download direto
+    window.open(url, "_blank");
+    // const link = document.createElement("a");
+    // link.href = url;
+    // link.download = nomeArquivo;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+  }
+};
+
+  if (erro) return <p>{erro}</p>;
+
+  return (
+     <>
+      <div className="space-y-2">
+        {arquivos.map((arquivo) => (
+          <div key={arquivo.name} className="flex items-center gap-2">
+            <button
+              onClick={() => baixar(arquivo.name)}
+              className="flex items-center font-medium text-white text-[14px] px-4 py-3 bg-gradient-to-t from-[#4D36D0] to-[#8474FE] rounded-full hover:shadow-[0_0.5em_1.5em_-0.5em_rgba(77,54,208,0.75)] active:shadow-[0_0.3em_1em_-0.5em_rgba(77,54,208,0.75)] transition cursor-pointer"
+            >
+              Baixar {formatarNomeAmigavel(arquivo.name.replace(".webp", ""))}
+            </button>
+
+            <FaTrashAlt onClick={() => abrirModalExcluir(arquivo.name)} size={20} color="red" className="cursor-pointer" />
+
+          </div>
+        ))}
+      </div>
+
+      {mostrarModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="absolute inset-0 backdrop-blur-sm bg-black/30"
+            onClick={() => setMostrarModal(false)} 
+          ></div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+            <h2 className="text-xl font-bold mb-4">
+              Deseja realmente excluir este arquivo?
+            </h2>
+
+            <p className="mb-4">
+              Todos os dados relacionados a este arquivo serão apagados de forma permanente.
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={confirmarExclusao}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer"
+              >
+                Sim
+              </button>
+
+              <button
+                onClick={() => setMostrarModal(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"
+              >
+                Não
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

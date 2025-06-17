@@ -12,15 +12,6 @@ export default async function Home() {
     redirect('/auth/login')
   }
 
-  const { data: usuarios, error: usuariosError } = await supabase
-    .from('usuarios')
-    .select('*')
-
-  if (usuariosError) {
-    console.error('Erro ao buscar usuários:', usuariosError)
-    return <div>Erro ao carregar dados.</div>
-  }
-
   return (
 
     <div className='flex'>
@@ -28,7 +19,6 @@ export default async function Home() {
       <Menu />
 
       <h1> Teste </h1>
-
 
     </div>
 
