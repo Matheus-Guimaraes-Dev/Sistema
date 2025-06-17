@@ -1,4 +1,4 @@
-import { FomularioComponente } from "./components";
+import { FomularioComponente } from "./components/formularioComponente";
 
 export default function Formulario() {
   return(

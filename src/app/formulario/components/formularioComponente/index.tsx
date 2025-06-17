@@ -1,12 +1,17 @@
 "use client"
 
-import { Input } from "./input"
+import { Input } from "../componentes/input"
 import { useState } from "react"
 import toast from 'react-hot-toast'
 
-import { converterImagemParaWebP } from "./conversao";
+import { converterImagemParaWebP } from "../conversao";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
+
+import { limparValorMonetario, formatarParaReal, mostrarValor } from "@/funcoes/formatacao";
+import { limiteCep, limiteRg, limiteCpf, limiteTelefoneReserva, limiteWhatsapp } from "@/funcoes/limitacao";
+
+import { Label } from "../componentes/label";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -76,7 +81,6 @@ export function FomularioComponente() {
   const cidades = estado ? cidadesPorEstado[estado] : [];
 
   const supabase = createClient();
-
   const router = useRouter();
 
   async function enviarFormulario(e: React.FormEvent) {
@@ -177,16 +181,6 @@ export function FomularioComponente() {
       }
     }
 
-    // const { error: updateError } = await supabase
-    //   .from("clientes")
-    //   .update(urls)
-    //   .eq("id", idCliente)
-
-    // if (updateError) {
-    //   console.error(updateError)
-    //   return alert("Erro ao salvar URLs no cadastro")
-    // }
-
     router.push("/formulario/obrigado");
     setNome("");
     setEmail("");
@@ -216,12 +210,10 @@ export function FomularioComponente() {
 
 
   async function buscarCep(cep: string) {
-
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
       console.log(data);
-
       setBairro(data.bairro);
       setRua(data.logradouro);
       setEstado(data.uf); 
@@ -230,80 +222,6 @@ export function FomularioComponente() {
     } catch(error) {
       console.log("Deu errado!");
     }
-
-  }
-
-  function limparValorMonetario(valor: string): number {
-    return parseFloat(
-      valor
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim()
-    );
-  }
-
-
-  function limiteCpf(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, ""); 
-    if (value.length <= 11) {
-      setCpf(value);
-    }
-  }
-
-  function limiteRg(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 7) {
-      setRg(value);
-    }
-  }
-
-  function limiteWhatsapp(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setWhatsapp(value);
-    }
-  }
-
-  function limiteTelefoneReserva(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setTelefoneReserva(value);
-    }
-  }
-
-  function limiteCep(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 8) {
-      setCep(value);
-    }
-  }
-
-
-  const formatarParaReal = (valor: string) => {
-    const apenasNumeros = valor.replace(/\D/g, "");
-    const valorNumerico = parseFloat(apenasNumeros) / 100;
-
-    console.log("INFO: ", valorNumerico)
-
-    if (isNaN(valorNumerico)) {
-      return "";
-    }
-
-    return valorNumerico.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
-  const mostrarValor = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-    const valor = e.target.value;
-    const formatado = formatarParaReal(valor);
-
-    setValorSolicitado(formatado);
-    console.log(valorSolicitado)
-
   }
 
   return(
@@ -313,7 +231,7 @@ export function FomularioComponente() {
 
       <div className="mx-2 mt-4">
 
-        <label className="text-sm sm:text-base"> Nome Completo </label>
+        <Label> Nome Completo </Label>
         <Input 
           type="text"
           value={nome}
@@ -325,7 +243,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Email </label>
+        <Label> Email </Label>
         <Input 
           type="text" 
           value={email}
@@ -336,12 +254,12 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> CPF </label>
+        <Label> CPF </Label>
         <Input 
           type="text"
           inputMode="numeric"
           value={cpf}
-          onChange={limiteCpf}
+          onChange={(e) => limiteCpf(e, setCpf)}
           maxLength={11}
         />
         
@@ -349,12 +267,12 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> RG </label>
+        <Label> RG </Label>
         <Input 
           type="text"
           inputMode="numeric"
           value={rg}
-          onChange={limiteRg}
+          onChange={(e) => limiteRg(e, setRg)}
           maxLength={7} 
         />
         
@@ -362,7 +280,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 flex-col mb-4">
         
-        <label className="text-sm sm:text-base"> Data de Emissão RG </label>
+        <Label> Data de Emissão RG </Label>
         <input 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
@@ -374,7 +292,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Orgão Expedidor </label>
+        <Label> Orgão Expedidor </Label>
         <Input 
           type="text"
           value={orgaoExpedidor}
@@ -385,7 +303,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 flex flex-col mb-4">
         
-        <label className="text-sm sm:text-base"> Sexo </label>
+        <Label> Sexo </Label>
         <select 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           value={sexo}
@@ -400,7 +318,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
-        <label className="text-sm sm:text-base"> Estado Civil </label>
+        <Label> Estado Civil </Label>
         <select 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           value={estadoCivil}
@@ -418,7 +336,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
-        <label className="text-sm sm:text-base"> Data Nascimento </label>
+        <Label> Data Nascimento </Label>
         <input 
           className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
@@ -430,11 +348,11 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Whatsapp </label>
+        <Label> Whatsapp </Label>
         <Input 
           type="number"
           value={whatsapp}
-          onChange={limiteWhatsapp}
+          onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
           maxLength={13}
         />
         
@@ -442,11 +360,11 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Telefone Reserva </label>
+        <Label> Telefone Reserva </Label>
         <Input 
           type="number"
           value={telefoneReserva}
-          onChange={limiteTelefoneReserva}
+          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
           maxLength={13}
         />
         
@@ -454,11 +372,11 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> CEP </label>
+        <Label> CEP </Label>
         <Input 
           type="number"
           value={cep}
-          onChange={limiteCep}
+          onChange={ (e) => limiteCep(e, setCep)}
           onBlur={() => {
             if (cep.length === 8) buscarCep(cep);
           }}
@@ -469,7 +387,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Bairro </label>
+        <Label> Bairro </Label>
         <Input 
           type="text"
           value={bairro}
@@ -480,7 +398,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Rua </label>
+        <Label> Rua </Label>
         <Input 
           type="text"
           value={rua}
@@ -491,7 +409,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Nº da Casa </label>
+        <Label> Nº da Casa </Label>
         <Input 
           type="number" 
           value={Ncasa}
@@ -502,7 +420,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
-        <label className="text-sm sm:text-base"> Moradia </label>
+        <Label> Moradia </Label>
         <select 
           value={moradia}
           onChange={(e) => setMoradia(e.target.value)} 
@@ -519,7 +437,7 @@ export function FomularioComponente() {
     
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
 
-        <label className="text-sm sm:text-base"> Estado </label>
+        <Label> Estado </Label>
 
         <select
         value={estado}
@@ -539,7 +457,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
 
-        <label className="text-sm sm:text-base"> Cidade </label>
+        <Label> Cidade </Label>
 
         <select
         value={cidade}
@@ -556,7 +474,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Chave Pix </label>
+        <Label> Chave Pix </Label>
         <Input 
           type="text" 
           value={pix}
@@ -567,18 +485,18 @@ export function FomularioComponente() {
       
       <div className="mt-[-12px] mx-2 sm:mt-4">
         
-        <label className="text-sm sm:text-base"> Valor Solicitado </label>
+        <Label> Valor Solicitado </Label>
         <Input 
           type="text" 
           value={valorSolicitado}
-          onChange={mostrarValor}
+          onChange={ (e) => mostrarValor(e, setValorSolicitado) }
         />
         
       </div>
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
 
-        <label className="text-sm sm:text-base"> Foto do Comprovante de Renda </label>
+        <Label> Foto do Comprovante de Renda </Label>
         <input 
           className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
           type="file" 
@@ -590,7 +508,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
 
-        <label className="text-sm sm:text-base"> Foto do Comprovante de Endereço </label>
+        <Label> Foto do Comprovante de Endereço </Label>
         <input 
           className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
           type="file" 
@@ -602,7 +520,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
 
-        <label className="text-sm sm:text-base"> Foto da identidade (FRENTE) </label>
+        <Label> Foto da identidade (FRENTE) </Label>
         <input 
           className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
           type="file" 
@@ -614,7 +532,7 @@ export function FomularioComponente() {
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-6">
 
-        <label className="text-sm sm:text-base"> Foto da identidade (verso) </label>
+        <Label> Foto da identidade (verso) </Label>
         <input 
           className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
           type="file" 

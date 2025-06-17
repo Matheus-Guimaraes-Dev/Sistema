@@ -26,7 +26,7 @@ export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Bl
             else reject("Erro ao converter para WebP");
           },
           "image/webp",
-          0.7 // qualidade (de 0 a 1)
+          0.7
         );
       };
       img.onerror = () => reject("Erro ao carregar imagem");
