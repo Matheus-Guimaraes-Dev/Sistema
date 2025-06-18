@@ -1,4 +1,4 @@
-import { Menu } from "../componentes/menu"
+import { Menu } from "@/components/componentes/menu"
 import { FiltrosClientes } from "./filtros"
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'

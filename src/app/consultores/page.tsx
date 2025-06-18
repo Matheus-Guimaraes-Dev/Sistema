@@ -1,8 +1,9 @@
+import { Menu } from "@/components/componentes/menu"
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'
-import { Menu } from '@/components/componentes/menu';
+import FiltrosETabelas from "./filtrosEtabelas"
 
-export default async function Home() {
+export default async function Consultores() {
 
   const supabase = await createClient()
 
@@ -12,15 +13,13 @@ export default async function Home() {
     redirect('/auth/login')
   }
 
-  return (
-
-    <div className='sm:flex min-h-screen'>
+  return(
+    <div className="sm:flex min-h-screen">
 
       <Menu />
 
-      <h1> Teste </h1>
+      <FiltrosETabelas />
 
     </div>
-
-  );
+  )
 }

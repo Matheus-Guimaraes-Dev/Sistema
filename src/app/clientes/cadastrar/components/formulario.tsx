@@ -3,10 +3,12 @@
 import { InputAlterar } from "../../components/InputAlterar";
 import { useState } from "react"
 import toast from 'react-hot-toast'
-
 import { converterImagemParaWebP } from "@/app/formulario/components/conversao";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
+
+import { limparValorMonetario, formatarParaReal, mostrarValor } from "@/funcoes/formatacao";
+import { limiteCpf, limiteRg, limiteWhatsapp, limiteTelefoneReserva, limiteCep } from "@/funcoes/limitacao";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -153,6 +155,7 @@ export function Formulario() {
   if (!arquivo) continue;
 
   try {
+    
     const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
     const isPDF = arquivo.type === "application/pdf";
 
@@ -197,10 +200,7 @@ export function Formulario() {
   }
 }
 
-
-
 }
-
 
   async function buscarCep(cep: string) {
 
@@ -220,85 +220,12 @@ export function Formulario() {
 
   }
 
-  function limparValorMonetario(valor: string): number {
-    return parseFloat(
-      valor
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim()
-    );
-  }
-
   function limparNomeArquivo(nome: string) {
     return nome
-      .normalize("NFD") // Remove acentos
-      .replace(/[\u0300-\u036f]/g, "") // Regex para remover acentos
-      .replace(/\s+/g, "_") // Espaços viram underline
-      .toLowerCase(); // Tudo minúsculo (opcional)
-  }
-
-
-  function limiteCpf(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, ""); 
-    if (value.length <= 11) {
-      setCpf(value);
-    }
-  }
-
-  function limiteRg(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 7) {
-      setRg(value);
-    }
-  }
-
-  function limiteWhatsapp(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setWhatsapp(value);
-    }
-  }
-
-  function limiteTelefoneReserva(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setTelefoneReserva(value);
-    }
-  }
-
-  function limiteCep(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 8) {
-      setCep(value);
-    }
-  }
-
-
-  const formatarParaReal = (valor: string) => {
-    const apenasNumeros = valor.replace(/\D/g, "");
-    const valorNumerico = parseFloat(apenasNumeros) / 100;
-
-    console.log("INFO: ", valorNumerico)
-
-    if (isNaN(valorNumerico)) {
-      return "";
-    }
-
-    return valorNumerico.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
-  const mostrarValor = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-    const valor = e.target.value;
-    const formatado = formatarParaReal(valor);
-
-    setValorSolicitado(formatado);
-    console.log(valorSolicitado)
-
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") 
+      .replace(/\s+/g, "_") 
+      .toLowerCase();
   }
 
   return(
@@ -329,7 +256,7 @@ export function Formulario() {
                 type="text"
                 inputMode="numeric"
                 value={cpf}
-                onChange={limiteCpf}
+                onChange={ (e) => limiteCpf(e, setCep)}
                 maxLength={11}
               />
             </div>
@@ -340,7 +267,7 @@ export function Formulario() {
                 type="text"
                 inputMode="numeric"
                 value={rg}
-                onChange={limiteRg}
+                onChange={ (e) => limiteRg(e, setRg)}
                 maxLength={7} 
               />
             </div>
@@ -408,7 +335,7 @@ export function Formulario() {
               <input 
                 type="number"
                 value={whatsapp}
-                onChange={limiteWhatsapp}
+                onChange={ (e) => limiteWhatsapp(e, setWhatsapp)}
                 maxLength={13}
                 className="w-full h-8 border-2 px-1 mt-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
               />
@@ -419,7 +346,7 @@ export function Formulario() {
               <InputAlterar 
                 type="number"
                 value={telefoneReserva}
-                onChange={limiteTelefoneReserva}
+                onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
                 maxLength={13}
               />
             </div>
@@ -429,7 +356,7 @@ export function Formulario() {
               <InputAlterar 
                 type="number"
                 value={cep}
-                onChange={limiteCep}
+                onChange={ (e) => limiteCep(e, setCep)}
                 onBlur={() => {
                   if (cep.length === 8) buscarCep(cep);
                 }}
@@ -524,7 +451,7 @@ export function Formulario() {
               <InputAlterar 
                 type="text" 
                 value={valorSolicitado}
-                onChange={mostrarValor}
+                onChange={ (e) => mostrarValor(e, setValorSolicitado)}
               />
             </div>
 

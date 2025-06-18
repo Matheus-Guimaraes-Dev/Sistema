@@ -157,10 +157,10 @@ export function FiltrosClientes() {
 
       <form onSubmit={aplicarFiltro}>
         <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
-    grid-cols-1 
-    sm:grid-cols-2 
-    lg:grid-cols-3 
-    mb-6">
+          grid-cols-1 
+          sm:grid-cols-2 
+          lg:grid-cols-3 
+          mb-6">
           <InputCliente
             type="text"
             placeholder="Buscar por nome"

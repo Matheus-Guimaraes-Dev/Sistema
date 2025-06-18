@@ -150,7 +150,7 @@ export function Menu() {
         <div className='w-70 h-0.5 bg-white m-auto mt-4'> </div>
 
         <div className="flex items-center text-white gap-2 px-4 mt-8">
-          <BsFillPeopleFill size={34} color="#fff" className="cursor-pointer"  />
+          <BsFillPeopleFill onClick={paginaClientes} size={34} color="#fff" className="cursor-pointer"  />
           <span
             onClick={paginaClientes}
             className={`transition-all duration-300 text-lg cursor-pointer ${
@@ -161,8 +161,9 @@ export function Menu() {
         </div>
 
         <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <GrUserManager  size={34} color="#fff" className="cursor-pointer"  />
+          <GrUserManager onClick={paginaConsultores} size={34} color="#fff" className="cursor-pointer"  />
           <span
+            onClick={paginaConsultores}
             className={`transition-all duration-300 text-lg cursor-pointer ${
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
