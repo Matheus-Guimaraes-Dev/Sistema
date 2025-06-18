@@ -14,7 +14,7 @@ export default async function Home() {
 
   return (
 
-    <div className='flex min-h-screen'>
+    <div className='sm:flex min-h-screen'>
 
       <Menu />
 

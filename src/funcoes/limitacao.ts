@@ -47,3 +47,13 @@ export function limiteCep(
     setCep(value);
   }
 }
+
+export function limiteId(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setId: (value: string) => void
+) {
+    const value = e.target.value.replace(/\D/g, ""); 
+      if (value.length <=7) {
+        setId(value);
+  }
+}

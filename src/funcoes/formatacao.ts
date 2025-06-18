@@ -31,3 +31,12 @@ export function mostrarValor(
 
   setValor(formatado);
 }
+
+export function formatarCPF(cpf: string) {
+  return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+}
+
+export function formatarData(data: string) {
+  const dataObj = new Date(data);
+  return dataObj.toLocaleDateString('pt-BR');
+}

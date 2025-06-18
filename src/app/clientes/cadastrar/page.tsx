@@ -23,7 +23,7 @@ export default async function Cadastrar() {
   }
 
   return(
-    <div className="bg-[#002956]">
+    <div className="bg-[#002956] min-h-screen">
       <div className="max-w-5xl mx-auto p-6">
 
         <h1 className="text-2xl font-bold text-white mb-6"> Cadastrar Cliente </h1>

@@ -4,6 +4,12 @@ import Link from "next/link";
 import ListaDownloads from "../components/ListaDownload";
 import Alterar from "../components/Alterar";
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
 export default async function Detalhes( { params }: { params: { id: string } }) {
 
   const supabase = await createClient()
@@ -65,7 +71,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
 
   return (
 
-    <div className="bg-[#002956]">
+    <div className="bg-[#002956] min-h-screen">
         <div className="max-w-5xl mx-auto p-6">
 
         <h1 className="text-2xl font-bold text-white mb-6"> Detalhes do Cliente </h1>

@@ -18,6 +18,8 @@ export function Menu() {
 
   const router = useRouter();
 
+  const [mostrarModal, setMostrarModal] = useState(false);
+
   function abrirMenu() {
     
     setMenu(!menu)
@@ -25,14 +27,112 @@ export function Menu() {
   }
 
   function paginaClientes(){
+    setMostrarModal(false);
     router.push("/clientes");
   }
 
+  function paginaConsultores() {
+    setMostrarModal(false);
+    router.push("/consultores");
+  }
 
   return(
-    <div className="min-h-screen">
+    <div className="">
 
-      <div className={`transition-all duration-200 whitespace-nowrap bg-[#002956] h-full ${menu ? 'w-80' : 'w-20'}`} >
+      <div className={`transition-all duration-200 whitespace-nowrap bg-[#002956] py-4 sm:hidden`}>
+        <div className='flex items-center justify-between gap-2 px-4'>
+
+          <Link href="/"> 
+              <h1 className='transition-all duration-300 text-2xl text-center font-bold text-white'> <span className='text-[#1BA1C8]'>LANG</span> CONSULTORIA </h1>
+          </Link>
+
+          <button onClick={ () => setMostrarModal(true)} className='cursor-pointer'> {menu ? <IoMdClose size={24} color="#fff"/> : <FaBars size={24} color="fff" />
+          } </button>
+
+        </div>
+
+      </div>
+
+      {mostrarModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+
+            <div className="flex items-center text-black gap-2 px-4 mt-8">
+              <BsFillPeopleFill size={34} color="#111" className="cursor-pointer" />
+              <span
+                onClick={paginaClientes}
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Clientes
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <GrUserManager  size={34} color="#111" className="cursor-pointer"  />
+              <span
+                onClick={paginaConsultores}
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Consultores
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <GrMoney size={34} color="#111" className="cursor-pointer"  />
+              <span
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Lançamentos
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <CgNotes size={34} color="#111" className="cursor-pointer"  />
+              <span
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Notas Promissórias
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <RiDashboard3Line  size={34} color="#111" className="cursor-pointer"  />
+              <span
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Relatórios
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <RiLogoutBoxLine size={34} color="#111" className="cursor-pointer"  />
+              <span
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Sair
+              </span>
+            </div>
+
+            <button onClick={ () => setMostrarModal(false)} className='cursor-pointer mt-4'> {menu ? <FaBars size={24} color="#111"/> : <IoMdClose size={36} color="111" /> } </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+      {/* =========================================================== */}
+
+      <div className={`hidden sm:block transition-all duration-200 whitespace-nowrap bg-[#002956] h-full ${menu ? 'w-80' : 'w-20'}`} >
 
         <div className='flex items-center justify-between gap-2 px-4 pt-4'>
 
@@ -109,10 +209,6 @@ export function Menu() {
             }`}
           > Sair
           </span>
-        </div>
-
-        <div>
-
         </div>
 
       </div>
