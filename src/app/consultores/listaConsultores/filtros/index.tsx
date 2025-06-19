@@ -17,7 +17,7 @@ interface Cliente {
   data_cadastro: string;
 };
 
-export default function FiltrosETabelas() {
+export default function FiltrosConsultores() {
 
   const supabase = createClient();
 
@@ -110,14 +110,14 @@ export default function FiltrosETabelas() {
   };
 
   function navegarCadastro() {
-    router.push("/consultores/listaConsultores");
+    router.push("/consultores/cadastrar");
   }
 
   return(
 
     <div className="flex-1">
 
-      <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Relatório de Consultores </h1>
+      <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lista de Consultores </h1>
 
       <form onSubmit={aplicarFiltro}>
         <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
@@ -127,13 +127,13 @@ export default function FiltrosETabelas() {
           mb-6">
           <InputCliente
             type="text"
-            placeholder="Buscar por nome"
+            placeholder="Buscar do consultor"
             value={nome}
             onChange={ (e) => setNome(e.target.value)}
           />
           <InputCliente
             type="text"
-            placeholder="Buscar por ID da conta"
+            placeholder="Buscar por ID do consultor"
             inputMode="numeric"
             value={id}
             onChange={ (e) => limiteId(e, setId)}
@@ -146,23 +146,13 @@ export default function FiltrosETabelas() {
             onChange={ (e) => setStatus(e.target.value)}
           >
             <option value="">Status</option>
-            <option value="Pendente">Pendente</option>
-            <option value="Pago">Pago</option>
-          </select>
-
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-          >
-            <option value="">Ordenar por data</option>
-            <option value="asc">Mais antigos</option>
-            <option value="desc">Mais recentes</option>
+            <option value="Pendente"> Ativo </option>
+            <option value="Pago"> Inativo </option>
           </select>
 
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
 
-          <button onClick={navegarCadastro} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Consultores </button>
+          <button onClick={navegarCadastro} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Cadastrar </button>
 
         </div>
       </form>

@@ -202,6 +202,26 @@ export function Formulario() {
 
 }
 
+  const limiteDataRg = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+    if (regex.test(value)) {
+      setDataRg(value);
+    }
+  };
+
+  const limiteDataNascimento = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+    if (regex.test(value)) {
+      setDataNascimento(value);
+    }
+  };
+
   async function buscarCep(cep: string) {
 
     try {
@@ -256,7 +276,7 @@ export function Formulario() {
                 type="text"
                 inputMode="numeric"
                 value={cpf}
-                onChange={ (e) => limiteCpf(e, setCep)}
+                onChange={ (e) => limiteCpf(e, setCpf)}
                 maxLength={11}
               />
             </div>
@@ -278,7 +298,7 @@ export function Formulario() {
                 className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
                 type="date"
                 value={dataRg}
-                onChange={ (e) => setDataRg(e.target.value)}
+                onChange={limiteDataRg}
               />
             </div>
       
@@ -326,7 +346,7 @@ export function Formulario() {
                 className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
                 type="date"
                 value={dataNascimento}
-                onChange={ (e) => setDataNascimento(e.target.value)}
+                onChange={limiteDataNascimento}
               />
             </div>
       

@@ -29,7 +29,7 @@ export default async function Cadastrar() {
         <h1 className="text-2xl font-bold text-white mb-6"> Cadastrar Cliente </h1>
 
         <div className="flex gap-3 flex-wrap">
-          <Link href="clientes" className="cursor-pointer"> 
+          <Link href="/clientes" className="cursor-pointer"> 
             <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm cursor-pointer"> Voltar </button>
           </Link>
         </div>
