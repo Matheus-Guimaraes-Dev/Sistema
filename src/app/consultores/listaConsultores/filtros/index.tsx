@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
-import { limiteCpf, limiteId } from "@/funcoes/limitacao";
+import { limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { InputCliente } from "@/app/clientes/inputCliente";
+import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 interface Cliente {
   id: number;
@@ -50,7 +51,7 @@ export default function FiltrosConsultores() {
     try {
 
       let query = supabase
-        .from("clientes")
+        .from("consultores")
         .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
 
       if (nome.trim() !== "") {
@@ -113,6 +114,10 @@ export default function FiltrosConsultores() {
     router.push("/consultores/cadastrar");
   }
 
+  function detalhes(id: number) {
+    router.push(`/consultores/${id}`);
+  }
+
   return(
 
     <div className="flex-1">
@@ -146,8 +151,8 @@ export default function FiltrosConsultores() {
             onChange={ (e) => setStatus(e.target.value)}
           >
             <option value="">Status</option>
-            <option value="Pendente"> Ativo </option>
-            <option value="Pago"> Inativo </option>
+            <option value="Ativo"> Ativo </option>
+            <option value="Inativo"> Inativo </option>
           </select>
 
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
@@ -156,6 +161,62 @@ export default function FiltrosConsultores() {
 
         </div>
       </form>
+
+      <div className="bg-white rounded-xl shadow-md overflow-x-auto px-4 mb-4">
+        <table className="min-w-full text-sm text-left border-collapse">
+          <thead className="bg-blue-700 text-white">
+            <tr>
+              <th className="hidden sm:table-cell px-4 py-3">ID</th>
+              <th className="px-4 py-3">Nome</th>
+              <th className="hidden lg:table-cell px-4 py-3">CPF</th>
+              <th className="px-4 py-3">Cidade</th>
+              <th className="hidden lg:table-cell px-4 py-3">Estado</th>
+              <th className="hidden lg:table-cell px-4 py-3">Data de Cadastro</th>
+              <th className="px-4 py-3 text-center"> Detalhes</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {clientes && (
+              clientes.map( (info) => (
+                <tr key={info.id} className="hover:bg-gray-50 border-b border-gray-200">
+                  <td className="hidden sm:table-cell px-4 py-2"> {info.id} </td>
+                  <td className="px-4 py-2 max-w-[100px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.nome_completo} </td>
+                  <td className="hidden lg:table-cell px-4 py-2"> {formatarCPF(info.cpf)} </td>
+                  <td className="px-4 py-2"> {info.cidade} </td>
+                  <td className="hidden lg:table-cell px-4 py-2"> {info.estado} </td>
+                  <td className="hidden lg:table-cell px-4 py-2"> {formatarData(info.data_cadastro)} </td>
+                  <td className="px-4 py-2 flex justify-center">
+                    <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer"> <IoIosArrowDroprightCircle size={32} /></button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+        
+      <div className="flex gap-4 justify-center items-center mt-4 mb-6">
+        <button
+          onClick={() => setPaginaAtual((prev) => Math.max(prev - 1, 1))}
+          disabled={paginaAtual === 1}
+          className={`px-4 py-2 rounded text-white 
+            ${paginaAtual === 1 ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
+        >
+          Anterior
+        </button>
+
+        <span> {paginaAtual} </span>
+
+        <button
+          onClick={() => setPaginaAtual((prev) => prev + 1)}
+          disabled={paginaAtual >= totalPaginas}
+          className={`px-4 py-2 rounded text-white 
+            ${paginaAtual >= totalPaginas ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
+        >
+          Próxima
+        </button>
+      </div>
+
     </div>
   )
 }

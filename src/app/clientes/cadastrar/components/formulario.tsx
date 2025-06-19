@@ -229,10 +229,10 @@ export function Formulario() {
       const data: viaCep = await response.json();
       console.log(data);
 
-      setBairro(data.bairro);
-      setRua(data.logradouro);
-      setEstado(data.uf); 
-      setCidade(data.localidade);
+      setBairro(data.bairro ?? '');
+      setRua(data.logradouro ?? '');
+      setEstado(data.uf ?? ''); 
+      setCidade(data.localidade ?? '');
 
     } catch(error) {
       console.log("Deu errado!");

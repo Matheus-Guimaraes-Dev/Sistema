@@ -232,10 +232,10 @@ export function FomularioComponente() {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
       console.log(data);
-      setBairro(data.bairro);
-      setRua(data.logradouro);
-      setEstado(data.uf); 
-      setCidade(data.localidade);
+      setBairro(data.bairro ?? '');
+      setRua(data.logradouro ?? '');
+      setEstado(data.uf ?? ''); 
+      setCidade(data.localidade ?? '');
 
     } catch(error) {
       console.log("Deu errado!");

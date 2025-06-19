@@ -122,12 +122,14 @@ export function FormularioConsultor() {
         estado,
         cidade,
         observacao: observacao,
-        porcentagem: porcentagem,
+        percentual_comissao: porcentagem,
       })
 
-    if (insertError || !clienteData) {
+    if (insertError) {
       console.error("Erro ao criar cliente:", insertError)
       return toast.error("Erro ao criar cliente")
+    } else {
+      console.log('Cliente cadastrado com sucesso:', clienteData);
     }
 
   }
@@ -137,10 +139,10 @@ export function FormularioConsultor() {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
       console.log(data);
-      setBairro(data.bairro);
-      setRua(data.logradouro);
-      setEstado(data.uf); 
-      setCidade(data.localidade);
+      setBairro(data.bairro ?? '');
+      setRua(data.logradouro ?? '');
+      setEstado(data.uf ?? ''); 
+      setCidade(data.localidade ?? '');
     } catch(error) {
       console.log("Deu errado!");
     }
@@ -391,7 +393,6 @@ export function FormularioConsultor() {
           value={porcentagem}
           onChange={setPorcentagem}
           name="desconto"
-          required
         />
       </div>
 

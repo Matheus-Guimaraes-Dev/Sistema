@@ -19,16 +19,13 @@ export default function InputPorcentagem({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
 
-    // Permite apenas números e um ponto (.)
     val = val.replace(/[^0-9.]/g, '');
 
-    // Garante que só tenha UM ponto (.)
     const partes = val.split('.');
     if (partes.length > 2) {
       val = partes[0] + '.' + partes[1];
     }
 
-    // Validação do número
     const numero = parseFloat(val);
 
     if (isNaN(numero)) {

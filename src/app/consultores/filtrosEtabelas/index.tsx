@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { limiteCpf, limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { InputCliente } from "@/app/clientes/inputCliente";
+import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 interface Cliente {
   id: number;
@@ -50,7 +51,7 @@ export default function FiltrosETabelas() {
     try {
 
       let query = supabase
-        .from("clientes")
+        .from("consultores")
         .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
 
       if (nome.trim() !== "") {
@@ -113,6 +114,10 @@ export default function FiltrosETabelas() {
     router.push("/consultores/listaConsultores");
   }
 
+  function detalhes(id: number) {
+    router.push(`/consultores/${id}`);
+  }
+
   return(
 
     <div className="flex-1">
@@ -166,6 +171,7 @@ export default function FiltrosETabelas() {
 
         </div>
       </form>
+
     </div>
   )
 }
