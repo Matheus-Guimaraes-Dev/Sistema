@@ -5,6 +5,9 @@ import { Toaster } from 'react-hot-toast'
 export const metadata: Metadata = {
   title: "Lang Consultoria",
   description: "Empresa especializada em empréstimos",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
