@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'
 import { Menu } from '@/components/componentes/menu';
 import Image from 'next/image';
-import logo from "@/fotos/logo.jpeg"
+import logo from "@/fotos/logo.png"
 
 export default async function Home() {
 
@@ -20,15 +20,20 @@ export default async function Home() {
 
       <Menu />
 
-      <div className="relative w-64 h-40">
-        <Image
-          src={logo}
-          alt="Descrição da imagem"
-          fill
-          className="object-cover rounded-lg"
-        />
+      <div className="flex justify-center items-center w-full h-screen">
+        <div className="flex-1 max-w-[600px]">
+          <div className="relative w-full h-80">
+            <Image
+              src={logo}
+              alt="Logo"
+              fill
+              priority
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 600px"
+            />
+          </div>
+        </div>
       </div>
-
     </div>
 
   );
