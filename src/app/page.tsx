@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'
 import { Menu } from '@/components/componentes/menu';
+import Image from 'next/image';
+import logo from "@/fotos/logo.jpeg"
 
 export default async function Home() {
 
@@ -18,7 +20,14 @@ export default async function Home() {
 
       <Menu />
 
-      <h1> Teste </h1>
+      <div className="relative w-64 h-40">
+        <Image
+          src={logo}
+          alt="Descrição da imagem"
+          fill
+          className="object-cover rounded-lg"
+        />
+      </div>
 
     </div>
 
