@@ -20,7 +20,7 @@ export default async function Home() {
 
       <Menu />
 
-      <div className="flex justify-center items-center w-full h-screen">
+      <div className="flex justify-center items-center w-full h-[calc(100vh-64px)]">
         <div className="flex-1 max-w-[600px]">
           <div className="relative w-full h-80">
             <Image
