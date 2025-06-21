@@ -57,3 +57,14 @@ export function limiteId(
         setId(value);
   }
 }
+
+export function limiteIdDocumento(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setIdDocumento: (value: string) => void
+) {
+    const value = e.target.value.replace(/\D/g, ""); 
+      if (value.length <=7) {
+        setIdDocumento(value);
+  }
+}
+

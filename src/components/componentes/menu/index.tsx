@@ -37,6 +37,11 @@ export function Menu() {
     router.push("/consultores");
   }
 
+  function paginaLancamentos() {
+    setMostrarModal(false);
+    router.push("/lancamentos");
+  }
+
   async function sair() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -68,7 +73,7 @@ export function Menu() {
           <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
 
             <div className="flex items-center text-black gap-2 px-4 mt-8">
-              <BsFillPeopleFill size={34} color="#111" className="cursor-pointer" />
+              <BsFillPeopleFill onClick={paginaClientes} size={34} color="#111" className="cursor-pointer" />
               <span
                 onClick={paginaClientes}
                 className={`transition-all duration-300 text-lg cursor-pointer ${
@@ -79,7 +84,7 @@ export function Menu() {
             </div>
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <GrUserManager  size={34} color="#111" className="cursor-pointer"  />
+              <GrUserManager onClick={paginaConsultores} size={34} color="#111" className="cursor-pointer"  />
               <span
                 onClick={paginaConsultores}
                 className={`transition-all duration-300 text-lg cursor-pointer ${
@@ -90,8 +95,9 @@ export function Menu() {
             </div>
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <GrMoney size={34} color="#111" className="cursor-pointer"  />
+              <GrMoney onClick={paginaLancamentos} size={34} color="#111" className="cursor-pointer"  />
               <span
+                onClick={paginaLancamentos}
                 className={`transition-all duration-300 text-lg cursor-pointer ${
                   mostrarModal ? 'opacity-100 scale-100' : 'hidden'
                 }`}
@@ -180,8 +186,9 @@ export function Menu() {
         </div>
 
         <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <GrMoney size={34} color="#fff" className="cursor-pointer"  />
+          <GrMoney onClick={paginaLancamentos} size={34} color="#fff" className="cursor-pointer"  />
           <span
+            onClick={paginaLancamentos}
             className={`transition-all duration-300 text-lg cursor-pointer ${
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
