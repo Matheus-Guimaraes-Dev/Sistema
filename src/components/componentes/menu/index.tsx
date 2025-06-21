@@ -12,6 +12,7 @@ import { GrMoney } from "react-icons/gr";
 import { RiDashboard3Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { createClient } from '@/lib/client'
+import { FaGear } from "react-icons/fa6";
 
 export function Menu() {
 
@@ -126,6 +127,16 @@ export function Menu() {
             </div>
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <FaGear size={34} color="#111" className="cursor-pointer"  />
+              <span
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Configurações
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
               <RiLogoutBoxLine onClick={sair} size={34} color="#111" className="cursor-pointer"  />
               <span
                 onClick={sair}
@@ -206,7 +217,6 @@ export function Menu() {
           </span>
         </div>
 
-        
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <RiDashboard3Line  size={34} color="#fff" className="cursor-pointer"  />
           <span
@@ -214,6 +224,16 @@ export function Menu() {
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
           > Relatórios
+          </span>
+        </div>
+
+        <div className="flex items-center text-white gap-2 px-4 mt-6">
+          <FaGear size={32} color="#fff" className="cursor-pointer"  />
+          <span
+            className={`transition-all duration-300 text-lg cursor-pointer ${
+              menu ? 'opacity-100 scale-100' : 'hidden'
+            }`}
+          > Configurações
           </span>
         </div>
 

@@ -6,7 +6,6 @@ import toast from 'react-hot-toast'
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 
-import { mostrarValor } from "@/funcoes/formatacao";
 import { limiteCpf, limiteRg, limiteWhatsapp, limiteTelefoneReserva, limiteCep } from "@/funcoes/limitacao";
 import InputPorcentagem from "./InputPorcentagem";
 
@@ -68,7 +67,11 @@ export function FormularioConsultor() {
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [observacao, setObservacao] = useState("");
-  const [porcentagem, setPorcentagem] = useState("");
+  const [comissaoMensal, setComissacaoMensal] = useState("");
+  const [comissaoSemanal, setComissacaoSemanal] = useState("");
+  const [comissaoDiario, setComissacaoDiario] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
@@ -98,8 +101,13 @@ export function FormularioConsultor() {
     if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
     if (!estado.trim()) return toast.error("Selecione o seu estado!");
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
-    if (!porcentagem.trim()) return toast.error("Escreva a porcentagem do consultor");
-    
+    if (!comissaoDiario.trim()) return toast.error("Digite o valor da Comissão Diário!");
+    if (!comissaoSemanal.trim()) return toast.error("Digite o valor da Comissão Semanal!");
+    if (!comissaoMensal.trim()) return toast.error("Digite o valor da Comissão Mensal!");
+
+
+    setLoading(true);
+
     const { data: clienteData, error: insertError } = await supabase
       .from("consultores")
       .insert({ 
@@ -122,7 +130,9 @@ export function FormularioConsultor() {
         estado,
         cidade,
         observacao: observacao,
-        percentual_comissao: porcentagem,
+        comissao_mensal: comissaoMensal,
+        comissao_semanal: comissaoSemanal,
+        comissao_diaria: comissaoDiario,
       })
 
     if (insertError) {
@@ -130,11 +140,39 @@ export function FormularioConsultor() {
       return toast.error("Erro ao criar cliente")
     } else {
       console.log('Cliente cadastrado com sucesso:', clienteData);
+      setNome("");
+      setEmail("");
+      setCpf("");
+      setRg("");
+      setDataRg("");
+      setOrgaoExpedidor("");
+      setSexo("");
+      setEstadoCivil("");
+      setDataNascimento("");
+      setWhatsapp("");
+      setTelefoneReserva("");
+      setCep("");
+      setBairro("");
+      setRua("");
+      setNcasa("");
+      setMoradia("");
+      setEstado("");
+      setCidade("");
+      setObservacao("");
+      setComissacaoMensal("");
+      setComissacaoSemanal("");
+      setComissacaoDiario("");
+      toast.success('Consultor Cadastrado com Sucesso!')
     }
+
+    setLoading(false);
 
   }
 
   async function buscarCep(cep: string) {
+
+    setLoading(true);
+
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
@@ -146,6 +184,9 @@ export function FormularioConsultor() {
     } catch(error) {
       console.log("Deu errado!");
     }
+
+    setLoading(false);
+
   }
 
   const limiteDataRg = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -387,11 +428,31 @@ export function FormularioConsultor() {
       </div>
 
       <div>
-        <label className="text-sm sm:text-base"> Porcentagem </label>
+        <label className="text-sm sm:text-base"> Comissão Mensal </label>
         <InputPorcentagem
           label="Desconto"
-          value={porcentagem}
-          onChange={setPorcentagem}
+          value={comissaoMensal}
+          onChange={setComissacaoMensal}
+          name="desconto"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm sm:text-base"> Comissão Semanal </label>
+        <InputPorcentagem
+          label="Desconto"
+          value={comissaoSemanal}
+          onChange={setComissacaoSemanal}
+          name="desconto"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm sm:text-base"> Comissão Diário </label>
+        <InputPorcentagem
+          label="Desconto"
+          value={comissaoDiario}
+          onChange={setComissacaoDiario}
           name="desconto"
         />
       </div>
@@ -403,6 +464,12 @@ export function FormularioConsultor() {
         </div>
 
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
+        </div>
+      )}
 
     </form>
   )

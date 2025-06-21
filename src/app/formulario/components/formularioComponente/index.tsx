@@ -77,6 +77,8 @@ export function FomularioComponente() {
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
 
+  const [loading, setLoading] = useState(false);
+
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
 
@@ -84,6 +86,8 @@ export function FomularioComponente() {
   const router = useRouter();
 
   async function enviarFormulario(e: React.FormEvent) {
+
+    setLoading(true);
 
     e.preventDefault()
 
@@ -181,7 +185,6 @@ export function FomularioComponente() {
       }
     }
 
-    router.push("/formulario/obrigado");
     setNome("");
     setEmail("");
     setCpf("");
@@ -206,6 +209,11 @@ export function FomularioComponente() {
     setComprovanteEndereco(null);
     setDocumentoFrente(null);
     setDocumentoVerso(null);
+
+    setLoading(false);
+
+    router.push("/formulario/obrigado");
+
   }
 
     const limiteDataRg = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +236,9 @@ export function FomularioComponente() {
     };
 
   async function buscarCep(cep: string) {
+
+    setLoading(true);
+
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
@@ -240,6 +251,9 @@ export function FomularioComponente() {
     } catch(error) {
       console.log("Deu errado!");
     }
+
+    setLoading(false);
+
   }
 
   return(
@@ -567,6 +581,12 @@ export function FomularioComponente() {
         </div>
 
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
+        </div>
+      )}
 
     </form>
   )

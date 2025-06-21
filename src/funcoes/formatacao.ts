@@ -37,6 +37,6 @@ export function formatarCPF(cpf: string) {
 }
 
 export function formatarData(data: string) {
-  const dataObj = new Date(data);
+  const dataObj = new Date(data + "T12:00:00");
   return dataObj.toLocaleDateString('pt-BR');
 }

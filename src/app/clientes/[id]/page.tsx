@@ -65,7 +65,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
   }
 
   function formatarData(data: string) {
-    const dataObj = new Date(data);
+    const dataObj = new Date(data + "T12:00:00");
     return dataObj.toLocaleDateString('pt-BR');
   }
 

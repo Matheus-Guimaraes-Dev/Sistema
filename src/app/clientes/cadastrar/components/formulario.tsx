@@ -170,6 +170,7 @@ export function Formulario() {
       setDocumentoFrente(null);
       setDocumentoVerso(null);
       setArquivo(null);
+      toast.success('Cliente Cadastrado com Sucesso!')
     }
 
     const idCliente = clienteData[0].id

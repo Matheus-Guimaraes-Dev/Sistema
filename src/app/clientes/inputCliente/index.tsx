@@ -17,7 +17,7 @@ interface Props {
 
 export function InputCliente({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
   return (
-    <div className="mb-4">
+    <div className="">
       <label className="block font-semibold mb-1">{label}</label>
       <input
         type={type}

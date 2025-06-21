@@ -38,7 +38,7 @@ export default function InputPorcentagem({
   };
 
   return (
-    <div className="mb-4">
+    <div className="">
       <div className="flex items-center gap-2">
         <input
           type="text"

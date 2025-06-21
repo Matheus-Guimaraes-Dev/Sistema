@@ -48,7 +48,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
   }
 
   function formatarData(data: string) {
-    const dataObj = new Date(data);
+    const dataObj = new Date(data + "T12:00:00");
     return dataObj.toLocaleDateString('pt-BR');
   }
 
@@ -86,6 +86,9 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Status:</strong> {consultor.status} </p>
             <p><strong>Data de Cadastro:</strong> {formatarData(consultor.data_cadastro)} </p>
             <p><strong>Observação: </strong> {consultor.observacao} </p>
+            <p><strong>Comissão Diário: </strong> {consultor.comissao_diaria}% </p>
+            <p><strong>Comissão Semanal: </strong> {consultor.comissao_semanal}% </p>
+            <p><strong>Comissão Mensal: </strong> {consultor.comissao_mensal}% </p>
           </div>
 
         </section>
