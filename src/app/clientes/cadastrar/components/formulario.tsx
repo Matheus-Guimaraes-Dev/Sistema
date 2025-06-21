@@ -76,6 +76,8 @@ export function Formulario() {
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
   const [arquivo, setArquivo] = useState<File | null>(null); 
 
+  const [loading, setLoading] = useState(false);
+
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
 
@@ -106,6 +108,8 @@ export function Formulario() {
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
+
+    setLoading(true);
 
     const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
 
@@ -139,6 +143,33 @@ export function Formulario() {
     if (insertError || !clienteData || clienteData.length === 0) {
       console.error("Erro ao criar cliente:", insertError)
       return toast.error("Erro ao criar cliente")
+    } else { 
+      setNome("");
+      setEmail("");
+      setCpf("");
+      setRg("");
+      setDataRg("");
+      setOrgaoExpedidor("");
+      setSexo("");
+      setEstadoCivil("");
+      setDataNascimento("");
+      setWhatsapp("");
+      setTelefoneReserva("");
+      setCep("");
+      setBairro("");
+      setRua("");
+      setNcasa("");
+      setMoradia("");
+      setEstado("");
+      setCidade("");
+      setPix("");
+      setValorSolicitado("");
+      setObservacao("");
+      setComprovanteRenda(null);
+      setComprovanteEndereco(null);
+      setDocumentoFrente(null);
+      setDocumentoVerso(null);
+      setArquivo(null);
     }
 
     const idCliente = clienteData[0].id
@@ -152,53 +183,56 @@ export function Formulario() {
     const urls: Record<string, string> = {}
 
     for (const { arquivo, campo } of arquivos) {
-  if (!arquivo) continue;
+      if (!arquivo) continue;
 
-  try {
-    
-    const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
-    const isPDF = arquivo.type === "application/pdf";
+    try {
+      
+      const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
+      const isPDF = arquivo.type === "application/pdf";
 
-    let arquivoFinal: Blob;
-    let extensao: string;
+      let arquivoFinal: Blob;
+      let extensao: string;
 
-    if (isPDF) {
-      arquivoFinal = arquivo;
-      extensao = "pdf";
-    } else {
-      const convertido = await converterImagemParaWebP(arquivo);
-      arquivoFinal = convertido;
-      extensao = "webp";
+      if (isPDF) {
+        arquivoFinal = arquivo;
+        extensao = "pdf";
+      } else {
+        const convertido = await converterImagemParaWebP(arquivo);
+        arquivoFinal = convertido;
+        extensao = "webp";
+      }
+
+      const nomeArquivo = campo === "outro_arquivo"
+        ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
+        : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
+
+      const { error: uploadError } = await supabase
+        .storage
+        .from("clientes")
+        .upload(nomeArquivo, arquivoFinal, {
+          contentType: arquivoFinal.type,
+        });
+
+      if (uploadError) {
+        console.error(uploadError);
+        return alert(`Erro ao enviar ${campo}`);
+      }
+
+      const { data: urlData } = supabase
+        .storage
+        .from("clientes")
+        .getPublicUrl(nomeArquivo);
+
+      urls[campo] = urlData.publicUrl;
+
+    } catch (erro) {
+      console.error("Erro no processamento do arquivo:", erro);
+      return alert(`Erro ao processar o arquivo: ${campo}`);
     }
 
-    const nomeArquivo = campo === "outro_arquivo"
-      ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
-      : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
-
-    const { error: uploadError } = await supabase
-      .storage
-      .from("clientes")
-      .upload(nomeArquivo, arquivoFinal, {
-        contentType: arquivoFinal.type,
-      });
-
-    if (uploadError) {
-      console.error(uploadError);
-      return alert(`Erro ao enviar ${campo}`);
-    }
-
-    const { data: urlData } = supabase
-      .storage
-      .from("clientes")
-      .getPublicUrl(nomeArquivo);
-
-    urls[campo] = urlData.publicUrl;
-
-  } catch (erro) {
-    console.error("Erro no processamento do arquivo:", erro);
-    return alert(`Erro ao processar o arquivo: ${campo}`);
   }
-}
+
+  setLoading(false);
 
 }
 
@@ -551,6 +585,12 @@ export function Formulario() {
         </div>
 
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
+        </div>
+      )}
 
     </form>
   )
