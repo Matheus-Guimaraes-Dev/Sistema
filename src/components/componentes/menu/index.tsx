@@ -43,6 +43,12 @@ export function Menu() {
     router.push("/lancamentos");
   }
 
+  function paginaConfiguracoes() {
+    setMostrarModal(false);
+    router.push("/configuracoes");
+  }
+  
+
   async function sair() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -127,8 +133,9 @@ export function Menu() {
             </div>
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <FaGear size={34} color="#111" className="cursor-pointer"  />
+              <FaGear onClick={paginaConfiguracoes} size={34} color="#111" className="cursor-pointer"  />
               <span
+                onClick={paginaConfiguracoes}
                 className={`transition-all duration-300 text-lg cursor-pointer ${
                   mostrarModal ? 'opacity-100 scale-100' : 'hidden'
                 }`}
@@ -228,8 +235,9 @@ export function Menu() {
         </div>
 
         <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <FaGear size={32} color="#fff" className="cursor-pointer"  />
+          <FaGear onClick={paginaConfiguracoes} size={32} color="#fff" className="cursor-pointer"  />
           <span
+            onClick={paginaConfiguracoes}
             className={`transition-all duration-300 text-lg cursor-pointer ${
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
