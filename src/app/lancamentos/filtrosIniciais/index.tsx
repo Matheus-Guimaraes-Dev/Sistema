@@ -7,6 +7,8 @@ import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteId, limiteIdDocumento } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
+import InputPorcentagem from "@/app/consultores/cadastrar/formulario/InputPorcentagem";
+import { FaArrowDown } from "react-icons/fa";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -63,7 +65,13 @@ export function FiltrosLancamentos() {
   const [ordenarValor, setOrdenarValor] = useState("");
   const [erro, setErro] = useState("");
 
+  const [filtros, setFiltros] = useState(false);
+
+  const [porcentagem, setPorcentagem] = useState("");
+
   const [paginaAtual, setPaginaAtual] = useState(1);
+
+  const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
   useEffect(() => {
     buscarClientes()
@@ -157,12 +165,22 @@ export function FiltrosLancamentos() {
 
       <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lançamentos </h1>
 
+      <div className="px-4 sm:hidden mb-4">
+        <div className='flex items-center justify-between px-4 gap-2 text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full'>
+          
+          <button onClick={() => setFiltros(true)} type="button" className="text-lg cursor-pointer"> Filtros </button>
+
+          <FaArrowDown size={24} color="FFF" />
+
+        </div>
+      </div>
+
       <form onSubmit={aplicarFiltro}>
-        <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
+        <div className="bg-white p-4 rounded-xl shadow-md sm:grid gap-4 
           grid-cols-1 
           sm:grid-cols-2 
           lg:grid-cols-3 
-          mb-6">
+          mb-6 hidden ">
           <InputCliente
             type="text"
             placeholder="Buscar por nome do cliente"
@@ -261,7 +279,7 @@ export function FiltrosLancamentos() {
 
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
 
-          <button onClick={navegarCadastro} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Cadastrar </button>
+          <button onClick={() => setAbrirModalCadastrar(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Cadastrar </button>
 
         </div>
       </form>
@@ -330,6 +348,40 @@ export function FiltrosLancamentos() {
           Próxima
         </button>
       </div>
+
+      {abrirModalCadastrar && (
+      
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+
+        <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+          <h2 className="text-xl font-bold mb-4"> Lançamento </h2>
+
+          <form>
+
+          <InputPorcentagem 
+            value={porcentagem}
+            onChange={setPorcentagem}
+            label="10%, 7%, 3%.."
+          />
+
+          <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
+
+          <div className="flex justify-center gap-4">
+            <button 
+              type="button" 
+              onClick={() => {
+                setAbrirModalCadastrar(false);
+                setPorcentagem("");
+              }} 
+              className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+          </div>
+
+          </form>
+        </div>
+      </div>
+      )}
       
     </div>
   )
