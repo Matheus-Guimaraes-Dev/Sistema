@@ -9,6 +9,8 @@ import { limiteCpf, limiteId, limiteIdDocumento } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import InputPorcentagem from "@/app/consultores/cadastrar/formulario/InputPorcentagem";
 import { FaArrowDown } from "react-icons/fa";
+import { FaArrowUp } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -65,7 +67,25 @@ export function FiltrosLancamentos() {
   const [ordenarValor, setOrdenarValor] = useState("");
   const [erro, setErro] = useState("");
 
-  const [filtros, setFiltros] = useState(false);
+  const [filtros, setFiltros] = useState(true);
+
+  useEffect(() => {
+    const verificarTela = () => {
+      if (window.innerWidth >= 640) {
+        setFiltros(true);
+      } else {
+        setFiltros(false);
+      }
+    };
+
+    verificarTela(); 
+
+    window.addEventListener("resize", verificarTela);
+
+    return () => {
+      window.removeEventListener("resize", verificarTela);
+    };
+  }, []);
 
   const [porcentagem, setPorcentagem] = useState("");
 
@@ -165,124 +185,137 @@ export function FiltrosLancamentos() {
 
       <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lançamentos </h1>
 
-      <div className="px-4 sm:hidden mb-4">
-        <div className='flex items-center justify-between px-4 gap-2 text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full'>
-          
-          <button onClick={() => setFiltros(true)} type="button" className="text-lg cursor-pointer"> Filtros </button>
+      <AnimatePresence>
+        {filtros && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4 }}
+            className="overflow-hidden"
+            onSubmit={aplicarFiltro}
+          >
+            <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
+              grid-cols-1 
+              sm:grid-cols-2 
+              lg:grid-cols-3 
+              mb-6">
+              <InputCliente
+                type="text"
+                placeholder="Buscar por nome do cliente"
+                value={nome}
+                onChange={ (e) => setNome(e.target.value)}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por ID do cliente"
+                inputMode="numeric"
+                value={id}
+                onChange={ (e) => limiteId(e, setId)}
+                maxLength={7}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por CPF"
+                inputMode="numeric"
+                value={cpf}
+                onChange={ (e) => limiteCpf(e, setCpf)}
+                maxLength={11}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por ID do documento"
+                inputMode="numeric"
+                value={id}
+                onChange={ (e) => limiteIdDocumento(e, setIdDocumento)}
+                maxLength={7}
+              />
 
-          <FaArrowDown size={24} color="FFF" />
+              <select 
+                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={status}
+                onChange={ (e) => setStatus(e.target.value)}
+              >
+                <option value="">Status</option>
+                <option value="Pago">Pago</option>
+                <option value="Pendente">Pendente</option>
+              </select>
+
+              <select 
+                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={status}
+                onChange={ (e) => setStatus(e.target.value)}
+              >
+                <option value="">Consultor</option>
+                <option value="Pago">Arthur</option>
+                <option value="Pendente">Bia</option>
+              </select>
+
+              <select 
+                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+              >
+                <option value="">Ordenar por data</option>
+                <option value="asc">Mais antigos</option>
+                <option value="desc">Mais recentes</option>
+              </select>
+
+              <select 
+                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={ordenarValor}
+                onChange={(e) => setOrdenarValor(e.target.value)}
+              >
+                <option value="">Ordenar por Valor</option>
+                <option value="asc">Maior para Menor</option>
+                <option value="desc">Menor para Maior</option>
+              </select>
+
+              <select
+                value={estado}
+                onChange={(e) => {
+                  setEstado(e.target.value);
+                  setCidade(""); 
+                }}
+                className="w-full h-10 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value=""> Selecionar Estado... </option>
+                {estados.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+
+              <select
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                className="w-full h-10 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value=""> Selecionar Cidade... </option>
+                {cidades.map((cidade) => (
+                  <option key={cidade} value={cidade}>{cidade}</option>
+                ))}
+              </select>
+
+              <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
+
+              <button onClick={() => setAbrirModalCadastrar(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Cadastrar </button>
+
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      <div className="px-4 sm:hidden mb-4">
+        <div onClick={() => setFiltros(!filtros)} className='flex items-center justify-between px-4 gap-2 text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full'>
+          
+          <button type="button" className="text-lg cursor-pointer"> Filtros </button>
+
+          {filtros ? (
+            <FaArrowUp size={24} color="FFF" />
+          ) : <FaArrowDown size={24} color="FFF" /> }
 
         </div>
       </div>
-
-      <form onSubmit={aplicarFiltro}>
-        <div className="bg-white p-4 rounded-xl shadow-md sm:grid gap-4 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-3 
-          mb-6 hidden ">
-          <InputCliente
-            type="text"
-            placeholder="Buscar por nome do cliente"
-            value={nome}
-            onChange={ (e) => setNome(e.target.value)}
-          />
-          <InputCliente
-            type="text"
-            placeholder="Buscar por ID do cliente"
-            inputMode="numeric"
-            value={id}
-            onChange={ (e) => limiteId(e, setId)}
-            maxLength={7}
-          />
-          <InputCliente
-            type="text"
-            placeholder="Buscar por CPF"
-            inputMode="numeric"
-            value={cpf}
-            onChange={ (e) => limiteCpf(e, setCpf)}
-            maxLength={11}
-          />
-          <InputCliente
-            type="text"
-            placeholder="Buscar por ID do documento"
-            inputMode="numeric"
-            value={id}
-            onChange={ (e) => limiteIdDocumento(e, setIdDocumento)}
-            maxLength={7}
-          />
-
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={status}
-            onChange={ (e) => setStatus(e.target.value)}
-          >
-            <option value="">Status</option>
-            <option value="Pago">Pago</option>
-            <option value="Pendente">Pendente</option>
-          </select>
-
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={status}
-            onChange={ (e) => setStatus(e.target.value)}
-          >
-            <option value="">Consultor</option>
-            <option value="Pago">Arthur</option>
-            <option value="Pendente">Bia</option>
-          </select>
-
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-          >
-            <option value="">Ordenar por data</option>
-            <option value="asc">Mais antigos</option>
-            <option value="desc">Mais recentes</option>
-          </select>
-
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={ordenarValor}
-            onChange={(e) => setOrdenarValor(e.target.value)}
-          >
-            <option value="">Ordenar por Valor</option>
-            <option value="asc">Maior para Menor</option>
-            <option value="desc">Menor para Maior</option>
-          </select>
-
-          <select
-            value={estado}
-            onChange={(e) => {
-              setEstado(e.target.value);
-              setCidade(""); 
-            }}
-            className="w-full h-10 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-          >
-            <option value=""> Selecionar Estado... </option>
-            {estados.map((uf) => (
-              <option key={uf} value={uf}>{uf}</option>
-            ))}
-          </select>
-
-          <select
-            value={cidade}
-            onChange={(e) => setCidade(e.target.value)}
-            className="w-full h-10 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-          >
-            <option value=""> Selecionar Cidade... </option>
-            {cidades.map((cidade) => (
-              <option key={cidade} value={cidade}>{cidade}</option>
-            ))}
-          </select>
-
-          <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
-
-          <button onClick={() => setAbrirModalCadastrar(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Cadastrar </button>
-
-        </div>
-      </form>
 
       <div className="bg-white rounded-xl shadow-md overflow-x-auto px-4 mb-4">
         <table className="min-w-full text-sm text-left border-collapse">
@@ -382,7 +415,14 @@ export function FiltrosLancamentos() {
         </div>
       </div>
       )}
-      
+
+      {filtros && (
+        <div>
+          oi
+        </div>
+      )}
+
+
     </div>
   )
 }
