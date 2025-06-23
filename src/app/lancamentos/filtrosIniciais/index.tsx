@@ -69,23 +69,16 @@ export function FiltrosLancamentos() {
 
   const [filtros, setFiltros] = useState(true);
 
-  useEffect(() => {
-    const verificarTela = () => {
-      if (window.innerWidth >= 640) {
-        setFiltros(true);
-      } else {
-        setFiltros(false);
-      }
-    };
 
-    verificarTela(); 
+useEffect(() => {
+  const larguraTela = window.innerWidth;
 
-    window.addEventListener("resize", verificarTela);
-
-    return () => {
-      window.removeEventListener("resize", verificarTela);
-    };
-  }, []);
+  if (larguraTela >= 640) {
+    setFiltros(true); // Desktop começa aberto
+  } else {
+    setFiltros(false); // Mobile começa fechado
+  }
+}, []);
 
   const [porcentagem, setPorcentagem] = useState("");
 
