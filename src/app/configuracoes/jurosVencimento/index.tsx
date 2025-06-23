@@ -17,7 +17,7 @@ interface ConsultaJuros {
   percentual: number;
 }
 
-export default function Juros() {
+export default function JurosVencimento() {
 
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
@@ -31,7 +31,7 @@ export default function Juros() {
   const [editarJuros, setEditarJuros] = useState(false);
   const [excluirJuros, setExcluirJuros] = useState(false);
 
-  const tipoEmprestimo = "Emprestimo";
+  const tipoEmprestimo = "Vencimento";
 
   useEffect(() => {
     carregarJuros();
@@ -102,7 +102,7 @@ export default function Juros() {
 
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Juros</CardTitle>
+          <CardTitle>Juros do Vencimento ao MÊS </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
