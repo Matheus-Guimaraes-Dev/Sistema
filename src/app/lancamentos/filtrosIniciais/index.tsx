@@ -254,6 +254,12 @@ export function FiltrosLancamentos() {
     }
   };
 
+  async function enviarLancamento(e: React.FormEvent) {
+
+    e.preventDefault();
+
+  } 
+
   return(
     <div className="flex-1">
 
@@ -471,7 +477,7 @@ export function FiltrosLancamentos() {
 
             <h2 className="text-xl font-bold mb-4 text-center"> Lançamento </h2>
 
-            <form>
+            <form onSubmit={enviarLancamento}>
 
               <div className="mb-3">
 
@@ -549,6 +555,7 @@ export function FiltrosLancamentos() {
                   {["Mensal", "Semanal", "Diario"].map((item) => (
                     <label key={item} className="flex items-center gap-2">
                       <input
+                        className="w-4 h-4 border-2"
                         type="checkbox"
                         checked={tipo === item}
                         onChange={() => handleChange(item)}
