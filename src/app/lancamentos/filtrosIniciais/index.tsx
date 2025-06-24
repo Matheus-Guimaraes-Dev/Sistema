@@ -7,13 +7,14 @@ import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteId, limiteIdDocumento } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
-import InputPorcentagem from "@/app/consultores/cadastrar/formulario/InputPorcentagem";
 import { FaArrowDown } from "react-icons/fa";
 import { FaArrowUp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import BuscarCliente from "../BuscarClientes";
 import { Label } from "@/app/formulario/components/componentes/label";
 import BuscarConsultor from "../BuscarConsultor";
+import { mostrarValor } from "@/funcoes/formatacao";
+import toast from "react-hot-toast";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -79,6 +80,10 @@ export function FiltrosLancamentos() {
 
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataVencimento, setDataVencimento] = useState("");
+  const [valorEmprestado, setValorEmprestado] = useState("");
+  const [valorRecebimento, setValorRecebimento] = useState("");
+  const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
+  const [observacoes, setObservacoes] = useState("");
 
   const [filtros, setFiltros] = useState(true);
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
@@ -90,17 +95,15 @@ export function FiltrosLancamentos() {
     setTipo(valor === tipo ? null : valor);
   };
 
+  useEffect(() => {
+    const larguraTela = window.innerWidth;
 
-
-useEffect(() => {
-  const larguraTela = window.innerWidth;
-
-  if (larguraTela >= 640) {
-    setFiltros(true);
-  } else {
-    setFiltros(false); 
-  }
-}, []);
+    if (larguraTela >= 640) {
+      setFiltros(true);
+    } else {
+      setFiltros(false); 
+    }
+  }, []);
 
   const [porcentagem, setPorcentagem] = useState("");
 
@@ -109,7 +112,8 @@ useEffect(() => {
   const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
   useEffect(() => {
-    buscarClientes()
+    buscarClientes();
+    buscarJuros();
   }, [paginaAtual])
 
   const router = useRouter();
@@ -119,6 +123,45 @@ useEffect(() => {
   const itensPorPagina = 5
   const [totalPaginas, setTotalPaginas] = useState(1);
 
+  const buscarJuros = async () => {
+
+    const { data, error } = await supabase
+      .from("configuracoes_juros")
+      .select("tipo_lancamento, tipo_juros, percentual")
+      .eq("tipo_juros", "Emprestimo")
+    
+    if(error) {
+      toast.error("Erro ao buscar Juros");
+    } else {
+      setJuros(data as { tipo_lancamento: string; percentual: number }[]);
+    }
+
+  }
+
+  useEffect(() => {
+    calcularValorReceber();
+  }, [tipo, valorEmprestado, juros]);
+
+  const calcularValorReceber = () => {
+    const valorLimpo = Number(valorEmprestado.replace(/\D/g, "")) / 100;
+
+    if (!tipo || !valorLimpo) {
+      setValorRecebimento("");
+      return;
+    }
+
+    const jurosSelecionado = juros.find((item) => item.tipo_lancamento === tipo);
+
+    if (!jurosSelecionado) {
+      setValorRecebimento("");
+      return;
+    }
+
+    const percentual = jurosSelecionado.percentual / 100;
+    const valorReceber = valorLimpo + valorLimpo * percentual;
+
+    setValorRecebimento(valorReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+  };
 
   const buscarClientes = async () => {
 
@@ -180,10 +223,6 @@ useEffect(() => {
       setErro("Erro inesperado ao buscar clientes.");
     }
   };
-
-  function navegarCadastro() {
-    router.push("clientes/cadastrar");
-  }
 
   function detalhes(id: number) {
     router.push(`/clientes/${id}`);
@@ -424,147 +463,162 @@ useEffect(() => {
 
       {abrirModalCadastrar && (
       
-      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
 
-        <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
 
-        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md 
-    max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md max-h-[90vh] overflow-y-auto">
 
-          <h2 className="text-xl font-bold mb-4 text-center"> Lançamento </h2>
+            <h2 className="text-xl font-bold mb-4 text-center"> Lançamento </h2>
 
-          <form>
+            <form>
 
-            <div className="mb-4">
+              <div className="mb-3">
 
-              <Label> Buscar Cliente </Label>
+                <Label> Buscar Cliente </Label>
 
-              <BuscarCliente
-                onSelecionar={(cliente) => setClienteSelecionado(cliente)}
-              />
+                <BuscarCliente
+                  onSelecionar={(cliente) => setClienteSelecionado(cliente)}
+                />
 
-              {clienteSelecionado && (
-                <div className="mt-2 p-2 border rounded">
-                  <p>
-                    <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
-                  </p>
-                  <p>
-                    <strong>CPF:</strong> {clienteSelecionado.cpf}
-                  </p>
-                </div>
-              )}
+                {clienteSelecionado && (
+                  <div className="mt-2 p-2 border rounded">
+                    <p>
+                      <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
+                    </p>
+                    <p>
+                      <strong>CPF:</strong> {clienteSelecionado.cpf}
+                    </p>
+                  </div>
+                )}
 
-            </div>
-
-            <div className="mb-4">
-
-              <Label> Data do Empréstimo </Label>
-
-              <input 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
-                type="date"
-                value={dataEmprestimo}
-                onChange={limiteDataEmprestimo}
-              />
-              
-            </div>
-
-            <div className="mb-4">
-
-              <Label> Data do Vencimento </Label>
-
-              <input 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
-                type="date"
-                value={dataVencimento}
-                onChange={limiteDataVencimento}
-              />
-              
-            </div>
-
-            <div className="mb-3">
-
-              <Label> Buscar Consultor </Label>
-
-              <BuscarConsultor
-                onSelecionar={(consultor) => setConsultorSelecionado(consultor)}
-              />
-
-              {consultorSelecionado && (
-                <div className="mt-2 p-2 border rounded">
-                  <p>
-                    <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
-                  </p>
-                  <p>
-                    <strong>CPF:</strong> {consultorSelecionado.cpf}
-                  </p>
-                </div>
-              )}
-
-            </div>
-
-            <div>
-
-              <Label> Modalidade do Empréstimo </Label>
-
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={tipo === "Mensal"}
-                    onChange={() => handleChange("Mensal")}
-                  />
-                  Mensal
-                </label>
-
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={tipo === "Semanal"}
-                    onChange={() => handleChange("Semanal")}
-                  />
-                  Semanal
-                </label>
-
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={tipo === "Diario"}
-                    onChange={() => handleChange("Diario")}
-                  />
-                  Diário
-                </label>
               </div>
-            </div>
+
+              <div className="mb-3">
+
+                <Label> Data do Empréstimo </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataEmprestimo}
+                  onChange={limiteDataEmprestimo}
+                />
+                
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Data do Vencimento </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataVencimento}
+                  onChange={limiteDataVencimento}
+                />
+                
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Buscar Consultor </Label>
+
+                <BuscarConsultor
+                  onSelecionar={(consultor) => setConsultorSelecionado(consultor)}
+                />
+
+                {consultorSelecionado && (
+                  <div className="mt-2 p-2 border rounded">
+                    <p>
+                      <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
+                    </p>
+                    <p>
+                      <strong>CPF:</strong> {consultorSelecionado.cpf}
+                    </p>
+                  </div>
+                )}
+
+              </div>
+
+              <div>
+
+                <Label> Modalidade do Empréstimo </Label>
+
+                <div className="flex gap-4">
+                  {["Mensal", "Semanal", "Diario"].map((item) => (
+                    <label key={item} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={tipo === item}
+                        onChange={() => handleChange(item)}
+                      />
+                      {item}
+                    </label>
+                  ))}
+                </div>
+
+              </div>
+
+              <div className="mt-2 mb-3">
+                <Label> Valor do Empréstimo </Label>
+                <input 
+                  type="text" 
+                  value={valorEmprestado}
+                  onChange={(e) => mostrarValor(e, setValorEmprestado)}
+                  placeholder="R$ 0,00"
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1 focus:outline-[#4b8ed6]"
+                />
+              </div>
+
+              <div className="mb-3">
+                <Label> Valor do Recebimento </Label>
+                <input 
+                  type="text" 
+                  value={valorRecebimento}
+                  onChange={(e) => mostrarValor(e, setValorRecebimento)}
+                  placeholder="R$ 0,00"
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1 focus:outline-[#4b8ed6]"
+                  readOnly
+                />
+              </div>
+
+              <div className="mb-1">
+
+                <Label> Observação </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="text"
+                  value={observacoes}
+                  onChange={ (e) => setObservacoes(e.target.value)}
+                />
+                
+              </div>
 
 
-          <InputPorcentagem 
-            placeholder="Porcentagem: 10%, 7%, 3%.."
-            value={porcentagem}
-            onChange={setPorcentagem}
-            label="10%, 7%, 3%.."
-          />
+              <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
 
-          <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
+              <div className="flex justify-center gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setAbrirModalCadastrar(false);
+                    setPorcentagem("");
+                    setDataEmprestimo("");
+                    setDataVencimento("");
+                    setClienteSelecionado(null);
+                    setConsultorSelecionado(null);
+                    setTipo(null);
+                    setValorEmprestado("");
+                    setObservacoes("");
+                  }} 
+                  className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+              </div>
 
-          <div className="flex justify-center gap-4">
-            <button 
-              type="button" 
-              onClick={() => {
-                setAbrirModalCadastrar(false);
-                setPorcentagem("");
-                setDataEmprestimo("");
-                setDataVencimento("");
-                setClienteSelecionado(null);
-                setConsultorSelecionado(null);
-                setTipo(null);
-              }} 
-              className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+            </form>
           </div>
-
-          </form>
         </div>
-      </div>
       )}
 
     </div>
