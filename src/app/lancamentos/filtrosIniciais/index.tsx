@@ -428,7 +428,8 @@ useEffect(() => {
 
         <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
 
-        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md">
+        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md 
+    max-h-[90vh] overflow-y-auto">
 
           <h2 className="text-xl font-bold mb-4 text-center"> Lançamento </h2>
 
@@ -489,13 +490,13 @@ useEffect(() => {
                 onSelecionar={(consultor) => setConsultorSelecionado(consultor)}
               />
 
-              {clienteSelecionado && (
+              {consultorSelecionado && (
                 <div className="mt-2 p-2 border rounded">
                   <p>
-                    <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
+                    <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
                   </p>
                   <p>
-                    <strong>CPF:</strong> {clienteSelecionado.cpf}
+                    <strong>CPF:</strong> {consultorSelecionado.cpf}
                   </p>
                 </div>
               )}
@@ -552,6 +553,11 @@ useEffect(() => {
               onClick={() => {
                 setAbrirModalCadastrar(false);
                 setPorcentagem("");
+                setDataEmprestimo("");
+                setDataVencimento("");
+                setClienteSelecionado(null);
+                setConsultorSelecionado(null);
+                setTipo(null);
               }} 
               className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
           </div>
