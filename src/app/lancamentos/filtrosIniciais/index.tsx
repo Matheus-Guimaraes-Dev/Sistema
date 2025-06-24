@@ -11,6 +11,9 @@ import InputPorcentagem from "@/app/consultores/cadastrar/formulario/InputPorcen
 import { FaArrowDown } from "react-icons/fa";
 import { FaArrowUp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import BuscarCliente from "../BuscarClientes";
+import { Label } from "@/app/formulario/components/componentes/label";
+import BuscarConsultor from "../BuscarConsultor";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -51,6 +54,13 @@ interface Cliente {
   data_cadastro: string;
 };
 
+interface Consultor {
+  id: number;
+  nome_completo: string;
+  cpf: string;
+  status: string;
+}
+
 export function FiltrosLancamentos() {
 
   const supabase = createClient();
@@ -67,16 +77,28 @@ export function FiltrosLancamentos() {
   const [ordenarValor, setOrdenarValor] = useState("");
   const [erro, setErro] = useState("");
 
+  const [dataEmprestimo, setDataEmprestimo] = useState("");
+  const [dataVencimento, setDataVencimento] = useState("");
+
   const [filtros, setFiltros] = useState(true);
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
+  const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null);
+
+  const [tipo, setTipo] = useState<string | null>(null);
+
+  const handleChange = (valor: string) => {
+    setTipo(valor === tipo ? null : valor);
+  };
+
 
 
 useEffect(() => {
   const larguraTela = window.innerWidth;
 
   if (larguraTela >= 640) {
-    setFiltros(true); // Desktop começa aberto
+    setFiltros(true);
   } else {
-    setFiltros(false); // Mobile começa fechado
+    setFiltros(false); 
   }
 }, []);
 
@@ -171,6 +193,26 @@ useEffect(() => {
     e.preventDefault();
     setPaginaAtual(1);
     buscarClientes();
+  };
+
+  const limiteDataEmprestimo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+    if (regex.test(value)) {
+      setDataEmprestimo(value);
+    }
+  };
+
+  const limiteDataVencimento = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+    if (regex.test(value)) {
+      setDataVencimento(value);
+    }
   };
 
   return(
@@ -291,7 +333,7 @@ useEffect(() => {
 
               <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
 
-              <button onClick={() => setAbrirModalCadastrar(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 hidden sm:block"> Cadastrar </button>
+              <button onClick={() => setAbrirModalCadastrar(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 hidden sm:block"> Lançamento </button>
 
             </div>
           </motion.form>
@@ -386,12 +428,117 @@ useEffect(() => {
 
         <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
 
-        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
-          <h2 className="text-xl font-bold mb-4"> Lançamento </h2>
+        <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md">
+
+          <h2 className="text-xl font-bold mb-4 text-center"> Lançamento </h2>
 
           <form>
 
+            <div className="mb-4">
+
+              <Label> Buscar Cliente </Label>
+
+              <BuscarCliente
+                onSelecionar={(cliente) => setClienteSelecionado(cliente)}
+              />
+
+              {clienteSelecionado && (
+                <div className="mt-2 p-2 border rounded">
+                  <p>
+                    <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
+                  </p>
+                  <p>
+                    <strong>CPF:</strong> {clienteSelecionado.cpf}
+                  </p>
+                </div>
+              )}
+
+            </div>
+
+            <div className="mb-4">
+
+              <Label> Data do Empréstimo </Label>
+
+              <input 
+                className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                type="date"
+                value={dataEmprestimo}
+                onChange={limiteDataEmprestimo}
+              />
+              
+            </div>
+
+            <div className="mb-4">
+
+              <Label> Data do Vencimento </Label>
+
+              <input 
+                className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                type="date"
+                value={dataVencimento}
+                onChange={limiteDataVencimento}
+              />
+              
+            </div>
+
+            <div className="mb-3">
+
+              <Label> Buscar Consultor </Label>
+
+              <BuscarConsultor
+                onSelecionar={(consultor) => setConsultorSelecionado(consultor)}
+              />
+
+              {clienteSelecionado && (
+                <div className="mt-2 p-2 border rounded">
+                  <p>
+                    <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
+                  </p>
+                  <p>
+                    <strong>CPF:</strong> {clienteSelecionado.cpf}
+                  </p>
+                </div>
+              )}
+
+            </div>
+
+            <div>
+
+              <Label> Modalidade do Empréstimo </Label>
+
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={tipo === "Mensal"}
+                    onChange={() => handleChange("Mensal")}
+                  />
+                  Mensal
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={tipo === "Semanal"}
+                    onChange={() => handleChange("Semanal")}
+                  />
+                  Semanal
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={tipo === "Diario"}
+                    onChange={() => handleChange("Diario")}
+                  />
+                  Diário
+                </label>
+              </div>
+            </div>
+
+
           <InputPorcentagem 
+            placeholder="Porcentagem: 10%, 7%, 3%.."
             value={porcentagem}
             onChange={setPorcentagem}
             label="10%, 7%, 3%.."
@@ -413,13 +560,6 @@ useEffect(() => {
         </div>
       </div>
       )}
-
-      {filtros && (
-        <div>
-          oi
-        </div>
-      )}
-
 
     </div>
   )

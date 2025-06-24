@@ -6,6 +6,7 @@ interface InputPorcentagemProps {
   onChange: (value: string) => void;
   name?: string;
   required?: boolean;
+  placeholder?: string;
 }
 
 export default function InputPorcentagem({
@@ -13,6 +14,7 @@ export default function InputPorcentagem({
   value,
   onChange,
   name,
+  placeholder,
   required = false,
 }: InputPorcentagemProps) {
 
@@ -42,6 +44,7 @@ export default function InputPorcentagem({
       <div className="flex items-center gap-2">
         <input
           type="text"
+          placeholder={placeholder}
           name={name}
           value={value}
           onChange={handleChange}
