@@ -258,7 +258,7 @@ export function FiltrosLancamentos() {
   };
 
   function detalhes(id: number) {
-    router.push(`/clientes/${id}`);
+    router.push(`/lancamentos/${id}`);
   }
 
   const aplicarFiltro = (e: React.FormEvent) => {
@@ -548,7 +548,7 @@ export function FiltrosLancamentos() {
 
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-x-auto px-4 mb-4">
+      <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-blue-700 text-white">
             <tr>
