@@ -15,6 +15,7 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import BuscarConsultor from "../BuscarConsultor";
 import { mostrarValor } from "@/funcoes/formatacao";
 import toast from "react-hot-toast";
+import { limparValorMonetario } from "@/funcoes/formatacao";
 
 type CidadesPorEstado = {
   [estado: string]: string[];
@@ -45,6 +46,22 @@ const cidadesPorEstado: CidadesPorEstado = {
   ]
 }
 
+interface Contas {
+  id: number;
+  valor_emprestado: number;
+  valor_receber: number;
+  data_vencimento: string;
+  data_cadastro: string;
+  clientes: {
+    id: number;
+    nome_completo: string;
+  } | null;
+  consultores: {
+    id: number;
+    nome_completo: string;
+  } | null;
+}
+
 interface Cliente {
   id: number;
   nome_completo: string;
@@ -60,6 +77,9 @@ interface Consultor {
   nome_completo: string;
   cpf: string;
   status: string;
+  comissao_mensal?: number;
+  comissao_semanal?: number;
+  comissao_diaria?: number;
 }
 
 export function FiltrosLancamentos() {
@@ -70,13 +90,15 @@ export function FiltrosLancamentos() {
   const [id, setId] = useState("");
   const [idDocumento, setIdDocumento] = useState("");
   const [cpf, setCpf] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Pendente");
   const [data, setData] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [contas, setContas] = useState<Contas[]>([]);
   const [ordenarValor, setOrdenarValor] = useState("");
   const [erro, setErro] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataVencimento, setDataVencimento] = useState("");
@@ -112,7 +134,7 @@ export function FiltrosLancamentos() {
   const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
   useEffect(() => {
-    buscarClientes();
+    buscarContas();
     buscarJuros();
   }, [paginaAtual])
 
@@ -163,64 +185,73 @@ export function FiltrosLancamentos() {
     setValorRecebimento(valorReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
   };
 
-  const buscarClientes = async () => {
+  const buscarContas = async () => {
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const fim = inicio + itensPorPagina - 1;
 
-    const inicio = (paginaAtual - 1) * itensPorPagina;
-    const fim = inicio + itensPorPagina - 1;
+  try {
+    let query = supabase
+      .from("contas_receber")
+      .select(`
+        id,
+        valor_emprestado,
+        valor_receber,
+        data_vencimento,
+        data_cadastro,
+        clientes:clientes!id_cliente ( id, nome_completo ),
+        consultores:consultores!id_consultor ( id, nome_completo )
+      `, { count: "exact" });
 
-    try {
+    if (id.trim() !== "") {
+      query = query.eq("id", Number(id));
+    }
 
-      let query = supabase
-        .from("clientes")
-        .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
+    if (status !== "") {
+      query = query.eq("status", status);
+    }
+
+    if (estado !== "") {
+      query = query.eq("estado", estado);
+    }
+
+    if (cidade !== "") {
+      query = query.eq("cidade", cidade);
+    }
+
+    if (data === "asc" || data === "desc") {
+      query = query.order("data_cadastro", { ascending: data === "asc" });
+    }
+
+    query = query.range(inicio, fim);
+
+    const { data: resultado, error, count } = await query;
+
+    if (error) {
+      setErro("Erro ao buscar clientes.");
+      console.error("Erro Supabase:", error);
+    } else {
+      let resultadoFiltrado = (resultado || []).map((item) => ({
+        ...item,
+        clientes: Array.isArray(item.clientes) ? item.clientes[0] : item.clientes,
+        consultores: Array.isArray(item.consultores) ? item.consultores[0] : item.consultores,
+      }));
 
       if (nome.trim() !== "") {
-        query = query.ilike("nome_completo", `%${nome.trim()}%`);
+        resultadoFiltrado = resultadoFiltrado.filter((item) =>
+          item.clientes?.nome_completo?.toLowerCase().includes(nome.trim().toLowerCase())
+        );
       }
 
-      if (id.trim() !== "") {
-        query = query.eq("id", Number(id));
-      }
+      setContas(resultadoFiltrado);
+      setErro("");
 
-      if (cpf.trim() !== "") {
-        query = query.ilike("cpf", `%${cpf.trim()}%`);
-      }
-
-      if (status !== "") {
-        query = query.eq("status", status);
-      }
-
-      if (estado !== "") {
-        query = query.eq("estado", estado);
-      }
-
-      if (cidade !== "") {
-        query = query.eq("cidade", cidade);
-      }
-
-      if (data === "asc" || data === "desc") {
-        query = query.order("data_cadastro", { ascending: data === "asc" });
-      }
-
-      query = query.range(inicio, fim);
-
-      const { data: resultado, error, count } = await query;
-
-      if (error) {
-        setErro("Erro ao buscar clientes.");
-        console.error("Erro Supabase:", error);
-      } else {
-
-        setClientes(resultado || []);
-        setErro("");
-
-        const total = Math.ceil((count ?? 0) / itensPorPagina);
-        setTotalPaginas(total);
-
-      }
-    } catch (erro) {
+      const total = Math.ceil((count ?? 0) / itensPorPagina);
+      setTotalPaginas(total);
+    }
+    
+  } catch (erro) {
       console.error("Erro geral:", erro);
-      setErro("Erro inesperado ao buscar clientes.");
+      setErro("Erro inesperado ao buscar constas.");
     }
   };
 
@@ -231,7 +262,7 @@ export function FiltrosLancamentos() {
   const aplicarFiltro = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaAtual(1);
-    buscarClientes();
+    buscarContas();
   };
 
   const limiteDataEmprestimo = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -254,9 +285,91 @@ export function FiltrosLancamentos() {
     }
   };
 
+  const calcularComissao = () => {
+    if (!consultorSelecionado || !tipo || !valorEmprestado) {
+      return 0;
+    }
+
+    const valor = limparValorMonetario(valorEmprestado);
+
+    let percentual = 0;
+
+    if (tipo === "Mensal") {
+      percentual = consultorSelecionado.comissao_mensal || 0;
+    } else if (tipo === "Semanal") {
+      percentual = consultorSelecionado.comissao_semanal || 0;
+    } else if (tipo === "Diario") {
+      percentual = consultorSelecionado.comissao_diaria || 0;
+    }
+
+    return Number((valor * (percentual / 100)).toFixed(2));
+  };
+
   async function enviarLancamento(e: React.FormEvent) {
 
     e.preventDefault();
+
+    if(!clienteSelecionado) return toast.error("Selecione um cliente");
+    if(!dataEmprestimo) return toast.error("Selecione a data do empréstimo");
+    if(!dataVencimento) return toast.error("Selecione a data do vencimento");
+    if(!consultorSelecionado) return toast.error("Selecione um consultor");
+    if(!tipo) return toast.error("Selecione uma modalidade");
+    if(!valorEmprestado) return toast.error("Digite o valor do empréstimo");
+
+    setLoading(true);
+    
+    const comissaoCalculada = calcularComissao();
+
+    const valorEmprestimoCorreto = limparValorMonetario(valorEmprestado);
+    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento)
+
+    const { data: contaInserida, error: erroEmprestimo } = await supabase  
+      .from("contas_receber")
+      .insert({
+        id_cliente: clienteSelecionado.id,
+        id_consultor: consultorSelecionado.id,
+        tipo_lancamento: tipo,
+        estado: clienteSelecionado.estado,
+        cidade: clienteSelecionado.cidade,
+        valor_emprestado: valorEmprestimoCorreto,
+        valor_receber: valorRecebimentoCorreto,
+        data_emprestimo: dataEmprestimo,
+        data_vencimento: dataVencimento,
+        descricao: observacoes,
+        comissao: Number(comissaoCalculada),
+      })
+      .select("id")
+      .single();
+
+     if (erroEmprestimo || !contaInserida) {
+      setLoading(false);
+      return toast.error("Erro ao salvar empréstimo");
+    }
+
+    const { error: erroComissao } = await supabase
+      .from("comissoes_consultores")
+      .insert({
+        id_consultor: consultorSelecionado.id,
+        id_conta_receber: contaInserida.id,
+        valor_comissao: Number(comissaoCalculada),
+      })
+
+    if (erroComissao) {
+      setLoading(false);
+      return toast.error("Erro ao salvar comissão do consultor");
+    }
+
+    toast.success("Empréstimo salvo com sucesso");
+    setAbrirModalCadastrar(false);
+    setPorcentagem("");
+    setDataEmprestimo("");
+    setDataVencimento("");
+    setClienteSelecionado(null);
+    setConsultorSelecionado(null);
+    setTipo(null);
+    setValorEmprestado("");
+    setObservacoes("");
+    setLoading(false);
 
   } 
 
@@ -316,7 +429,6 @@ export function FiltrosLancamentos() {
                 value={status}
                 onChange={ (e) => setStatus(e.target.value)}
               >
-                <option value="">Status</option>
                 <option value="Pago">Pago</option>
                 <option value="Pendente">Pendente</option>
               </select>
@@ -327,8 +439,8 @@ export function FiltrosLancamentos() {
                 onChange={ (e) => setStatus(e.target.value)}
               >
                 <option value="">Consultor</option>
-                <option value="Pago">Arthur</option>
-                <option value="Pendente">Bia</option>
+                <option value="">Arthur</option>
+                <option value="">Bia</option>
               </select>
 
               <select 
@@ -406,33 +518,31 @@ export function FiltrosLancamentos() {
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-blue-700 text-white">
             <tr>
-              <th className="hidden sm:table-cell px-4 py-3">ID</th>
-              <th className="px-4 py-3">Nome</th>
-              <th className="hidden lg:table-cell px-4 py-3">CPF</th>
-              <th className="hidden sm:table-cell px-4 py-3">Cidade</th>
-              <th className="hidden lg:table-cell px-4 py-3">Estado</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="hidden lg:table-cell px-4 py-3">Data de Cadastro</th>
-              <th className="px-4 py-3 text-center"> Detalhes</th>
+              <th className="hidden sm:table-cell px-2 py-3">ID</th>
+              <th className="px-2 py-3">Nome</th>
+              <th className="px-2 py-3">Consultor</th>
+              <th className="px-2 py-3">Valor Emprestado</th>
+              <th className="px-2 py-3">Valor a Receber</th>
+              <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Vencimento</th>
+              <th className="px-2 py-3 text-center w-20"> Detalhes</th>
             </tr>
           </thead>
           <tbody className="divide-y">
-            {clientes && (
-              clientes.map( (info) => (
+            {contas && (
+              contas.map( (info) => (
                 <tr key={info.id} className="hover:bg-gray-50 border-b border-gray-200">
-                  <td className="hidden sm:table-cell px-4 py-2"> {info.id} </td>
-                  <td className="px-4 py-2 max-w-[100px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.nome_completo} </td>
-                  <td className="hidden lg:table-cell px-4 py-2"> {formatarCPF(info.cpf)} </td>
-                  <td className="hidden sm:table-cell px-4 py-2"> {info.cidade} </td>
-                  <td className="hidden lg:table-cell px-4 py-2"> {info.estado} </td>
-                  <td className="px-4 py-2">
-                    <span className={`px-3 py-1 rounded-full text-white font-semibold text-xs 
-                      ${info.status === "Autorizado" ? "bg-green-500" :
-                        info.status === "Análise" ? "bg-[#950DF7]" : info.status === "Pendente" ? "bg-red-500" : "bg-red-500"}`}>
-                      {info.status}
-                    </span>
-                  </td>
-                  <td className="hidden lg:table-cell px-4 py-2"> {formatarData(info.data_cadastro)} </td>
+                  <td className="hidden sm:table-cell px-2 py-2"> {info.id} </td>
+                  <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
+                  <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
+                  <td className="px-2 py-2"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })} </td>
+                  <td className="px-2 py-2"> {Number(info.valor_receber).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })} </td>
+                  <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info.data_vencimento)} </td>
                   <td className="px-4 py-2 flex justify-center">
                     <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer"> <IoIosArrowDroprightCircle size={32} /></button>
                   </td>
@@ -493,7 +603,7 @@ export function FiltrosLancamentos() {
                       <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
                     </p>
                     <p>
-                      <strong>CPF:</strong> {clienteSelecionado.cpf}
+                      <strong>CPF:</strong> {formatarCPF(clienteSelecionado.cpf)}
                     </p>
                   </div>
                 )}
@@ -540,7 +650,7 @@ export function FiltrosLancamentos() {
                       <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
                     </p>
                     <p>
-                      <strong>CPF:</strong> {consultorSelecionado.cpf}
+                      <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf)}
                     </p>
                   </div>
                 )}
@@ -625,6 +735,12 @@ export function FiltrosLancamentos() {
 
             </form>
           </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
         </div>
       )}
 

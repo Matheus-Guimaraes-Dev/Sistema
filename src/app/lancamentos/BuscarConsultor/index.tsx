@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/client";
+import { formatarCPF } from "@/funcoes/formatacao";
 
 interface Consultor {
   id: number;
   nome_completo: string;
   cpf: string;
   status: string;
+  comissao_mensal?: number;
+  comissao_semanal?: number;
+  comissao_diaria?: number;
 }
 
 export default function BuscarConsultor({
@@ -36,7 +40,7 @@ export default function BuscarConsultor({
 
       const { data, error } = await supabase
         .from('consultores')
-        .select('id, nome_completo, cpf')
+        .select('id, nome_completo, cpf, comissao_mensal, comissao_semanal, comissao_semanal')
         .or(
           [
             `nome_completo.ilike.%${pesquisa}%`,
@@ -94,14 +98,14 @@ export default function BuscarConsultor({
                 onSelecionar(consultor);
                 setMostrarResultados(false);
                 setPesquisa(
-                  `${consultor.nome_completo} - CPF: ${consultor.cpf} - ID: ${consultor.id}`
+                  `${consultor.nome_completo} - CPF: ${formatarCPF(consultor.cpf)} - ID: ${consultor.id}`
                 );
               }}
               className="p-2 hover:bg-blue-100 cursor-pointer"
             >
               <p className="font-semibold">{consultor.nome_completo}</p>
               <p className="text-sm">
-                CPF: {consultor.cpf} | ID: {consultor.id}
+                CPF: {formatarCPF(consultor.cpf)} | ID: {consultor.id}
               </p>
             </div>
           ))}
