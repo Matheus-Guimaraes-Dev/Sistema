@@ -48,6 +48,7 @@ const cidadesPorEstado: CidadesPorEstado = {
 
 interface Contas {
   id: number;
+  tipo_lancamento: string;
   valor_emprestado: number;
   valor_receber: number;
   data_vencimento: string;
@@ -194,6 +195,7 @@ export function FiltrosLancamentos() {
       .from("contas_receber")
       .select(`
         id,
+        tipo_lancamento,
         valor_emprestado,
         valor_receber,
         data_vencimento,
@@ -360,6 +362,7 @@ export function FiltrosLancamentos() {
     }
 
     toast.success("Empréstimo salvo com sucesso");
+    buscarContas();
     setAbrirModalCadastrar(false);
     setPorcentagem("");
     setDataEmprestimo("");
@@ -372,6 +375,37 @@ export function FiltrosLancamentos() {
     setLoading(false);
 
   } 
+
+  const getCorPorData = (dataVencimento: string) => {
+    const hoje = new Date();
+    const vencimento = new Date(dataVencimento + "T12:00:00");
+
+    const diaHoje = hoje.getDate();
+    const mesHoje = hoje.getMonth();
+    const anoHoje = hoje.getFullYear();
+
+    const diaVenc = vencimento.getDate();
+    const mesVenc = vencimento.getMonth();
+    const anoVenc = vencimento.getFullYear();
+
+    if (
+      anoVenc < anoHoje ||
+      (anoVenc === anoHoje && mesVenc < mesHoje) ||
+      (anoVenc === anoHoje && mesVenc === mesHoje && diaVenc < diaHoje)
+    ) {
+      return "bg-red-300"; // vencido
+    }
+
+    if (
+      anoVenc === anoHoje &&
+      mesVenc === mesHoje &&
+      diaVenc === diaHoje
+    ) {
+      return "bg-yellow-300"; // vencendo hoje
+    }
+
+    return "bg-green-300"; // a vencer
+  };
 
   return(
     <div className="flex-1">
@@ -518,11 +552,12 @@ export function FiltrosLancamentos() {
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-blue-700 text-white">
             <tr>
-              <th className="hidden sm:table-cell px-2 py-3">ID</th>
-              <th className="px-2 py-3">Nome</th>
-              <th className="px-2 py-3">Consultor</th>
-              <th className="px-2 py-3">Valor Emprestado</th>
-              <th className="px-2 py-3">Valor a Receber</th>
+              <th className="hidden sm:table-cell px-2 py-3 w-10">ID</th>
+              <th className="px-2 py-3 w-50">Cliente</th>
+              <th className="px-2 py-3 w-50">Consultor</th>
+              <th className="px-2 py-3 w-25">Tipo</th>
+              <th className="px-2 py-3 w-45">Valor Emprestado</th>
+              <th className="px-2 py-3 w-45">Valor a Receber</th>
               <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Vencimento</th>
               <th className="px-2 py-3 text-center w-20"> Detalhes</th>
             </tr>
@@ -530,10 +565,11 @@ export function FiltrosLancamentos() {
           <tbody className="divide-y">
             {contas && (
               contas.map( (info) => (
-                <tr key={info.id} className="hover:bg-gray-50 border-b border-gray-200">
+                <tr key={info.id} className={`${getCorPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
                   <td className="hidden sm:table-cell px-2 py-2"> {info.id} </td>
                   <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
                   <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
+                  <td className="px-2 py-2"> {info.tipo_lancamento} </td>
                   <td className="px-2 py-2"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',
@@ -544,7 +580,7 @@ export function FiltrosLancamentos() {
               })} </td>
                   <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info.data_vencimento)} </td>
                   <td className="px-4 py-2 flex justify-center">
-                    <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer"> <IoIosArrowDroprightCircle size={32} /></button>
+                    <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                   </td>
                 </tr>
               ))
