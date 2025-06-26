@@ -2,12 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Trash2, PlusCircle } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/client";
-import FormasDePagamento from "../formasDePagamento";
 import InputPorcentagem from "@/app/consultores/cadastrar/formulario/InputPorcentagem";
 
 interface ConsultaJuros {
@@ -19,17 +17,15 @@ interface ConsultaJuros {
 
 export default function JurosVencimento() {
 
-  const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  
+  const [loading, setLoading] = useState(false);
 
   const [juros, setJuros] = useState<ConsultaJuros[]>([]);
-  const [tipoLancamento, setTipoLancamento] = useState("");
   const [percentual, setPercentual] = useState("");
-   const [itemSelecionado, setItemSelecionado] = useState<any>(null);
+  const [itemSelecionado, setItemSelecionado] = useState<any>(null);
 
-  const [adicionarJuros, setAdicionarJuros] = useState(false);
   const [editarJuros, setEditarJuros] = useState(false);
-  const [excluirJuros, setExcluirJuros] = useState(false);
 
   const tipoEmprestimo = "Vencimento";
 

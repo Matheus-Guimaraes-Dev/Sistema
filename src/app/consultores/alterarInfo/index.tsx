@@ -4,78 +4,18 @@ import { useState, useEffect, FormEvent } from "react";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { createClient } from "@/lib/client";
 import { AlterarStatusConsultor } from "../AlterarStatus";
-
-type CidadesPorEstado = {
-  [estado: string]: string[];
-}
-
-const cidadesPorEstado: CidadesPorEstado = {
-  RO: [
-    "Porto Velho",
-    "Ji-Paraná",
-    "Ariquemes",
-    "Vilhena",
-    "Cacoal",
-    "Rolim de Moura",
-    "Guajará-Mirim",
-    "Jaru",
-    "Pimenta Bueno",
-    "Machadinho d'Oeste",
-    "Buritis",
-    "Ouro Preto do Oeste",
-    "Espigão d'Oeste",
-    "Nova Mamoré",
-    "Candeias do Jamari",
-    "Alta Floresta d'Oeste",
-    "Presidente Médici",
-    "Cujubim",
-    "São Miguel do Guaporé",
-    "Alto Paraíso"
-  ]
-}
-
-interface viaCep {
-  bairro: string;
-  cep: string;
-  uf: string;
-  localidade: string;
-  logradouro: string;
-}
-
-interface infoConsultores {
-  id: string;
-  data_cadastrado: string;
-  status: string;
-  nome_completo: string;
-  email: string;
-  cpf: string;
-  rg: string;
-  data_emissao_rg: string;
-  orgao_expedidor: string;
-  sexo: string;
-  estado_civil: string;
-  data_nascimento: string;
-  whatsapp: string;
-  telefone_reserva: string;
-  cep: string;
-  bairro: string;
-  rua: string;
-  numero_casa: string;
-  moradia: string;
-  cidade: string;
-  estado: string;
-  observacao: string;
-  porcentagem: number;
-}
-
-interface PropsAlterar {
-  informacoesConsultor: infoConsultores;
-}
+import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
+import { viaCep } from "@/components/types/types";
+import { PropsAlterar } from "../types";
+import { Label } from "@/app/formulario/components/componentes/label";
+import { limiteCpf, limiteCep, limiteWhatsapp, limiteTelefoneReserva, limiteRg } from "@/funcoes/limitacao";
+import { Select } from "@/app/clientes/componentes/select-cliente";
 
 export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar ) {
 
   const supabase = createClient();
 
+  const [loading, setLoading] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
@@ -102,7 +42,9 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   const [ativar, setAtivar] = useState(false);
 
   const estados = Object.keys(cidadesPorEstado);
-  const cidades = estado ? cidadesPorEstado[estado] : [];
+  const cidades = estado in cidadesPorEstado 
+  ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
 
   useEffect( () => {
     if(informacoesConsultor) {
@@ -155,6 +97,8 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       observacao: observacao,
     }
 
+    setLoading(true);
+
     const { error } = await supabase
       .from("consultores")
       .update(dadosAtualizados)
@@ -165,6 +109,8 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       return false;
     }
 
+    setLoading(false);
+
     window.location.reload()
 
     return true
@@ -172,6 +118,8 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   }
 
   async function deletarCliente() {
+
+    setLoading(true);
 
     const { error: erroDeletarCliente } = await supabase
       .from("clientes")
@@ -183,11 +131,15 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       return false;
     }
 
+    setLoading(false);
+
     return true;
 
   }
 
   async function buscarCep(cep: string) {
+
+    setLoading(true);
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
@@ -203,54 +155,36 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       console.log("Deu errado!");
     }
 
+    setLoading(false);
+
   }
 
-  function ativarBotao() {
-    setAtivar(!ativar)
-    console.log(ativar);
-  }
+  const sexoOptions = [
+    { label: "Masculino", value: "Feminino" },
+    { label: "Feminino", value: "Autorizado" }
+  ];
 
-  function limiteCpf(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, ""); 
-    if (value.length <= 11) {
-      setCpf(value);
-    }
-  }
+  const estadoCivilOptions = [
+    { label: "Solteiro", value: "Solteiro" },
+    { label: "Casado", value: "Casado" },
+    { label: "Seperado", value: "Separado" },
+    { label: "Divorciado", value: "Divorciado" },
+    { label: "Viúvo", value: "Viuvo" },
+  ];
 
-  function limiteRg(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 7) {
-      setRg(value);
-    }
-  }
-
-  function limiteWhatsapp(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setWhatsapp(value);
-    }
-  }
-
-  function limiteTelefoneReserva(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 13) {
-      setTelefoneReserva(value);
-    }
-  }
-
-  function limiteCep(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "");
-    if(value.length <= 8) {
-      setCep(value);
-    }
-  }
+  const moradiaOptions = [
+    { label: "Casa", value: "Casa" },
+    { label: "Apartamento", value: "Apartamento" },
+    { label: "Aluguel", value: "Aluguel" },
+    { label: "Área rural", value: "Area rural" },
+  ];
 
   return(
     <div>
 
       <div className="flex gap-3 flex-wrap">
 
-        <button onClick={ativarBotao} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+        <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
         
         <AlterarStatusConsultor consultorId={informacoesConsultor.id} status={informacoesConsultor.status} />
 
@@ -262,7 +196,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
           <section className="grid md:grid-cols-2 gap-2">
 
             <div>
-              <label className="text-sm sm:text-base"> Nome Completo </label>
+              <Label> Nome Completo </Label>
               <InputAlterar 
                 type="text"
                 value={nome}
@@ -272,7 +206,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Email </label>
+              <Label> Email </Label>
               <InputAlterar 
                 type="text" 
                 value={email}
@@ -281,31 +215,30 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> CPF </label>
+              <Label> CPF </Label>
               <InputAlterar 
                 type="text"
                 inputMode="numeric"
                 value={cpf}
-                onChange={limiteCpf}
+                onChange={(e) => limiteCpf(e, setCpf)}
                 maxLength={11}
               />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> RG </label>
+              <Label> RG </Label>
               <InputAlterar 
                 type="text"
                 inputMode="numeric"
                 value={rg}
-                onChange={limiteRg}
+                onChange={(e) => limiteRg(e, setCpf)}
                 maxLength={7} 
               />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Data de Emissão RG </label>
-              <input 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              <Label> Data de Emissão RG </Label>
+              <InputAlterar 
                 type="date"
                 value={dataRg}
                 onChange={ (e) => setDataRg(e.target.value)}
@@ -313,7 +246,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Orgão Expedidor </label>
+              <Label> Orgão Expedidor </Label>
               <InputAlterar 
                 type="text"
                 value={orgaoExpedidor}
@@ -322,38 +255,28 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div className="flex flex-col">
-              <label className="text-sm sm:text-base"> Sexo </label>
-              <select 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              <Label> Sexo </Label>
+              <Select 
                 value={sexo}
-                onChange={ (e) => setSexo(e.target.value)}
-              >
-                <option value="" disabled> Selecionar... </option>
-                <option value="Masculino"> Masculino </option>
-                <option value="Feminino"> Feminino </option>
-              </select>
+                onChange={setSexo}
+                placeholder="Selecionar..."
+                options={sexoOptions}
+                />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Estado Civil </label>
-              <select 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              <Label> Estado Civil </Label>
+              <Select 
                 value={estadoCivil}
-                onChange={ (e) => setEstadoCivil(e.target.value)}
-              > 
-                <option value="" disabled> Selecionar... </option>
-                <option value="Solteiro"> Solteiro </option>
-                <option value="Casado"> Casado </option>
-                <option value="Separado"> Seperado(a) </option>
-                <option value="Divorciado"> Divorciado(a) </option>
-                <option value="Viuvo"> Viúvo(a) </option>
-              </select>
+                onChange={setEstadoCivil}
+                placeholder="Selecionar..."
+                options={estadoCivilOptions}
+              />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Data Nascimento </label>
-              <input 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              <Label> Data Nascimento </Label>
+              <InputAlterar 
                 type="date"
                 value={dataNascimento}
                 onChange={ (e) => setDataNascimento(e.target.value)}
@@ -361,32 +284,31 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Whatsapp </label>
-              <input 
+              <Label> Whatsapp </Label>
+              <InputAlterar 
                 type="number"
                 value={whatsapp}
-                onChange={limiteWhatsapp}
+                onChange={(e) => limiteWhatsapp(e, setCpf)}
                 maxLength={13}
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
               />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Telefone Reserva </label>
+              <Label> Telefone Reserva </Label>
               <InputAlterar 
                 type="number"
                 value={telefoneReserva}
-                onChange={limiteTelefoneReserva}
+                onChange={(e) => limiteTelefoneReserva(e, setCpf)}
                 maxLength={13}
               />
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> CEP </label>
+              <Label> CEP </Label>
               <InputAlterar 
                 type="number"
                 value={cep}
-                onChange={limiteCep}
+                onChange={(e) => limiteCep(e, setCpf)}
                 onBlur={() => {
                   if (cep.length === 8) buscarCep(cep);
                 }}
@@ -395,7 +317,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Bairro </label>
+              <Label> Bairro </Label>
               <InputAlterar 
                 type="text"
                 value={bairro}
@@ -404,7 +326,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Rua </label>
+              <Label> Rua </Label>
               <InputAlterar 
                 type="text"
                 value={rua}
@@ -413,7 +335,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Nº da Casa </label>
+              <Label> Nº da Casa </Label>
               <InputAlterar 
                 type="number" 
                 value={Ncasa}
@@ -422,22 +344,17 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Moradia </label>
-              <select 
+              <Label> Moradia </Label>
+              <Select 
                 value={moradia}
-                onChange={(e) => setMoradia(e.target.value)} 
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] mt-1"
-              >
-                <option value="" disabled> Selecionar... </option>
-                <option value="Casa"> Casa </option>
-                <option value="Apartamento"> Apartamento </option>
-                <option value="Aluguel"> Aluguel </option>
-                <option value="Area rural"> Área rural </option>
-              </select>
+                onChange={setMoradia} 
+                placeholder="Selecionar..."
+                options={moradiaOptions}
+              />
             </div>
           
             <div>
-              <label className="text-sm sm:text-base"> Estado </label>
+              <Label> Estado </Label>
               <select
                 value={estado}
                 onChange={(e) => {
@@ -454,7 +371,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
       
             <div>
-              <label className="text-sm sm:text-base"> Cidade </label>
+              <Label> Cidade </Label>
               <select
                 value={cidade}
                 onChange={(e) => setCidade(e.target.value)}
@@ -468,7 +385,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
             </div>
   
             <div>
-              <label className="text-sm sm:text-base"> Observação </label>
+              <Label> Observação </Label>
               <InputAlterar 
                 type="text"
                 value={observacao ?? ""}
@@ -506,6 +423,12 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
               <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
         </div>
       )}
 

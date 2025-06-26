@@ -2,6 +2,7 @@ import { createClient } from "@/lib/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AlterarConsutores from "../alterarInfo";
+import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 
 export default async function Detalhes( { params }: { params: { id: string } }) {
 
@@ -41,15 +42,6 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
 
   if (!consultor) {
     redirect("/clientes");
-  }
-
-  function formatarCPF(cpf: string) {
-    return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-  }
-
-  function formatarData(data: string) {
-    const dataObj = new Date(data + "T12:00:00");
-    return dataObj.toLocaleDateString('pt-BR');
   }
 
   return (
