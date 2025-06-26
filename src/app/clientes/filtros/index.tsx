@@ -1,51 +1,15 @@
 "use client";
 
-import { InputCliente } from "../inputCliente";
+import { InputCliente } from "../componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
-
-type CidadesPorEstado = {
-  [estado: string]: string[];
-}
-
-const cidadesPorEstado: CidadesPorEstado = {
-  RO: [
-    "Porto Velho",
-    "Ji-Paraná",
-    "Ariquemes",
-    "Vilhena",
-    "Cacoal",
-    "Rolim de Moura",
-    "Guajará-Mirim",
-    "Jaru",
-    "Pimenta Bueno",
-    "Machadinho d'Oeste",
-    "Buritis",
-    "Ouro Preto do Oeste",
-    "Espigão d'Oeste",
-    "Nova Mamoré",
-    "Candeias do Jamari",
-    "Alta Floresta d'Oeste",
-    "Presidente Médici",
-    "Cujubim",
-    "São Miguel do Guaporé",
-    "Alto Paraíso"
-  ]
-}
-
-interface Cliente {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  cidade: string;
-  estado: string;
-  status: string;
-  data_cadastro: string;
-};
+import { Cliente } from "../types";
+import { cidadesPorEstado } from "../estados-cidades";
+import { Select } from "../componentes/select-cliente";
 
 export function FiltrosClientes() {
 
@@ -68,12 +32,14 @@ export function FiltrosClientes() {
   }, [paginaAtual])
 
   const router = useRouter();
-  const estados = Object.keys(cidadesPorEstado);
-  const cidades = estado ? cidadesPorEstado[estado] : [];
-  
-  const itensPorPagina = 5
-  const [totalPaginas, setTotalPaginas] = useState(1);
 
+  const estados = Object.keys(cidadesPorEstado);
+  const cidades = estado in cidadesPorEstado 
+  ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
+  
+  const itensPorPagina = 10
+  const [totalPaginas, setTotalPaginas] = useState(1);
 
   const buscarClientes = async () => {
 
@@ -150,10 +116,24 @@ export function FiltrosClientes() {
     buscarClientes();
   };
 
+  const statusOptions = [
+    { label: "Pendente", value: "Pendente" },
+    { label: "Em Análise", value: "Análise" },
+    { label: "Autorizado", value: "Autorizado" }
+  ];
+
+  const dataOptions = [
+    { label: "Mais Antigos", value: "asc" },
+    { label: "Mais Recentes", value: "desc" },
+
+  ];
+
   return(
     <div className="flex-1">
 
       <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lista de Clientes </h1>
+
+      {/* ========== FILTROS ========== */}
 
       <form onSubmit={aplicarFiltro}>
         <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
@@ -184,26 +164,19 @@ export function FiltrosClientes() {
             maxLength={11}
           />
 
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+          <Select
             value={status}
-            onChange={ (e) => setStatus(e.target.value)}
-          >
-            <option value="">Status</option>
-            <option value="Pendente">Pendente</option>
-            <option value="Análise">Em Análise</option>
-            <option value="Autorizado">Autorizado</option>
-          </select>
+            onChange={setStatus}
+            options={statusOptions}
+            placeholder="Status"
+          />
 
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+          <Select 
             value={data}
-            onChange={(e) => setData(e.target.value)}
-          >
-            <option value="">Ordenar por data</option>
-            <option value="asc">Mais antigos</option>
-            <option value="desc">Mais recentes</option>
-          </select>
+            onChange={setData}
+            options={dataOptions}
+            placeholder="Ordenar por data"
+          />
 
           <select
             value={estado}
@@ -236,6 +209,8 @@ export function FiltrosClientes() {
 
         </div>
       </form>
+
+      {/* ========== TABELA ========== */}
 
       <div className="bg-white rounded-xl shadow-md overflow-x-auto px-4 mb-4">
         <table className="min-w-full text-sm text-left border-collapse">
@@ -276,9 +251,9 @@ export function FiltrosClientes() {
             )}
           </tbody>
         </table>
-
-
       </div>
+
+      {/* ========== PRÓXIMA PÁGINA ========== */}
         
       <div className="flex gap-4 justify-center items-center mt-4 mb-6">
         <button
@@ -301,7 +276,9 @@ export function FiltrosClientes() {
           Próxima
         </button>
       </div>
-      
+
+      {/* ==================================================== */}
+
     </div>
   )
 }

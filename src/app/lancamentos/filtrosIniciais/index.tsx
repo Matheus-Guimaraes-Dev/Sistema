@@ -1,6 +1,6 @@
 "use client";
 
-import { InputCliente } from "@/app/clientes/inputCliente";
+import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";

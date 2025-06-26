@@ -1,79 +1,14 @@
 "use client"
 
 import { useState, useEffect, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { InputAlterar } from "./InputAlterar";
 import { createClient } from "@/lib/client";
 import AdicionarDocumento from "./AdicionarDocumento";
 import { AlterarStatus } from "./AlterarStatus";
-
-type CidadesPorEstado = {
-  [estado: string]: string[];
-}
-
-const cidadesPorEstado: CidadesPorEstado = {
-  RO: [
-    "Porto Velho",
-    "Ji-Paraná",
-    "Ariquemes",
-    "Vilhena",
-    "Cacoal",
-    "Rolim de Moura",
-    "Guajará-Mirim",
-    "Jaru",
-    "Pimenta Bueno",
-    "Machadinho d'Oeste",
-    "Buritis",
-    "Ouro Preto do Oeste",
-    "Espigão d'Oeste",
-    "Nova Mamoré",
-    "Candeias do Jamari",
-    "Alta Floresta d'Oeste",
-    "Presidente Médici",
-    "Cujubim",
-    "São Miguel do Guaporé",
-    "Alto Paraíso"
-  ]
-}
-
-interface viaCep {
-  bairro: string;
-  cep: string;
-  uf: string;
-  localidade: string;
-  logradouro: string;
-}
-
-interface infoClientes {
-  id: string;
-  data_cadastrado: string;
-  status: string;
-  nome_completo: string;
-  email: string;
-  cpf: string;
-  rg: string;
-  data_emissao_rg: string;
-  orgao_expedidor: string;
-  sexo: string;
-  estado_civil: string;
-  data_nascimento: string;
-  whatsapp: string;
-  telefone_reserva: string;
-  cep: string;
-  bairro: string;
-  rua: string;
-  numero_casa: string;
-  moradia: string;
-  cidade: string;
-  estado: string;
-  pix: string;
-  valor_solicitado: string;
-  observacao: string;
-}
-
-interface PropsAlterar {
-  informacoesCliente: infoClientes;
-}
+import { cidadesPorEstado } from "../estados-cidades";
+import { viaCep } from "@/components/types/types";
+import { infoClientes } from "./types";
+import { PropsAlterar } from "./types";
 
 export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
@@ -100,6 +35,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [pix, setPix] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
 
@@ -108,7 +44,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [ativar, setAtivar] = useState(false);
 
   const estados = Object.keys(cidadesPorEstado);
-  const cidades = estado ? cidadesPorEstado[estado] : [];
+  const cidades = estado in cidadesPorEstado 
+  ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
 
   useEffect( () => {
     if(informacoesCliente) {
@@ -224,6 +162,8 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   async function buscarCep(cep: string) {
 
+    setLoading(true);
+
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
@@ -237,6 +177,8 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
     } catch(error) {
       console.log("Deu errado!");
     }
+
+    setLoading(false);
 
   }
 
@@ -599,6 +541,12 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
               <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
             </div>
           </div>
+        </div>
+      )}
+
+    {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
         </div>
       )}
 

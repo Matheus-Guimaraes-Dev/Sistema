@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import ListaDownloads from "../components/ListaDownload";
 import Alterar from "../components/Alterar";
+import { formatarCPF, formatarData, formatarDinheiro } from "@/funcoes/formatacao";
 
 interface PageProps {
   params: {
@@ -12,61 +13,43 @@ interface PageProps {
 
 export default async function Detalhes( { params }: { params: { id: string } }) {
 
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser();
 
   if (error || !data?.user) {
     redirect('/auth/login')
-  }
-
-  const { data: usuarios, error: usuariosError } = await supabase
-    .from('usuarios')
-    .select('*')
-
-  if (usuariosError) {
-    console.error('Erro ao buscar usuários:', usuariosError)
-    return <div>Erro ao carregar dados.</div>
-  }
+  };
 
   const { id } = await params;
   const idConvertido = parseInt(id);
 
   if (isNaN(idConvertido)) {
     redirect("/clientes");
-  }
+  };
 
   async function buscarCliente(id: number) {
   
-  const { data, error } = await supabase
-    .from("clientes")
-    .select("*")
-    .eq("id", id)
-    .single();
+    const { data, error } = await supabase
+      .from("clientes")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (error) {
-    console.error("Erro ao buscar cliente:", error.message);
-    return null;
+    if (error) {
+      console.error("Erro ao buscar cliente:", error.message);
+      return null;
+    }
+
+    return data;
+
   }
-
-  return data;
-
-}
 
   const clienteId = (await params).id;
   const cliente = await buscarCliente(idConvertido);
 
   if (!cliente) {
     redirect("/clientes");
-  }
-
-  function formatarCPF(cpf: string) {
-    return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-  }
-
-  function formatarData(data: string) {
-    const dataObj = new Date(data + "T12:00:00");
-    return dataObj.toLocaleDateString('pt-BR');
   }
 
   return (
@@ -102,13 +85,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Telefone Reserva:</strong> {cliente.telefone_reserva} </p>
             <p><strong>Status:</strong> {cliente.status} </p>
             <p><strong>Data de Cadastro:</strong> {formatarData(cliente.data_cadastro)} </p>
-            <p>
-              <strong>Valor Solicitado:</strong>{' '}
-              {Number(cliente.valor_solicitado).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-            </p>
+            <p> <strong>Valor Solicitado:</strong>{formatarDinheiro(cliente.valor_solicitado)} </p>
             <p><strong>Chave Pix:</strong> {cliente.pix} </p>
             <p><strong>Observação: </strong> {cliente.observacao} </p>
           </div>

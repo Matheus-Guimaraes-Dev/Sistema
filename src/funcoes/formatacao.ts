@@ -40,3 +40,18 @@ export function formatarData(data: string) {
   const dataObj = new Date(data + "T12:00:00");
   return dataObj.toLocaleDateString('pt-BR');
 }
+
+export function formatarDinheiro(valor: number): string {
+  return valor?.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+}
+
+export function limparNomeArquivo(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") 
+    .replace(/\s+/g, "_")           
+    .toLowerCase();                 
+}

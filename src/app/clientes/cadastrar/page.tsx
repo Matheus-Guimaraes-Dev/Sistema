@@ -13,15 +13,6 @@ export default async function Cadastrar() {
     redirect('/auth/login')
   }
 
-  const { data: usuarios, error: usuariosError } = await supabase
-    .from('usuarios')
-    .select('*')
-
-  if (usuariosError) {
-    console.error('Erro ao buscar usuários:', usuariosError)
-    return <div>Erro ao carregar dados.</div>
-  }
-
   return(
     <div className="bg-[#002956] min-h-screen">
       <div className="max-w-5xl mx-auto p-6">

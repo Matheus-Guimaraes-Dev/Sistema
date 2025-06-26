@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import Opcoes from "../opcoes";
+import { formatarCPF, formatarData, formatarDinheiro } from "@/funcoes/formatacao";
 
 interface PageProps {
   params: {
@@ -122,23 +123,6 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
     redirect("/lancamentos");
   }
   const jurosCalculado = await calcularJurosSeVencido(emprestimo);
-
-
-  function formatarCPF(cpf: string) {
-    return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-  }
-
-  function formatarData(data: string) {
-    const dataObj = new Date(data + "T12:00:00");
-    return dataObj.toLocaleDateString('pt-BR');
-  }
-
-  function formatarDinheiro(valor: number) {
-    return valor?.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  }
 
   return (
 

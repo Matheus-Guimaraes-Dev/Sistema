@@ -5,17 +5,15 @@ interface Props {
   type?: string;
   name?: string;
   value?: string;
+  inputMode?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  inputMode?: string;
-  pattern?: string;
-  maxLength?: number;
   onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  aceept?: string;
   required?: boolean;
+  maxLength?: number;
 }
 
-export function InputCliente({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
+export function InputCliente({ label, type = 'text', name, value, onChange, placeholder, onBlur, inputMode, maxLength }: Props) {
   return (
     <div className="">
       <label className="block font-semibold mb-1">{label}</label>

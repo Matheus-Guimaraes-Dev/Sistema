@@ -5,7 +5,7 @@ import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
-import { InputCliente } from "@/app/clientes/inputCliente";
+import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 
 interface Cliente {
