@@ -143,7 +143,7 @@ export function FiltrosLancamentos() {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado ? cidadesPorEstado[estado] : [];
   
-  const itensPorPagina = 5
+  const itensPorPagina = 10
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const buscarJuros = async () => {
@@ -548,48 +548,48 @@ export function FiltrosLancamentos() {
 
       </div>
 
-      <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
-        <table className="min-w-full text-sm text-left border-collapse">
-          <thead className="bg-blue-700 text-white">
-            <tr>
-              <th className="hidden sm:table-cell px-2 py-3 w-10">ID</th>
-              <th className="px-2 py-3 w-50">Cliente</th>
-              <th className="px-2 py-3 w-50">Consultor</th>
-              <th className="px-2 py-3 w-25">Tipo</th>
-              <th className="px-2 py-3 w-45">Valor Emprestado</th>
-              <th className="px-2 py-3 w-45">Valor a Receber</th>
-              <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Vencimento</th>
-              <th className="px-2 py-3 text-center w-20"> Detalhes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {contas && (
-              contas.map( (info) => (
-                <tr key={info.id} className={`${getCorPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
-                  <td className="hidden sm:table-cell px-2 py-2"> {info.id} </td>
-                  <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
-                  <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
-                  <td className="px-2 py-2"> {info.tipo_lancamento} </td>
-                  <td className="px-2 py-2"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })} </td>
-                  <td className="px-2 py-2"> {Number(info.valor_receber).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })} </td>
-                  <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info.data_vencimento)} </td>
-                  <td className="px-4 py-2 flex justify-center">
-                    <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-
-      </div>
+      {status === "Pendente" && (
+        <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
+          <table className="min-w-full text-sm text-left border-collapse">
+            <thead className="bg-blue-700 text-white">
+              <tr>
+                <th className="hidden sm:table-cell px-2 py-3 w-10">ID</th>
+                <th className="px-2 py-3 w-50">Cliente</th>
+                <th className="px-2 py-3 w-50">Consultor</th>
+                <th className="px-2 py-3 w-25">Tipo</th>
+                <th className="px-2 py-3 w-45">Valor Emprestado</th>
+                <th className="px-2 py-3 w-45">Valor a Receber</th>
+                <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Vencimento</th>
+                <th className="px-2 py-3 text-center w-20"> Detalhes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {contas && (
+                contas.map( (info) => (
+                  <tr key={info.id} className={`${getCorPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
+                    <td className="hidden sm:table-cell px-2 py-2"> {info.id} </td>
+                    <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
+                    <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
+                    <td className="px-2 py-2"> {info.tipo_lancamento} </td>
+                    <td className="px-2 py-2"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })} </td>
+                    <td className="px-2 py-2"> {Number(info.valor_receber).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })} </td>
+                    <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info.data_vencimento)} </td>
+                    <td className="px-4 py-2 flex justify-center">
+                      <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
         
       <div className="flex gap-4 justify-center items-center mt-4 mb-6">
         <button
