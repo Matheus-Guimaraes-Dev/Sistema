@@ -13,9 +13,10 @@ interface Props {
   onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   aceept?: string;
   required?: boolean;
+  readOnly?: boolean;
 }
 
-export function InputAlterar({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
+export function InputAlterar({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept, readOnly }: Props) {
   return (
     <div className="">
       <label className="block font-semibold mb-1">{label}</label>

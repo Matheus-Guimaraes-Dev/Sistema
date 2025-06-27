@@ -3,54 +3,21 @@
 import { Input } from "../componentes/input"
 import { useState } from "react"
 import toast from 'react-hot-toast'
-
 import { converterImagemParaWebP } from "../conversao";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
-
 import { limparValorMonetario, formatarParaReal, mostrarValor } from "@/funcoes/formatacao";
 import { limiteCep, limiteRg, limiteCpf, limiteTelefoneReserva, limiteWhatsapp } from "@/funcoes/limitacao";
-
+import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
 import { Label } from "../componentes/label";
-
-type CidadesPorEstado = {
-  [estado: string]: string[];
-}
-
-const cidadesPorEstado: CidadesPorEstado = {
-  RO: [
-    "Porto Velho",
-    "Ji-Paraná",
-    "Ariquemes",
-    "Vilhena",
-    "Cacoal",
-    "Rolim de Moura",
-    "Guajará-Mirim",
-    "Jaru",
-    "Pimenta Bueno",
-    "Machadinho d'Oeste",
-    "Buritis",
-    "Ouro Preto do Oeste",
-    "Espigão d'Oeste",
-    "Nova Mamoré",
-    "Candeias do Jamari",
-    "Alta Floresta d'Oeste",
-    "Presidente Médici",
-    "Cujubim",
-    "São Miguel do Guaporé",
-    "Alto Paraíso"
-  ]
-}
-
-interface viaCep {
-  bairro: string;
-  cep: string;
-  uf: string;
-  localidade: string;
-  logradouro: string;
-}
+import { viaCep } from "@/components/types/types";
+import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
+import { InputAlterar } from "@/app/clientes/components/InputAlterar";
+import { Select } from "@/app/clientes/componentes/select-cliente";
 
 export function FomularioComponente() {
+
+  const supabase = createClient();
  
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -80,9 +47,10 @@ export function FomularioComponente() {
   const [loading, setLoading] = useState(false);
 
   const estados = Object.keys(cidadesPorEstado);
-  const cidades = estado ? cidadesPorEstado[estado] : [];
+  const cidades = estado in cidadesPorEstado 
+  ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
 
-  const supabase = createClient();
   const router = useRouter();
 
   async function enviarFormulario(e: React.FormEvent) {
@@ -216,25 +184,6 @@ export function FomularioComponente() {
 
   }
 
-    const limiteDataRg = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-      if (regex.test(value)) {
-        setDataRg(value);
-      }
-    };
-
-    const limiteDataNascimento = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-
-      const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-
-      if (regex.test(value)) {
-        setDataNascimento(value);
-      }
-    };
-
   async function buscarCep(cep: string) {
 
     setLoading(true);
@@ -256,10 +205,32 @@ export function FomularioComponente() {
 
   }
 
+  const sexoOptions = [
+    { label: "Masculino", value: "Feminino" },
+    { label: "Feminino", value: "Autorizado" }
+  ];
+
+  const estadoCivilOptions = [
+    { label: "Solteiro", value: "Solteiro" },
+    { label: "Casado", value: "Casado" },
+    { label: "Seperado", value: "Separado" },
+    { label: "Divorciado", value: "Divorciado" },
+    { label: "Viúvo", value: "Viuvo" },
+  ];
+
+  const moradiaOptions = [
+    { label: "Casa", value: "Casa" },
+    { label: "Apartamento", value: "Apartamento" },
+    { label: "Aluguel", value: "Aluguel" },
+    { label: "Área rural", value: "Area rural" },
+  ];
+
   return(
     <form className="bg-white w-full sm:w-100 rounded-3xl pb-6 px-2" onSubmit={enviarFormulario}>
 
       <h1 className="text-center mt-4 font-semibold text-2xl pt-4"> Formulário </h1>
+
+      {/* ======== FORMULARIO ========== */}
 
       <div className="mx-2 mt-4">
 
@@ -313,11 +284,10 @@ export function FomularioComponente() {
       <div className="mt-[-12px] mx-2 sm:mt-4 flex-col mb-4">
         
         <Label> Data de Emissão RG </Label>
-        <input 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        <InputAlterar 
           type="date"
           value={dataRg}
-          onChange={limiteDataRg}
+          onChange={(e) => limiteDataRg(e, setDataRg)}
         />
         
       </div>
@@ -336,44 +306,34 @@ export function FomularioComponente() {
       <div className="mt-[-12px] mx-2 sm:mt-4 flex flex-col mb-4">
         
         <Label> Sexo </Label>
-        <select 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        <Select 
           value={sexo}
-          onChange={ (e) => setSexo(e.target.value)}
-        >
-          <option value="" disabled> Selecionar... </option>
-          <option value="Masculino"> Masculino </option>
-          <option value="Feminino"> Feminino </option>
-        </select>
+          onChange={setSexo}
+          placeholder="Selecionar..."
+          options={sexoOptions}
+        />
         
       </div>
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
         <Label> Estado Civil </Label>
-        <select 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        <Select 
           value={estadoCivil}
-          onChange={ (e) => setEstadoCivil(e.target.value)}
-        > 
-          <option value="" disabled> Selecionar... </option>
-          <option value="Solteiro"> Solteiro </option>
-          <option value="Casado"> Casado </option>
-          <option value="Separado"> Seperado(a) </option>
-          <option value="Divorciado"> Divorciado(a) </option>
-          <option value="Viuvo"> Viúvo(a) </option>
-        </select>
+          onChange={setEstadoCivil}
+          placeholder="Selecionar..."
+          options={estadoCivilOptions}
+        />
         
       </div>
 
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
         <Label> Data Nascimento </Label>
-        <input 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        <InputAlterar 
           type="date"
           value={dataNascimento}
-          onChange={limiteDataNascimento}
+          onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
         />
         
       </div>
@@ -453,17 +413,12 @@ export function FomularioComponente() {
       <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
         
         <Label> Moradia </Label>
-        <select 
+        <Select 
           value={moradia}
-          onChange={(e) => setMoradia(e.target.value)} 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled> Selecionar... </option>
-          <option value="Casa"> Casa </option>
-          <option value="Apartamento"> Apartamento </option>
-          <option value="Aluguel"> Aluguel </option>
-          <option value="Area rural"> Área rural </option>
-        </select>
+          onChange={setMoradia} 
+          placeholder="Selecionar..."
+          options={moradiaOptions}
+        />
         
       </div>
     
@@ -581,6 +536,8 @@ export function FomularioComponente() {
         </div>
 
       </div>
+
+      {/* ========== LOADING ========== */}
 
       {loading && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">

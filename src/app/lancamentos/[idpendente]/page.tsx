@@ -4,47 +4,12 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import Opcoes from "../opcoes";
 import { formatarCPF, formatarData, formatarDinheiro } from "@/funcoes/formatacao";
-
-interface PageProps {
-  params: {
-    idpendente: string;
-  };
-}
-
-interface Cliente {
-  id: number,
-  nome_completo: string;
-  cpf: string;
-}
-
-interface Consultor {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-}
-
-interface Emprestimo {
-  id: number;
-  tipo_lancamento: string;
-  valor_emprestado: number;
-  valor_receber: number;
-  valor_pago: number;
-  cidade: string;
-  estado: string;
-  data_emprestimo: string;
-  data_vencimento: string;
-  descricao: string;
-  status: string;
-  numero_promissoria: number;
-  comissao: number;
-  status_comissao: string;
-  clientes: Cliente;
-  consultores: Consultor;
-}
+import { Emprestimo } from "../types";
 
 export default async function Detalhes( { params }: { params: { idpendente: string } }) {
 
   const supabase = await createClient()
+
   const { data, error } = await supabase.auth.getUser()
   if (error || !data?.user) {
     redirect('/auth/login')
@@ -176,7 +141,7 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
           <div>
             <p><strong>Número da Promissória:</strong> {emprestimo.numero_promissoria || "Nenhum"} </p>
             <p>
-              <strong>Valor da Comissão:</strong>{formatarDinheiro(emprestimo.comissao)}
+              <strong>Valor da Comissão:</strong> {formatarDinheiro(emprestimo.comissao)}
             </p>
             <p>
               <strong>Juros Após Vencimento:</strong> {formatarDinheiro(jurosCalculado)}

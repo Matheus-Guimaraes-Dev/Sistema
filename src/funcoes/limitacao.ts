@@ -91,3 +91,28 @@ export function limiteDataNascimento(
     setDataNascimento(value);
   }
 }
+
+export function limiteDataEmprestimo(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setDataEmprestimo: (valor: string) => void
+) {
+  const value = e.target.value;
+  const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+  if (regex.test(value)) {
+    setDataEmprestimo(value);
+  }
+}
+
+export function limiteDataVencimento(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setDataVencimento: (valor: string) => void
+) {
+  const value = e.target.value;
+  const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+  if (regex.test(value)) {
+    setDataVencimento(value);
+  }
+}
+

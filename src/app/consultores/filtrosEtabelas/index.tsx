@@ -7,16 +7,7 @@ import { limiteCpf, limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-
-interface Cliente {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  cidade: string;
-  estado: string;
-  status: string;
-  data_cadastro: string;
-};
+import { Cliente } from "../types";
 
 export default function FiltrosETabelas() {
 
@@ -100,7 +91,7 @@ export default function FiltrosETabelas() {
       }
     } catch (erro) {
       console.error("Erro geral:", erro);
-      setErro("Erro inesperado ao buscar clientes.");
+      setErro("Erro inesperado ao buscar consultor.");
     }
   };
 

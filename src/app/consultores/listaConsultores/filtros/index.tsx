@@ -7,16 +7,7 @@ import { limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-
-interface Cliente {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  cidade: string;
-  estado: string;
-  status: string;
-  data_cadastro: string;
-};
+import { Cliente } from "../../types";
 
 export default function FiltrosConsultores() {
 
@@ -35,7 +26,7 @@ export default function FiltrosConsultores() {
   const [paginaAtual, setPaginaAtual] = useState(1);
       
   useEffect(() => {
-    buscarClientes()
+    buscarConsultor()
   }, [paginaAtual])
 
   const itensPorPagina = 5
@@ -43,7 +34,7 @@ export default function FiltrosConsultores() {
 
   const router = useRouter();
 
-  const buscarClientes = async () => {
+  const buscarConsultor = async () => {
 
   const inicio = (paginaAtual - 1) * itensPorPagina;
   const fim = inicio + itensPorPagina - 1;
@@ -62,24 +53,8 @@ export default function FiltrosConsultores() {
         query = query.eq("id", Number(id));
       }
 
-      if (cpf.trim() !== "") {
-        query = query.ilike("cpf", `%${cpf.trim()}%`);
-      }
-
       if (status !== "") {
         query = query.eq("status", status);
-      }
-
-      if (estado !== "") {
-        query = query.eq("estado", estado);
-      }
-
-      if (cidade !== "") {
-        query = query.eq("cidade", cidade);
-      }
-
-      if (data === "asc" || data === "desc") {
-        query = query.order("data_cadastro", { ascending: data === "asc" });
       }
 
       query = query.range(inicio, fim);
@@ -107,7 +82,7 @@ export default function FiltrosConsultores() {
   const aplicarFiltro = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaAtual(1);
-    buscarClientes();
+    buscarConsultor();
   };
 
   function navegarCadastro() {

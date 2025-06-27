@@ -16,77 +16,17 @@ import BuscarConsultor from "../BuscarConsultor";
 import { mostrarValor } from "@/funcoes/formatacao";
 import toast from "react-hot-toast";
 import { limparValorMonetario } from "@/funcoes/formatacao";
-
-type CidadesPorEstado = {
-  [estado: string]: string[];
-}
-
-const cidadesPorEstado: CidadesPorEstado = {
-  RO: [
-    "Porto Velho",
-    "Ji-Paraná",
-    "Ariquemes",
-    "Vilhena",
-    "Cacoal",
-    "Rolim de Moura",
-    "Guajará-Mirim",
-    "Jaru",
-    "Pimenta Bueno",
-    "Machadinho d'Oeste",
-    "Buritis",
-    "Ouro Preto do Oeste",
-    "Espigão d'Oeste",
-    "Nova Mamoré",
-    "Candeias do Jamari",
-    "Alta Floresta d'Oeste",
-    "Presidente Médici",
-    "Cujubim",
-    "São Miguel do Guaporé",
-    "Alto Paraíso"
-  ]
-}
-
-interface Contas {
-  id: number;
-  tipo_lancamento: string;
-  valor_emprestado: number;
-  valor_receber: number;
-  data_vencimento: string;
-  data_cadastro: string;
-  clientes: {
-    id: number;
-    nome_completo: string;
-  } | null;
-  consultores: {
-    id: number;
-    nome_completo: string;
-  } | null;
-}
-
-interface Cliente {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  cidade: string;
-  estado: string;
-  status: string;
-  data_cadastro: string;
-};
-
-interface Consultor {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  status: string;
-  comissao_mensal?: number;
-  comissao_semanal?: number;
-  comissao_diaria?: number;
-}
+import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
+import { Contas, Cliente, Consultor } from "../types";
+import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
+import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 
 export function FiltrosLancamentos() {
 
   const supabase = createClient();
 
+  const [loading, setLoading] = useState(false);
+  
   const [nome, setNome] = useState("");
   const [id, setId] = useState("");
   const [idDocumento, setIdDocumento] = useState("");
@@ -98,23 +38,18 @@ export function FiltrosLancamentos() {
   const [contas, setContas] = useState<Contas[]>([]);
   const [ordenarValor, setOrdenarValor] = useState("");
   const [erro, setErro] = useState("");
-
-  const [loading, setLoading] = useState(false);
-
   const [dataEmprestimo, setDataEmprestimo] = useState("");
   const [dataVencimento, setDataVencimento] = useState("");
   const [valorEmprestado, setValorEmprestado] = useState("");
   const [valorRecebimento, setValorRecebimento] = useState("");
   const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
   const [observacoes, setObservacoes] = useState("");
-
   const [filtros, setFiltros] = useState(true);
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null);
-
   const [tipo, setTipo] = useState<string | null>(null);
 
-  const handleChange = (valor: string) => {
+  const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
 
@@ -139,12 +74,20 @@ export function FiltrosLancamentos() {
     buscarJuros();
   }, [paginaAtual])
 
+  useEffect(() => {
+    calcularValorReceber();
+  }, [tipo, valorEmprestado, juros]);
+
   const router = useRouter();
   const estados = Object.keys(cidadesPorEstado);
-  const cidades = estado ? cidadesPorEstado[estado] : [];
+  const cidades = estado in cidadesPorEstado 
+  ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
   
   const itensPorPagina = 10
   const [totalPaginas, setTotalPaginas] = useState(1);
+
+  // ========== BUSCAR E CALCULAR JUROS ==========
 
   const buscarJuros = async () => {
 
@@ -161,11 +104,8 @@ export function FiltrosLancamentos() {
 
   }
 
-  useEffect(() => {
-    calcularValorReceber();
-  }, [tipo, valorEmprestado, juros]);
-
   const calcularValorReceber = () => {
+    
     const valorLimpo = Number(valorEmprestado.replace(/\D/g, "")) / 100;
 
     if (!tipo || !valorLimpo) {
@@ -186,75 +126,80 @@ export function FiltrosLancamentos() {
     setValorRecebimento(valorReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
   };
 
+  // ========== BUSCAR AS CONSTAS ==========
+
   const buscarContas = async () => {
-  const inicio = (paginaAtual - 1) * itensPorPagina;
-  const fim = inicio + itensPorPagina - 1;
 
-  try {
-    let query = supabase
-      .from("contas_receber")
-      .select(`
-        id,
-        tipo_lancamento,
-        valor_emprestado,
-        valor_receber,
-        data_vencimento,
-        data_cadastro,
-        clientes:clientes!id_cliente ( id, nome_completo ),
-        consultores:consultores!id_consultor ( id, nome_completo )
-      `, { count: "exact" });
+    const inicio = (paginaAtual - 1) * itensPorPagina;
+    const fim = inicio + itensPorPagina - 1;
 
-    if (id.trim() !== "") {
-      query = query.eq("id", Number(id));
-    }
+    try {
+      let query = supabase
+        .from("contas_receber")
+        .select(`
+          id,
+          tipo_lancamento,
+          valor_emprestado,
+          valor_receber,
+          data_vencimento,
+          data_cadastro,
+          clientes:clientes!id_cliente ( id, nome_completo ),
+          consultores:consultores!id_consultor ( id, nome_completo )
+        `, { count: "exact" });
 
-    if (status !== "") {
-      query = query.eq("status", status);
-    }
-
-    if (estado !== "") {
-      query = query.eq("estado", estado);
-    }
-
-    if (cidade !== "") {
-      query = query.eq("cidade", cidade);
-    }
-
-    if (data === "asc" || data === "desc") {
-      query = query.order("data_cadastro", { ascending: data === "asc" });
-    }
-
-    query = query.range(inicio, fim);
-
-    const { data: resultado, error, count } = await query;
-
-    if (error) {
-      setErro("Erro ao buscar clientes.");
-      console.error("Erro Supabase:", error);
-    } else {
-      let resultadoFiltrado = (resultado || []).map((item) => ({
-        ...item,
-        clientes: Array.isArray(item.clientes) ? item.clientes[0] : item.clientes,
-        consultores: Array.isArray(item.consultores) ? item.consultores[0] : item.consultores,
-      }));
-
-      if (nome.trim() !== "") {
-        resultadoFiltrado = resultadoFiltrado.filter((item) =>
-          item.clientes?.nome_completo?.toLowerCase().includes(nome.trim().toLowerCase())
-        );
+      if (id.trim() !== "") {
+        query = query.eq("id", Number(id));
       }
 
-      setContas(resultadoFiltrado);
-      setErro("");
+      if (status !== "") {
+        query = query.eq("status", status);
+      }
 
-      const total = Math.ceil((count ?? 0) / itensPorPagina);
-      setTotalPaginas(total);
-    }
-    
-  } catch (erro) {
-      console.error("Erro geral:", erro);
-      setErro("Erro inesperado ao buscar constas.");
-    }
+      if (estado !== "") {
+        query = query.eq("estado", estado);
+      }
+
+      if (cidade !== "") {
+        query = query.eq("cidade", cidade);
+      }
+
+      if (data === "asc" || data === "desc") {
+        query = query.order("data_cadastro", { ascending: data === "asc" });
+      }
+
+      query = query.range(inicio, fim);
+
+      const { data: resultado, error, count } = await query;
+
+      if (error) {
+        setErro("Erro ao buscar empréstimos.");
+        console.error("Erro Supabase:", error);
+      } else {
+
+        let resultadoFiltrado = (resultado || []).map((item) => ({
+          ...item,
+          clientes: Array.isArray(item.clientes) ? item.clientes[0] : item.clientes,
+          consultores: Array.isArray(item.consultores) ? item.consultores[0] : item.consultores,
+        }));
+
+        if (nome.trim() !== "") {
+          resultadoFiltrado = resultadoFiltrado.filter((item) =>
+            item.clientes?.nome_completo?.toLowerCase().includes(nome.trim().toLowerCase())
+          );
+        }
+
+        setContas(resultadoFiltrado);
+        setErro("");
+
+        const total = Math.ceil((count ?? 0) / itensPorPagina);
+        setTotalPaginas(total);
+
+      }
+      
+    } catch (erro) {
+        console.error("Erro geral:", erro);
+        setErro("Erro inesperado ao buscar constas.");
+      }
   };
 
   function detalhes(id: number) {
@@ -265,26 +210,6 @@ export function FiltrosLancamentos() {
     e.preventDefault();
     setPaginaAtual(1);
     buscarContas();
-  };
-
-  const limiteDataEmprestimo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-
-    if (regex.test(value)) {
-      setDataEmprestimo(value);
-    }
-  };
-
-  const limiteDataVencimento = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-
-    if (regex.test(value)) {
-      setDataVencimento(value);
-    }
   };
 
   const calcularComissao = () => {
@@ -376,7 +301,7 @@ export function FiltrosLancamentos() {
 
   } 
 
-  const getCorPorData = (dataVencimento: string) => {
+  const corPorData = (dataVencimento: string) => {
     const hoje = new Date();
     const vencimento = new Date(dataVencimento + "T12:00:00");
 
@@ -393,7 +318,7 @@ export function FiltrosLancamentos() {
       (anoVenc === anoHoje && mesVenc < mesHoje) ||
       (anoVenc === anoHoje && mesVenc === mesHoje && diaVenc < diaHoje)
     ) {
-      return "bg-red-300"; // vencido
+      return "bg-red-300";
     }
 
     if (
@@ -401,10 +326,10 @@ export function FiltrosLancamentos() {
       mesVenc === mesHoje &&
       diaVenc === diaHoje
     ) {
-      return "bg-yellow-300"; // vencendo hoje
+      return "bg-yellow-300";
     }
 
-    return "bg-green-300"; // a vencer
+    return "bg-green-300";
   };
 
   return(
@@ -422,11 +347,7 @@ export function FiltrosLancamentos() {
             className="overflow-hidden"
             onSubmit={aplicarFiltro}
           >
-            <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
-              grid-cols-1 
-              sm:grid-cols-2 
-              lg:grid-cols-3 
-              mb-6">
+            <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 grid-cols- sm:grid-cols-2 lg:grid-cols-3 mb-6">
               <InputCliente
                 type="text"
                 placeholder="Buscar por nome do cliente"
@@ -566,7 +487,7 @@ export function FiltrosLancamentos() {
             <tbody className="divide-y">
               {contas && (
                 contas.map( (info) => (
-                  <tr key={info.id} className={`${getCorPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
+                  <tr key={info.id} className={`${corPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
                     <td className="hidden sm:table-cell px-2 py-2"> {info.id} </td>
                     <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
                     <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
@@ -654,7 +575,7 @@ export function FiltrosLancamentos() {
                   className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
                   type="date"
                   value={dataEmprestimo}
-                  onChange={limiteDataEmprestimo}
+                  onChange={ (e) => limiteDataEmprestimo(e, setDataEmprestimo)}
                 />
                 
               </div>
@@ -667,7 +588,7 @@ export function FiltrosLancamentos() {
                   className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
                   type="date"
                   value={dataVencimento}
-                  onChange={limiteDataVencimento}
+                  onChange={ (e) => limiteDataVencimento(e, setDataVencimento)}
                 />
                 
               </div>
@@ -697,14 +618,14 @@ export function FiltrosLancamentos() {
 
                 <Label> Modalidade do Empréstimo </Label>
 
-                <div className="flex gap-4">
+                <div className="flex gap-4 flex-wrap items-center">
                   {["Mensal", "Semanal", "Diario"].map((item) => (
                     <label key={item} className="flex items-center gap-2">
                       <input
                         className="w-4 h-4 border-2"
                         type="checkbox"
                         checked={tipo === item}
-                        onChange={() => handleChange(item)}
+                        onChange={() => trocarTipo(item)}
                       />
                       {item}
                     </label>
@@ -715,23 +636,21 @@ export function FiltrosLancamentos() {
 
               <div className="mt-2 mb-3">
                 <Label> Valor do Empréstimo </Label>
-                <input 
+                <InputAlterar 
                   type="text" 
                   value={valorEmprestado}
                   onChange={(e) => mostrarValor(e, setValorEmprestado)}
                   placeholder="R$ 0,00"
-                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1 focus:outline-[#4b8ed6]"
                 />
               </div>
 
               <div className="mb-3">
                 <Label> Valor do Recebimento </Label>
-                <input 
+                <InputAlterar 
                   type="text" 
                   value={valorRecebimento}
                   onChange={(e) => mostrarValor(e, setValorRecebimento)}
                   placeholder="R$ 0,00"
-                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1 focus:outline-[#4b8ed6]"
                   readOnly
                 />
               </div>
@@ -740,8 +659,7 @@ export function FiltrosLancamentos() {
 
                 <Label> Observação </Label>
 
-                <input 
-                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                <InputAlterar 
                   type="text"
                   value={observacoes}
                   onChange={ (e) => setObservacoes(e.target.value)}

@@ -1,66 +1,15 @@
 "use client"
 
 import { useState, useEffect, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { createClient } from "@/lib/client";
-import { AlterarStatus } from "@/app/clientes/components/AlterarStatus";
 import BuscarCliente from "../BuscarClientes";
-import { formatarCPF, mostrarValor } from "@/funcoes/formatacao";
+import { formatarCPF, mostrarValor, limparValorMonetario } from "@/funcoes/formatacao";
 import BuscarConsultor from "../BuscarConsultor";
 import { Label } from "@/app/formulario/components/componentes/label";
 import toast from "react-hot-toast";
-
-interface ClienteInfo {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-  cidade: string;
-  estado: string;
-  status: string;
-
-};
-
-interface ConsultorInfo {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-}
-
-interface Cliente {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-}
-
-interface Consultor {
-  id: number;
-  nome_completo: string;
-  cpf: string;
-}
-
-interface infoEmprestimo {
-  id: number;
-  tipo_lancamento: string;
-  valor_emprestado: number;
-  valor_receber: number;
-  valor_pago: number;
-  cidade: string;
-  estado: string;
-  data_emprestimo: string;
-  data_vencimento: string;
-  descricao: string;
-  status: string;
-  numero_promissoria: number;
-  comissao: number;
-  status_comissao: string;
-  clientes: Cliente;
-  consultores: Consultor;
-}
-
-interface PropsAlterar {
-  informacoesEmprestimo: infoEmprestimo;
-}
+import { ClienteInfo, ConsultorInfo, PropsAlterar } from "../types";
+import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
 
 export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
@@ -74,8 +23,9 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [observacoes, setObservacoes] = useState("");
   const [valorEmprestado, setValorEmprestado] = useState("");
   const [valorRecebimento, setValorRecebimento] = useState("");
+  const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
 
-  const handleChange = (valor: string) => {
+  const selecionarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
 
@@ -107,12 +57,32 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     }
   }, [informacoesEmprestimo] );
 
+  useEffect(() => {
+    buscarJuros();
+  }, []);
+
+  useEffect(() => {
+    calcularValorReceber();
+  }, [tipo, valorEmprestado, juros]);
+
   async function atualizarEmprestimo(e: FormEvent) {
 
     e.preventDefault();
 
+    if(!dataEmprestimo) return toast.error("Selecione data do empréstimo");
+    if(!dataVencimento) return toast.error("Selecione data do vencimento");
+    if(!tipo) return toast.error("Selecione o tipo");
+
     const valorEmprestadoCorreto = limparValorMonetario(valorEmprestado);
     const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento)
+
+    if (isNaN(valorEmprestadoCorreto) || valorEmprestadoCorreto <= 0) {
+      return toast.error("Digite o valor do empréstimo");
+    }
+
+    if (isNaN(valorRecebimentoCorreto) || valorRecebimentoCorreto <= 0) {
+      return toast.error("Digite o valor do recebimento");
+    }
 
     const dadosAtualizados = {
       id_cliente: clienteSelecionado?.id,
@@ -141,112 +111,81 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   }
 
-  async function deletarCliente() {
+  // ========== BUSCAR JUROS REFERENTE AO TIPO ==========
 
-  }
+  const buscarJuros = async () => {
 
-  // const mostrarValor = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { data, error } = await supabase
+      .from("configuracoes_juros")
+      .select("tipo_lancamento, tipo_juros, percentual")
+      .eq("tipo_juros", "Emprestimo")
 
-  //   const valor = e.target.value;
-  //   const formatado = formatarParaReal(valor);
-
-  //   setValorSolicitado(formatado);
-  //   console.log(valorSolicitado)
-
-  // }
-
-  const formatarParaReal = (valor: string) => {
-    const apenasNumeros = String(valor).replace(/\D/g, "");
-    const valorNumerico = parseFloat(apenasNumeros) / 100;
-
-    console.log("INFO: ", valorNumerico)
-
-    if (isNaN(valorNumerico)) {
-      return "";
+    if(error) {
+      toast.error("Erro ao buscar juros");
+    } else {
+      setJuros(data as { tipo_lancamento: string; percentual: number} []);
     }
 
-    return valorNumerico.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
   }
 
-  function ativarBotao() {
-    setAtivar(!ativar)
-    console.log(ativar);
-  }
+  const calcularValorReceber = () => {
 
-  function limparValorMonetario(valor: string): number {
-    return parseFloat(
-      String(valor)
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim()
-    );
-  }
+    const valorLimpo = Number(valorEmprestado.replace(/\D/g, "")) / 100;
 
-  // function limiteCpf(e: React.ChangeEvent<HTMLInputElement>) {
-  //   const value = e.target.value.replace(/\D/g, ""); 
-  //   if (value.length <= 11) {
-  //     setCpf(value);
-  //   }
-  // }
-
-  // function limiteRg(e: React.ChangeEvent<HTMLInputElement>) {
-  //   const value = e.target.value.replace(/\D/g, "");
-  //   if(value.length <= 7) {
-  //     setRg(value);
-  //   }
-  // }
-
-  // function limiteWhatsapp(e: React.ChangeEvent<HTMLInputElement>) {
-  //   const value = e.target.value.replace(/\D/g, "");
-  //   if(value.length <= 13) {
-  //     setWhatsapp(value);
-  //   }
-  // }
-
-  // function limiteTelefoneReserva(e: React.ChangeEvent<HTMLInputElement>) {
-  //   const value = e.target.value.replace(/\D/g, "");
-  //   if(value.length <= 13) {
-  //     setTelefoneReserva(value);
-  //   }
-  // }
-
-  // function limiteCep(e: React.ChangeEvent<HTMLInputElement>) {
-  //   const value = e.target.value.replace(/\D/g, "");
-  //   if(value.length <= 8) {
-  //     setCep(value);
-  //   }
-  // }
-
-  const limiteDataEmprestimo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-
-    if (regex.test(value)) {
-      setDataEmprestimo(value);
+    if(!tipo || !valorLimpo) {
+      setValorRecebimento("");
+      return;
     }
-  };
 
-  const limiteDataVencimento = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const jurosSelecionado = juros.find((item) => item.tipo_lancamento === tipo);
 
-    const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
-
-    if (regex.test(value)) {
-      setDataVencimento(value);
+    if(!jurosSelecionado) {
+      setValorEmprestado("");
+      return;
     }
-  };
+
+    const percentual = jurosSelecionado.percentual / 100;
+    const valorReceber = valorLimpo + valorLimpo * percentual;
+
+    setValorRecebimento(valorReceber.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
+
+  }
+
+  // ========== EXCLUIR O EMPRESTIMO E A COMISSAO DO CONSULTOR ==========
+
+  async function deletarEmprestimo() {
+
+    const { error: erroEmprestimo } = await supabase
+      .from("contas_receber")
+      .delete()
+      .eq("id", informacoesEmprestimo.id)
+
+    if(erroEmprestimo) {
+      toast.error("Erro ao deletar emprestimo");
+      return false;
+    }
+
+    const { error: erroComissao } = await supabase
+      .from("comissoes_consultores")
+      .delete()
+      .eq("id_conta_receber", informacoesEmprestimo.id);
+      
+    if(erroComissao) {
+      toast.error("Erro ao deletar Comissão");
+      return false;
+    }
+      
+    return true;
+
+  }
+
 
   return(
     <div>
 
       <div className="flex gap-3 flex-wrap">
 
-        <button onClick={ativarBotao} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+        <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
         
         <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
 
@@ -300,7 +239,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
                 type="date"
                 value={dataEmprestimo}
-                onChange={limiteDataEmprestimo}
+                onChange={ (e) => limiteDataEmprestimo(e, setDataEmprestimo)}
               />
               
             </div>
@@ -312,7 +251,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
               <InputAlterar 
                 type="date"
                 value={dataVencimento}
-                onChange={limiteDataVencimento}
+                onChange={ (e) => limiteDataVencimento(e, setDataVencimento)}
               />
               
             </div>
@@ -359,7 +298,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                         className="w-4 h-4 border-2"
                         type="checkbox"
                         checked={tipo === item}
-                        onChange={() => handleChange(item)}
+                        onChange={() => selecionarTipo(item)}
                       />
                       {item}
                     </label>
@@ -382,22 +321,22 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
           <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
 
           <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
-            <h2 className="text-xl font-bold mb-4"> Deseja realmente excluir este cliente? </h2>
+            <h2 className="text-xl font-bold mb-4"> Deseja realmente excluir este empréstimo? </h2>
 
-            <p className="mb-4"> Todos os dados relacionados a este cliente serão apagados de forma permanente. </p>
+            <p className="mb-4"> Todos os dados relacionados a este empréstimo serão apagados de forma permanente. </p>
 
-            {/* <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4">
               <button onClick={async () => {
-                const sucesso = await deletarCliente();
+                const sucesso = await deletarEmprestimo();
                   if (sucesso) {
                     setMostrarModal(false);
-                    window.location.href = "/clientes";
+                    window.location.href = "/lancamentos";
                   }
                 }}
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer"> Sim </button>
 
               <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
-            </div> */}
+            </div>
           </div>
         </div>
       )}
