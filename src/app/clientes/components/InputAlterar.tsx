@@ -14,9 +14,10 @@ interface Props {
   aceept?: string;
   required?: boolean;
   readOnly?: boolean;
+  disabled?: boolean;
 }
 
-export function InputAlterar({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept, readOnly }: Props) {
+export function InputAlterar({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept, readOnly, disabled }: Props) {
   return (
     <div className="">
       <label className="block font-semibold mb-1">{label}</label>
@@ -27,6 +28,8 @@ export function InputAlterar({ label, type = 'text', name, value, onChange, plac
         onChange={onChange}
         placeholder={placeholder}
         onBlur={onBlur}
+        readOnly={readOnly}  
+        disabled={disabled}
         className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
       />
     </div>

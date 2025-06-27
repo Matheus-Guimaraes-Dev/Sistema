@@ -30,6 +30,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   };
 
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
 
   const [ativar, setAtivar] = useState(false);
 
@@ -183,13 +184,19 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   return(
     <div>
 
+      {/* ========== CAMPO DE OPÇÕES ========== */}
+
       <div className="flex gap-3 flex-wrap">
 
         <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
         
         <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
 
+        <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+
       </div>
+
+      {/* ========== MOSTRAR TELA DE ALTERAÇÃO ========== */}
 
       {ativar && (
         <form onSubmit={atualizarEmprestimo} className="bg-white shadow rounded-xl p-6 my-5">
@@ -314,6 +321,170 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
         </form>
       )}
+
+      {/* ========== MOSTRAR MODAL DE BAIXAR ========== */}
+
+      {abrirModalBaixa && (
+      
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md max-h-[90vh] overflow-y-auto">
+
+            <h2 className="text-xl font-bold mb-4 text-center"> Baixa </h2>
+
+            <form>
+
+              <div className="mb-3">
+
+                <Label> Buscar Cliente </Label>
+
+                <BuscarCliente
+                  onSelecionar={(cliente) => setClienteSelecionado(cliente)}
+                />
+
+                {clienteSelecionado && (
+                  <div className="mt-2 p-2 border rounded">
+                    <p>
+                      <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
+                    </p>
+                    <p>
+                      <strong>CPF:</strong> {formatarCPF(clienteSelecionado.cpf)}
+                    </p>
+                  </div>
+                )}
+
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Data do Empréstimo </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataEmprestimo}
+                  onChange={ (e) => limiteDataEmprestimo(e, setDataEmprestimo)}
+                />
+                
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Data do Vencimento </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataVencimento}
+                  onChange={ (e) => limiteDataVencimento(e, setDataVencimento)}
+                />
+                
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Buscar Consultor </Label>
+
+                <BuscarConsultor
+                  onSelecionar={(consultor) => setConsultorSelecionado(consultor)}
+                />
+
+                {consultorSelecionado && (
+                  <div className="mt-2 p-2 border rounded">
+                    <p>
+                      <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
+                    </p>
+                    <p>
+                      <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf)}
+                    </p>
+                  </div>
+                )}
+
+              </div>
+
+              <div>
+
+                <Label> Modalidade do Empréstimo </Label>
+
+                <div className="flex gap-4 flex-wrap items-center">
+                  {["Mensal", "Semanal", "Diario"].map((item) => (
+                    <label key={item} className="flex items-center gap-2">
+                      <input
+                        className="w-4 h-4 border-2"
+                        type="checkbox"
+                        checked={tipo === item}
+                        onChange={() => selecionarTipo(item)}
+                      />
+                      {item}
+                    </label>
+                  ))}
+                </div>
+
+              </div>
+
+              <div className="mt-2 mb-3">
+                <Label> Valor do Empréstimo </Label>
+                <InputAlterar 
+                  type="text" 
+                  value={valorEmprestado}
+                  onChange={(e) => mostrarValor(e, setValorEmprestado)}
+                  placeholder="R$ 0,00"
+                  readOnly
+                />
+              </div>
+
+              <div className="mb-3">
+                <Label> Valor do Juros </Label>
+                <InputAlterar 
+                  type="text" 
+                  value={valorRecebimento}
+                  onChange={(e) => mostrarValor(e, setValorRecebimento)}
+                  placeholder="R$ 0,00"
+                />
+              </div>
+
+              <div className="mb-3">
+                <Label> Valor do Recebimento </Label>
+                <InputAlterar 
+                  type="text" 
+                  value={valorRecebimento}
+                  onChange={(e) => mostrarValor(e, setValorRecebimento)}
+                  placeholder="R$ 0,00"
+                />
+              </div>
+
+              <div className="mb-1">
+
+                <Label> Observação </Label>
+
+                <InputAlterar 
+                  type="text"
+                  value={observacoes}
+                  onChange={ (e) => setObservacoes(e.target.value)}
+                />
+                
+              </div>
+
+
+              <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
+
+              <div className="flex justify-center gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setAbrirModalBaixa(false);
+                  }} 
+                  className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========== MOSTRAR MODAL DE EXCLUIR ========== */}
 
       {mostrarModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
