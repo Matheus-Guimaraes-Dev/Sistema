@@ -8,7 +8,7 @@ import { formatarCPF, mostrarValor, limparValorMonetario } from "@/funcoes/forma
 import BuscarConsultor from "../BuscarConsultor";
 import { Label } from "@/app/formulario/components/componentes/label";
 import toast from "react-hot-toast";
-import { ClienteInfo, ConsultorInfo, PropsAlterar } from "../types";
+import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar } from "../types";
 import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
 
 export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
@@ -24,6 +24,8 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [valorEmprestado, setValorEmprestado] = useState("");
   const [valorRecebimento, setValorRecebimento] = useState("");
   const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
+  const [carregado, setCarregado] = useState(false);
+  const [jurosDoVencimento, setJurosDoVencimento] = useState<string>("");
 
   const selecionarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -33,6 +35,28 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
 
   const [ativar, setAtivar] = useState(false);
+
+    useEffect(() => {
+    buscarJuros();
+  }, []);
+
+  useEffect(() => {
+    if (carregado) {
+      calcularValorReceber();
+    }
+  }, [tipo, valorEmprestado, juros]);
+
+  useEffect( () => {
+    async function calcular() {
+      if(informacoesEmprestimo) {
+        const valor = await calcularJurosSeVencido(informacoesEmprestimo);
+        setJurosDoVencimento(valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
+      }
+    }
+
+    calcular();
+
+  },[informacoesEmprestimo] )
 
   useEffect( () => {
     if(informacoesEmprestimo) {
@@ -55,16 +79,16 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       setTipo(informacoesEmprestimo.tipo_lancamento);
       setDataVencimento(informacoesEmprestimo.data_vencimento);
       setDataEmprestimo(informacoesEmprestimo.data_emprestimo);
+      setCarregado(true);
+
     }
   }, [informacoesEmprestimo] );
 
   useEffect(() => {
-    buscarJuros();
-  }, []);
-
-  useEffect(() => {
-    calcularValorReceber();
-  }, [tipo, valorEmprestado, juros]);
+    if (valorRecebimento && jurosDoVencimento) {
+      somarValorComJurosVencido();
+    }
+  }, [jurosDoVencimento]);
 
   async function atualizarEmprestimo(e: FormEvent) {
 
@@ -133,15 +157,13 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
     const valorLimpo = Number(valorEmprestado.replace(/\D/g, "")) / 100;
 
-    if(!tipo || !valorLimpo) {
-      setValorRecebimento("");
+    if(!tipo || isNaN(valorLimpo) || valorEmprestado === "") {
       return;
     }
 
     const jurosSelecionado = juros.find((item) => item.tipo_lancamento === tipo);
 
     if(!jurosSelecionado) {
-      setValorEmprestado("");
       return;
     }
 
@@ -180,6 +202,53 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   }
 
+  // ========== CALCULAR JUROS DO VENCIMENTO ==========
+
+  async function calcularJurosSeVencido(emprestimo: Emprestimo) {
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const vencimento = new Date(emprestimo.data_vencimento + "T12:00:00");
+
+    if (vencimento >= hoje) {
+      return 0; 
+    }
+
+    const diasAtraso = Math.ceil((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24));
+
+    const { data, error } = await supabase
+      .from("configuracoes_juros")
+      .select("percentual")
+      .eq("tipo_juros", "Vencimento")
+      .eq("tipo_lancamento", emprestimo.tipo_lancamento)
+      .single(); 
+
+    if (error || !data) {
+      toast.error("Erro ao buscar percentual de juros");
+      return 0;
+    }
+
+    const percentualMensal = Number(data.percentual);
+    const jurosProporcional = (percentualMensal / 30) * diasAtraso;
+
+    const valorJuros = emprestimo.valor_emprestado * (jurosProporcional / 100);
+
+    return Number(valorJuros.toFixed(2));
+    
+  }
+
+  function somarValorComJurosVencido() {
+    if (jurosDoVencimento && valorRecebimento) {
+      const valorJuros = limparValorMonetario(jurosDoVencimento);
+      const valorBase = limparValorMonetario(valorRecebimento);
+
+      const soma = valorBase + valorJuros;
+
+      setValorRecebimento(
+        soma.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      );
+    }
+  }
 
   return(
     <div>
@@ -439,8 +508,8 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                 <Label> Valor do Juros </Label>
                 <InputAlterar 
                   type="text" 
-                  value={valorRecebimento}
-                  onChange={(e) => mostrarValor(e, setValorRecebimento)}
+                  value={jurosDoVencimento}
+                  onChange={(e) => mostrarValor(e, setJurosDoVencimento)}
                   placeholder="R$ 0,00"
                 />
               </div>
