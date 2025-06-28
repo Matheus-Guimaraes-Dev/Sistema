@@ -37,7 +37,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   const [ativar, setAtivar] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     buscarJuros();
   }, []);
 
@@ -97,6 +97,8 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       }));
     }
   }, [valorRecebimento, jurosDoVencimento]);
+
+  // ========== ATUALIZAR O EMPRÉSTIMO ==========
 
   async function atualizarEmprestimo(e: FormEvent) {
 
@@ -245,17 +247,12 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     
   }
 
-  function somarValorComJurosVencido() {
-    if (jurosDoVencimento && valorRecebimento) {
-      const valorJuros = limparValorMonetario(jurosDoVencimento);
-      const valorBase = limparValorMonetario(valorRecebimento);
+  // ========== BAIXAR O EMPRÉSTIMO ==========
 
-      const soma = valorBase + valorJuros;
+  async function baixarEmprestimo(e: React.FormEvent) {
 
-      setValorRecebimento(
-        soma.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-      );
-    }
+    e.preventDefault();
+
   }
 
   return(
@@ -391,7 +388,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                 
             </div>
             
-
           </section>
 
           <button type="submit" className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 cursor-pointer w-full mt-8"> Salvar Alterações </button>
@@ -411,7 +407,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
             <h2 className="text-xl font-bold mb-4 text-center"> Baixa </h2>
 
-            <form>
+            <form onSubmit={baixarEmprestimo}>
 
               <div className="mb-3">
 
