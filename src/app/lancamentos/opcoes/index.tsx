@@ -26,6 +26,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
   const [carregado, setCarregado] = useState(false);
   const [jurosDoVencimento, setJurosDoVencimento] = useState<string>("");
+  const [valorComJuros, setValorComJuros] = useState<string>("");
 
   const selecionarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -86,9 +87,16 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   useEffect(() => {
     if (valorRecebimento && jurosDoVencimento) {
-      somarValorComJurosVencido();
+      const valorBase = limparValorMonetario(valorRecebimento);
+      const valorJuros = limparValorMonetario(jurosDoVencimento);
+      const soma = valorBase + valorJuros;
+
+      setValorComJuros(soma.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }));
     }
-  }, [jurosDoVencimento]);
+  }, [valorRecebimento, jurosDoVencimento]);
 
   async function atualizarEmprestimo(e: FormEvent) {
 
@@ -518,8 +526,8 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                 <Label> Valor do Recebimento </Label>
                 <InputAlterar 
                   type="text" 
-                  value={valorRecebimento}
-                  onChange={(e) => mostrarValor(e, setValorRecebimento)}
+                  value={valorComJuros}
+                  onChange={(e) => mostrarValor(e, setValorComJuros)}
                   placeholder="R$ 0,00"
                 />
               </div>
