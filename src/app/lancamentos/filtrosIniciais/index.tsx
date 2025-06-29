@@ -604,7 +604,7 @@ export function FiltrosLancamentos() {
                 {consultorSelecionado && (
                   <div className="mt-2 p-2 border rounded">
                     <p>
-                      <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
+                      <strong>Consultor:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
                     </p>
                     <p>
                       <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf)}

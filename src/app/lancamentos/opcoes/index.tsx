@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, useRef } from "react";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { createClient } from "@/lib/client";
 import BuscarCliente from "../BuscarClientes";
@@ -10,6 +10,11 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import toast from "react-hot-toast";
 import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar } from "../types";
 import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
+
+interface Recebimentos {
+  id: number;
+  descricao: string;
+}
 
 export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
@@ -27,6 +32,9 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [carregado, setCarregado] = useState(false);
   const [jurosDoVencimento, setJurosDoVencimento] = useState<string>("");
   const [valorComJuros, setValorComJuros] = useState<string>("");
+
+  const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
+  const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
 
   const selecionarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -81,6 +89,8 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       setDataVencimento(informacoesEmprestimo.data_vencimento);
       setDataEmprestimo(informacoesEmprestimo.data_emprestimo);
       setCarregado(true);
+
+      formasDeRecebimento();
 
     }
   }, [informacoesEmprestimo] );
@@ -140,7 +150,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       return false;
     }
 
-    window.location.reload()
+    alterarAComissaoDoConsultor();
 
     return true
 
@@ -253,7 +263,99 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
     e.preventDefault();
 
+    console.log(recebimentoSelecionado);
+
   }
+
+  // ========== ALTERAR A COMISSÃO DO CONSULTOR SELECIONADO ==========
+
+  async function alterarAComissaoDoConsultor() {
+
+    const { data:Comissao, error: erroComissao } = await supabase
+      .from("consultores")
+      .select("comissao_mensal, comissao_semanal, comissao_diaria")
+      .eq("id", consultorSelecionado?.id)
+
+    if(erroComissao) {
+      console.log("Erro ao lançar alterar Comissão.");
+      return;
+    }
+
+    if(Comissao && Comissao.length > 0) {
+
+      if(tipo === "Mensal") {
+
+        const calculo = limparValorMonetario(valorEmprestado) *  (Comissao[0].comissao_mensal / 100);
+
+        const { error } = await supabase
+          .from("contas_receber")
+          .update({
+            comissao: calculo
+          })
+          .eq("id", informacoesEmprestimo.id);
+
+        if(error) {
+          toast.error("Erro ao atualizar juros do consultor.");
+          return;
+        } else {
+          window.location.reload();
+        }
+      } else if (tipo === "Semanal") {
+        const calculo = limparValorMonetario(valorEmprestado) *  (Comissao[0].comissao_semanal / 100);
+
+        const { error } = await supabase
+          .from("contas_receber")
+          .update({
+            comissao: calculo
+          })
+          .eq("id", informacoesEmprestimo.id);
+
+        if(error) {
+          toast.error("Erro ao atualizar juros do consultor.");
+          return;
+        } else {
+          window.location.reload();
+        }
+      } else if (tipo === "Diario") {
+        const calculo = limparValorMonetario(valorEmprestado) *  (Comissao[0].comissao_diaria / 100);
+
+        const { error } = await supabase
+          .from("contas_receber")
+          .update({
+            comissao: calculo
+          })
+          .eq("id", informacoesEmprestimo.id);
+
+        if(error) {
+          toast.error("Erro ao atualizar juros do consultor.");
+          return;
+        } else {
+          window.location.reload();
+        }
+      }
+    }
+  }
+
+  // ========== BUSCAR AS FORMAS DE RECEBIMENTO ==========
+
+  async function formasDeRecebimento() {
+
+    const { data, error } = await supabase
+      .from("formas_pagamento")
+      .select("id, descricao");
+    
+    if(error) {
+      toast.error("Erro ao buscar formas de recebimento");
+    }
+
+    if(data) {
+
+      setFormasRecebimento(data);
+
+    }
+
+  }
+
 
   return(
     <div>
@@ -303,7 +405,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                 {consultorSelecionado && (
                   <div className="mt-2 p-2 border rounded">
                     <p>
-                      <strong>Cliente:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
+                      <strong>Consultor:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
                     </p>
                     <p>
                       <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf)}
@@ -357,6 +459,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                 placeholder="R$ 0,00"
               />
             </div>
+            
 
             <div className="mb-1">
 
@@ -526,6 +629,24 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                   onChange={(e) => mostrarValor(e, setValorComJuros)}
                   placeholder="R$ 0,00"
                 />
+              </div>
+
+              <div className="mb-3">
+                <Label> Forma de Recebimento </Label>
+
+                <select 
+                  className="w-full h-8 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                  value={recebimentoSelecionado}
+                  onChange={(e) => setRecebimentoSelecionado(e.target.value)}
+                >
+                  <option value="">Selecione a forma de recebimento</option>
+
+                  {formasRecebimento.map((forma) => (
+                    <option key={forma.id} value={forma.id}>
+                      {forma.descricao}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="mb-1">
