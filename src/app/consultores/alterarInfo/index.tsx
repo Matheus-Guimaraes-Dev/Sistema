@@ -10,6 +10,7 @@ import { PropsAlterar } from "../types";
 import { Label } from "@/app/formulario/components/componentes/label";
 import { limiteCpf, limiteCep, limiteWhatsapp, limiteTelefoneReserva, limiteRg } from "@/funcoes/limitacao";
 import { Select } from "@/app/clientes/componentes/select-cliente";
+import InputPorcentagem from "../cadastrar/formulario/InputPorcentagem";
 
 export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar ) {
 
@@ -36,6 +37,9 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   const [cidade, setCidade] = useState("");
   const [observacao, setObservacao] = useState("");
   const [porcentagem, setPorcentagem] = useState(0);
+  const [comissaoMensal, setComissacaoMensal] = useState("");
+  const [comissaoSemanal, setComissacaoSemanal] = useState("");
+  const [comissaoDiario, setComissacaoDiario] = useState("");
 
   const [mostrarModal, setMostrarModal] = useState(false);
 
@@ -67,7 +71,10 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       setEstado(informacoesConsultor.estado);
       setCidade(informacoesConsultor.cidade);
       setObservacao(informacoesConsultor.observacao);
-      setPorcentagem(informacoesConsultor.porcentagem)
+      setPorcentagem(informacoesConsultor.porcentagem);
+      setComissacaoMensal(informacoesConsultor.comissao_mensal?.toString() || "");
+      setComissacaoSemanal(informacoesConsultor.comissao_semanal?.toString() || "");
+      setComissacaoDiario(informacoesConsultor.comissao_diaria?.toString() || "");
     }
   }, [informacoesConsultor] );
 
@@ -95,6 +102,9 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       cidade: cidade,
       estado: estado,
       observacao: observacao,
+      comissao_mensal: comissaoMensal,
+      comissao_semanal: comissaoSemanal,
+      comissao_diaria: comissaoDiario,
     }
 
     setLoading(true);
@@ -383,6 +393,37 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
                 ))}
               </select>
             </div>
+
+            <div>
+              <Label> Comissão Mensal </Label>
+              <InputPorcentagem
+                label="Desconto"
+                value={comissaoMensal}
+                onChange={setComissacaoMensal}
+                name="desconto"
+              />
+            </div>
+      
+            <div>
+              <Label> Comissão Semanal </Label>
+              <InputPorcentagem
+                label="Desconto"
+                value={comissaoSemanal}
+                onChange={setComissacaoSemanal}
+                name="desconto"
+              />
+            </div>
+      
+            <div>
+              <Label> Comissão Diário </Label>
+              <InputPorcentagem
+                label="Desconto"
+                value={comissaoDiario}
+                onChange={setComissacaoDiario}
+                name="desconto"
+              />
+            </div>
+            
   
             <div>
               <Label> Observação </Label>

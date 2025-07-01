@@ -22,6 +22,9 @@ export interface infoConsultores {
   estado: string;
   observacao: string;
   porcentagem: number;
+  comissao_mensal: number;
+  comissao_semanal: number;
+  comissao_diaria: number;
 }
 
 export interface PropsAlterar {

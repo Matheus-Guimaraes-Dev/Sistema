@@ -8,18 +8,15 @@ import { formatarCPF, mostrarValor, limparValorMonetario } from "@/funcoes/forma
 import BuscarConsultor from "../BuscarConsultor";
 import { Label } from "@/app/formulario/components/componentes/label";
 import toast from "react-hot-toast";
-import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar } from "../types";
-import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
-
-interface Recebimentos {
-  id: number;
-  descricao: string;
-}
+import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar, Recebimentos} from "../types";
+import { limiteDataEmprestimo, limiteDataPagamento, limiteDataVencimento } from "@/funcoes/limitacao";
+import { useRouter } from "next/navigation";
 
 export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   const supabase = createClient();
 
+  const [loading, setLoading] = useState(false);
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteInfo | null>(null);
   const [consultorSelecionado, setConsultorSelecionado] = useState<ConsultorInfo | null>(null);
   const [tipo, setTipo] = useState<string | null>(null);
@@ -32,9 +29,12 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [carregado, setCarregado] = useState(false);
   const [jurosDoVencimento, setJurosDoVencimento] = useState<string>("");
   const [valorComJuros, setValorComJuros] = useState<string>("");
+  const [dataPagamento, setDataPagamento] = useState("");
 
   const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
   const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
+
+  const router = useRouter();
 
   const selecionarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -263,7 +263,80 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
     e.preventDefault();
 
-    console.log(recebimentoSelecionado);
+    if(!clienteSelecionado) return toast.error("Selecione um cliente");
+    if(!consultorSelecionado) return toast.error("Selecione um consultor");
+    if(!dataPagamento.trim()) return toast.error("Selecione uma data de pagamento");
+    if(!tipo) return toast.error("Selecione o tipo do lançamento");
+    if(!valorEmprestado) return toast.error("Valor emprestado não informado");
+    if(!valorRecebimento) return toast.error("Valor de Recebimento não informado");
+    if(!recebimentoSelecionado) return toast.error("Selecione uma forma de recebimento");
+
+    setLoading(true);
+
+    let status = "";
+    
+    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento);
+    const valorJurosVencimentoCorreto = limparValorMonetario(jurosDoVencimento);
+    const valorComJurosCorreto = limparValorMonetario(valorComJuros);
+    
+    let valorTotalRecebido = informacoesEmprestimo.valor_pago + valorComJurosCorreto;
+
+    if (isNaN(valorRecebimentoCorreto) || valorRecebimentoCorreto <= 0) {
+      return toast.error("Digite o valor do recebimento");
+    }
+
+    console.log(valorRecebimento);
+    console.log(valorRecebimentoCorreto);
+    console.log(limparValorMonetario(valorComJuros));
+    console.log(informacoesEmprestimo.valor_receber);
+
+    if(valorTotalRecebido < informacoesEmprestimo.valor_receber) {
+      status = "Pendente";
+    } else {
+      status = "Pago";
+    }
+
+    const { data: contasReceber, error: erroContasReceber } = await supabase  
+      .from("contas_receber")
+      .update({
+        id_cliente: clienteSelecionado.id,
+        id_consultor: consultorSelecionado.id,
+        tipo_lancamento: tipo,
+        cidade: clienteSelecionado.cidade,
+        estado: clienteSelecionado.estado,
+        valor_pago: valorTotalRecebido,
+        data_pagamento_total: dataPagamento,
+        id_forma_pagamento: recebimentoSelecionado,
+        descricao: observacoes,
+        juros_vencimento: valorJurosVencimentoCorreto,
+        status: status
+      })
+      .eq("id", informacoesEmprestimo.id)
+
+    const { data, error } = await supabase
+      .from("pagamentos_conta_receber")
+      .insert({
+        id_conta_receber: informacoesEmprestimo.id,
+        data_pagamento: dataPagamento,
+        valor_pago: valorComJurosCorreto,
+        forma_pagamento: recebimentoSelecionado,
+        observacao: observacoes,
+      })
+    
+
+    if(erroContasReceber || error) {
+      toast.error("Erro ao baixar empréstimo");
+      return;
+    }
+
+    if(!contasReceber || !data) {
+      setLoading(false);
+      toast.success("Empréstimo baixado com sucesso");
+      router.push("/lancamentos");
+    }
+
+    setLoading(false);
+
 
   }
 
@@ -535,32 +608,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
               <div className="mb-3">
 
-                <Label> Data do Empréstimo </Label>
-
-                <input 
-                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
-                  type="date"
-                  value={dataEmprestimo}
-                  onChange={ (e) => limiteDataEmprestimo(e, setDataEmprestimo)}
-                />
-                
-              </div>
-
-              <div className="mb-3">
-
-                <Label> Data do Vencimento </Label>
-
-                <input 
-                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
-                  type="date"
-                  value={dataVencimento}
-                  onChange={ (e) => limiteDataVencimento(e, setDataVencimento)}
-                />
-                
-              </div>
-
-              <div className="mb-3">
-
                 <Label> Buscar Consultor </Label>
 
                 <BuscarConsultor
@@ -578,6 +625,19 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                   </div>
                 )}
 
+              </div>
+
+              <div className="mb-3">
+
+                <Label> Data do Pagamento </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataPagamento}
+                  onChange={ (e) => limiteDataPagamento(e, setDataPagamento)}
+                />
+                
               </div>
 
               <div>
@@ -703,6 +763,12 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
               <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
         </div>
       )}
 

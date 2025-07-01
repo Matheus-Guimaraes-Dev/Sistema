@@ -92,3 +92,8 @@ export interface Emprestimo {
   clientes: Cliente;
   consultores: Consultor;
 }
+
+export interface Recebimentos {
+  id: number;
+  descricao: string;
+}
