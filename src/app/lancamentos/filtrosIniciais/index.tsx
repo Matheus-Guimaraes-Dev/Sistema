@@ -5,7 +5,7 @@ import { IoIosArrowDroprightCircle } from "react-icons/io";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
-import { limiteCpf, limiteId, limiteIdDocumento } from "@/funcoes/limitacao";
+import { limiteCpf, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { FaArrowDown } from "react-icons/fa";
 import { FaArrowUp } from "react-icons/fa";
@@ -17,9 +17,28 @@ import { mostrarValor } from "@/funcoes/formatacao";
 import toast from "react-hot-toast";
 import { limparValorMonetario } from "@/funcoes/formatacao";
 import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
-import { Contas, Cliente, Consultor } from "../types";
+import { Contas, Cliente, Consultor, ConsultorBusca } from "../types";
 import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
+
+interface ContasPagas {
+  id: number,
+  valor_pago: number,
+  data_pagamento: string,
+  formas_pagamento: {
+    descricao: string,
+  },
+  contas_receber: {
+    clientes: {
+      nome_completo: string,
+    },
+    consultores: {
+      nome_completo: string,
+    },
+    id: number,
+    tipo_lancamento: string
+  }
+}
 
 export function FiltrosLancamentos() {
 
@@ -28,7 +47,7 @@ export function FiltrosLancamentos() {
   const [loading, setLoading] = useState(false);
   
   const [nome, setNome] = useState("");
-  const [id, setId] = useState("");
+  const [idCliente, setIdCliente] = useState("");
   const [idDocumento, setIdDocumento] = useState("");
   const [cpf, setCpf] = useState("");
   const [status, setStatus] = useState("Pendente");
@@ -48,6 +67,13 @@ export function FiltrosLancamentos() {
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [consultorSelecionado, setConsultorSelecionado] = useState<Consultor | null>(null);
   const [tipo, setTipo] = useState<string | null>(null);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+
+  const [consultorFiltro, setConsultorFiltro] = useState("");
+  const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
+  const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
 
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -70,12 +96,17 @@ export function FiltrosLancamentos() {
   const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
   useEffect(() => {
-    buscarContas();
+    if(status === "Pendente") {
+       buscarContas();
+    } else {
+      buscarContasPagas();
+    }
     buscarJuros();
-  }, [paginaAtual])
+  }, [paginaAtual, status])
 
   useEffect(() => {
     calcularValorReceber();
+    consultoresBuscando();
   }, [tipo, valorEmprestado, juros]);
 
   const router = useRouter();
@@ -84,7 +115,7 @@ export function FiltrosLancamentos() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
   
-  const itensPorPagina = 10
+  const itensPorPagina = 5
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   // ========== BUSCAR E CALCULAR JUROS ==========
@@ -103,6 +134,8 @@ export function FiltrosLancamentos() {
     }
 
   }
+
+  // ========== VALOR A RECEBER ==========
 
   const calcularValorReceber = () => {
     
@@ -126,7 +159,7 @@ export function FiltrosLancamentos() {
     setValorRecebimento(valorReceber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
   };
 
-  // ========== BUSCAR AS CONSTAS ==========
+  // ========== BUSCAR AS CONTAS PENDENTES ==========
 
   const buscarContas = async () => {
 
@@ -147,9 +180,9 @@ export function FiltrosLancamentos() {
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
 
-      if (id.trim() !== "") {
-        query = query.eq("id", Number(id));
-      }
+      // if (id.trim() !== "") {
+      //   query = query.eq("id", Number(id));
+      // }
 
       if (status !== "") {
         query = query.eq("status", status);
@@ -161,6 +194,14 @@ export function FiltrosLancamentos() {
 
       if (cidade !== "") {
         query = query.eq("cidade", cidade);
+      }
+
+      if (dataInicio.trim() !== "") {
+        query = query.gte("data_pagamento", dataInicio);
+      }
+
+      if (dataFim.trim() !== "") {
+        query = query.lte("data_pagamento", dataFim);
       }
 
       if (data === "asc" || data === "desc") {
@@ -202,6 +243,239 @@ export function FiltrosLancamentos() {
       }
   };
 
+  // ========== BUSCAR AS CONTAS PAGAS ==========
+
+  async function buscarContasPagas() {
+
+    const inicio = (paginaAtual - 1) * itensPorPagina;
+    const fim = inicio + itensPorPagina -1;
+
+    try {
+
+      let query = supabase
+        .from("pagamentos_conta_receber")
+        .select(`
+        id,
+        valor_pago,
+        data_pagamento,
+        formas_pagamento (
+          descricao
+        ),
+        contas_receber (
+          id,
+          tipo_lancamento,
+          clientes (
+            nome_completo
+          ),
+          consultores (
+            nome_completo
+          )
+        )
+      `, { count: "exact" });
+
+      if (idCliente.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("id_cliente", Number(idCliente));
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (consultorFiltro.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("id_consultor", Number(consultorFiltro));
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (cpf.trim() !== "") {
+        const { data: clienteData, error: erroCliente } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("cpf", `%${cpf.trim()}%`)
+
+        if (erroCliente || !clienteData?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idClienteEncontrado = clienteData[0].id;
+
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("id_cliente", idClienteEncontrado);
+
+        if (erroContas) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (nome.trim() !== "") {
+
+        const { data: clientesEncontrados, error: erroClientes } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("nome_completo", `%${nome.trim()}%`);
+
+        if (erroClientes || !clientesEncontrados?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsClientes = clientesEncontrados.map((item) => item.id);
+
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .in("id_cliente", idsClientes);
+
+        if (erroContas || !contasRelacionadas?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsContas = contasRelacionadas.map((item) => item.id);
+
+        query = query.in("id_conta_receber", idsContas);
+      }
+
+      if (idDocumento.trim() !== "") {
+        query = query.eq("id_conta_receber", Number(idDocumento));
+      }
+
+      if (ordenarValor === "asc" || ordenarValor === "desc") {
+        query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
+      }
+
+      if (estado.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("estado", estado);
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (cidade.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("cidade", cidade);
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (dataInicio.trim() !== "") {
+        query = query.gte("data_pagamento", dataInicio);
+      }
+
+      if (dataFim.trim() !== "") {
+        query = query.lte("data_pagamento", dataFim);
+      }
+
+      query = query.range(inicio, fim);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        toast.error("Erro ao buscar empréstimos pagos");
+        return;
+      } else {
+        const dadosTratados: ContasPagas[] = data.map((item: any) => ({
+          ...item,
+          contas_receber: {
+            ...item.contas_receber,
+            clientes: item.contas_receber?.clientes,
+            consultores: item.contas_receber?.consultores,
+          },
+          formas_pagamento: item.formas_pagamento,
+        }));
+
+        setContasPagas(dadosTratados);
+
+        const total = Math.ceil((count ?? 0) / itensPorPagina);
+        setTotalPaginas(total);
+
+      }
+
+    } catch (erro) {
+      console.error("Erro geral:", erro);
+    }
+  }
+
+  // =========================================
+
   function detalhes(id: number) {
     router.push(`/lancamentos/${id}`);
   }
@@ -209,8 +483,19 @@ export function FiltrosLancamentos() {
   const aplicarFiltro = (e: React.FormEvent) => {
     e.preventDefault();
     setPaginaAtual(1);
-    buscarContas();
+    if(status === "Pendente") {
+      buscarContas();
+    } else {
+      console.log("teste");
+      console.log("Id do documento", idDocumento)
+      console.log("Id cliente", idCliente)
+      buscarContasPagas();
+    }
   };
+
+  // =========================================
+
+  // ========== CALCULAR COMISSÃO ==========
 
   const calcularComissao = () => {
     if (!consultorSelecionado || !tipo || !valorEmprestado) {
@@ -231,6 +516,8 @@ export function FiltrosLancamentos() {
 
     return Number((valor * (percentual / 100)).toFixed(2));
   };
+
+  // ========== CADASTRAR NOVO EMPRÉSTIMO ==========
 
   async function enviarLancamento(e: React.FormEvent) {
 
@@ -270,7 +557,8 @@ export function FiltrosLancamentos() {
 
      if (erroEmprestimo || !contaInserida) {
       setLoading(false);
-      return toast.error("Erro ao salvar empréstimo");
+      toast.error("Erro ao salvar empréstimo");
+      return
     }
 
     const { error: erroComissao } = await supabase
@@ -287,7 +575,9 @@ export function FiltrosLancamentos() {
     }
 
     toast.success("Empréstimo salvo com sucesso");
-    buscarContas();
+    if(status === "Pendente") {
+      buscarContas();
+    }
     setAbrirModalCadastrar(false);
     setPorcentagem("");
     setDataEmprestimo("");
@@ -300,6 +590,8 @@ export function FiltrosLancamentos() {
     setLoading(false);
 
   } 
+
+  // ========== APLICAR A COR POR DATA VENCIMENTO ==========
 
   const corPorData = (dataVencimento: string) => {
     const hoje = new Date();
@@ -332,6 +624,27 @@ export function FiltrosLancamentos() {
     return "bg-green-300";
   };
 
+  // ========== BUSCAR CONSULTORES ==========
+
+  async function consultoresBuscando() {
+
+    const { data, error } = await supabase  
+      .from("consultores")
+      .select("id, nome_completo")
+      .eq("status", "Ativo")
+
+    if(error) {
+      toast.error("Erro ao buscar consultores");
+      return
+    }
+
+    if(data) {
+      setConsultoresBusca(data);
+    }
+
+  }
+
+
   return(
     <div className="flex-1">
 
@@ -358,8 +671,8 @@ export function FiltrosLancamentos() {
                 type="text"
                 placeholder="Buscar por ID do cliente"
                 inputMode="numeric"
-                value={id}
-                onChange={ (e) => limiteId(e, setId)}
+                value={idCliente}
+                onChange={ (e) => limiteIdCliente(e, setIdCliente)}
                 maxLength={7}
               />
               <InputCliente
@@ -374,7 +687,7 @@ export function FiltrosLancamentos() {
                 type="text"
                 placeholder="Buscar por ID do documento"
                 inputMode="numeric"
-                value={id}
+                value={idDocumento}
                 onChange={ (e) => limiteIdDocumento(e, setIdDocumento)}
                 maxLength={7}
               />
@@ -388,35 +701,19 @@ export function FiltrosLancamentos() {
                 <option value="Pendente">Pendente</option>
               </select>
 
-              <select 
-                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-                value={status}
-                onChange={ (e) => setStatus(e.target.value)}
-              >
-                <option value="">Consultor</option>
-                <option value="">Arthur</option>
-                <option value="">Bia</option>
-              </select>
+                <select 
+                  className="w-full h-10 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                  value={consultorFiltro}
+                  onChange={(e) => setConsultorFiltro(e.target.value)}
+                >
+                  <option value="">Consultor</option>
 
-              <select 
-                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-              >
-                <option value="">Ordenar por data</option>
-                <option value="asc">Mais antigos</option>
-                <option value="desc">Mais recentes</option>
-              </select>
-
-              <select 
-                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-                value={ordenarValor}
-                onChange={(e) => setOrdenarValor(e.target.value)}
-              >
-                <option value="">Ordenar por Valor</option>
-                <option value="asc">Maior para Menor</option>
-                <option value="desc">Menor para Maior</option>
-              </select>
+                  {consultoresBusca.map((info) => (
+                    <option key={info.id} value={info.id}>
+                      {info.nome_completo}
+                    </option>
+                  ))}
+                </select>
 
               <select
                 value={estado}
@@ -442,6 +739,28 @@ export function FiltrosLancamentos() {
                   <option key={cidade} value={cidade}>{cidade}</option>
                 ))}
               </select>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  
+                  <input
+                    type="date"
+                    value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)}
+                    className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                  />
+                </div>
+
+                <div>
+                 
+                  <input
+                    type="date"
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
+                    className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                  />
+                </div>
+              </div>
 
               <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
 
@@ -501,6 +820,46 @@ export function FiltrosLancamentos() {
                   currency: 'BRL',
                 })} </td>
                     <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info.data_vencimento)} </td>
+                    <td className="px-4 py-2 flex justify-center">
+                      <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ========== TABELA DE PAGOS ========== */}
+
+      {status === "Pago" && (
+        <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
+          <table className="min-w-full text-sm text-left border-collapse">
+            <thead className="bg-blue-700 text-white">
+              <tr>
+                <th className="hidden sm:table-cell px-2 py-3 w-10">ID</th>
+                <th className="px-2 py-3 w-50">Cliente</th>
+                <th className="px-2 py-3 w-50">Consultor</th>
+                <th className="px-2 py-3 w-25">Tipo</th>
+                <th className="px-2 py-3 w-45">Valor Pago</th>
+                <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Pagamento</th>
+                <th className="px-2 py-3 text-center w-20"> Detalhes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {contasPagas && (
+                contasPagas.map( (info) => (
+                  <tr key={info.id}>
+                    <td className="hidden sm:table-cell px-2 py-2"> {info.contas_receber?.id}.{info.id} </td>
+                    <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.contas_receber?.clientes?.nome_completo || "Sem cliente"} </td>
+                    <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info?.contas_receber?.consultores?.nome_completo || "Sem consultor"} </td>
+                    <td className="px-2 py-2"> {info?.contas_receber?.tipo_lancamento} </td>
+                    <td className="px-2 py-2"> {Number(info?.valor_pago).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })} </td>
+                    <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info?.data_pagamento)} </td>
                     <td className="px-4 py-2 flex justify-center">
                       <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                     </td>

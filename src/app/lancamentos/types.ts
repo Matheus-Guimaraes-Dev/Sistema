@@ -97,3 +97,8 @@ export interface Recebimentos {
   id: number;
   descricao: string;
 }
+
+export interface ConsultorBusca {
+  id: number;
+  nome_completo: string;
+}

@@ -306,7 +306,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
         estado: clienteSelecionado.estado,
         valor_pago: valorTotalRecebido,
         data_pagamento_total: dataPagamento,
-        id_forma_pagamento: recebimentoSelecionado,
         descricao: observacoes,
         juros_vencimento: valorJurosVencimentoCorreto,
         status: status
@@ -319,7 +318,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
         id_conta_receber: informacoesEmprestimo.id,
         data_pagamento: dataPagamento,
         valor_pago: valorComJurosCorreto,
-        forma_pagamento: recebimentoSelecionado,
+        id_forma_pagamento: recebimentoSelecionado,
         observacao: observacoes,
       })
     
