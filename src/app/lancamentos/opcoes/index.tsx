@@ -99,7 +99,9 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     if (valorRecebimento && jurosDoVencimento) {
       const valorBase = limparValorMonetario(valorRecebimento);
       const valorJuros = limparValorMonetario(jurosDoVencimento);
-      const soma = valorBase + valorJuros;
+      const valoresPagos = informacoesEmprestimo.valor_pago;
+      console.log(valoresPagos);
+      const soma = (valorBase + valorJuros) - valoresPagos;
 
       setValorComJuros(soma.toLocaleString("pt-BR", {
         style: "currency",

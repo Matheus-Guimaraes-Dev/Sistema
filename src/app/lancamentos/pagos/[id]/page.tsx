@@ -29,6 +29,7 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
           valor_pago,
           observacao,
           data_pagamento,
+          juros_pago,
           contas_receber (
             id,
             tipo_lancamento,
@@ -107,6 +108,7 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
             <p><strong>Data de Vencimento:</strong> {formatarData(emprestimo.contas_receber.data_vencimento)} </p>
             <p><strong>Status da Comissão:</strong> {emprestimo.contas_receber.status_comissao} </p>
             <p><strong>Descrição:</strong> {emprestimo.observacao} </p>
+            <p><strong>Forma de Pagamento:</strong> {emprestimo.formas_pagamento.descricao} </p>
           </div>
 
         </section>
@@ -131,13 +133,11 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
               <strong>Valor da Comissão:</strong> {formatarDinheiro(emprestimo.contas_receber.comissao)}
             </p>
             <p>
-              <strong>Juros Pago:</strong> ---
+              <strong>Juros Pago: </strong> {formatarDinheiro(emprestimo.juros_pago) || "R$ 0,00"}
             </p>
           </div>
 
         </section>
-
-
       </div>
     </div>
     )

@@ -108,6 +108,7 @@ export interface EmprestimoPago {
   valor_pago: number;
   observacao: string;
   data_pagamento: string;
+  juros_pago: number;
   contas_receber: {
     id: number;
     cidade: string;
