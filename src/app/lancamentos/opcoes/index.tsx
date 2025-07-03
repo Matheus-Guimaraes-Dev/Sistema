@@ -307,7 +307,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
         valor_pago: valorTotalRecebido,
         data_pagamento_total: dataPagamento,
         descricao: observacoes,
-        juros_vencimento: valorJurosVencimentoCorreto,
         status: status
       })
       .eq("id", informacoesEmprestimo.id)
@@ -320,6 +319,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
         valor_pago: valorComJurosCorreto,
         id_forma_pagamento: recebimentoSelecionado,
         observacao: observacoes,
+        juros_pago: valorJurosVencimentoCorreto,
       })
     
 
@@ -335,7 +335,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     }
 
     setLoading(false);
-
 
   }
 

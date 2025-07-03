@@ -50,7 +50,7 @@ export function FiltrosLancamentos() {
   const [idCliente, setIdCliente] = useState("");
   const [idDocumento, setIdDocumento] = useState("");
   const [cpf, setCpf] = useState("");
-  const [status, setStatus] = useState("Pendente");
+  const [status, setStatus] = useState("");
   const [data, setData] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -69,11 +69,14 @@ export function FiltrosLancamentos() {
   const [tipo, setTipo] = useState<string | null>(null);
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [modalidade, setModalidade] = useState("");
 
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
   const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
+  const [filtrosCarregados, setFiltrosCarregados] = useState(false);
+
 
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -89,6 +92,51 @@ export function FiltrosLancamentos() {
     }
   }, []);
 
+  useEffect(() => {
+    const hoje = new Date();
+
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+    const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+    const formatarData = (data: Date) => {
+      return data.toISOString().split("T")[0];
+    };
+
+    setDataInicio(formatarData(primeiroDia));
+    setDataFim(formatarData(ultimoDia));
+  }, []);
+
+  useEffect(() => {
+    const statusAtual = localStorage.getItem("status");
+    if (statusAtual) {
+      setStatus(statusAtual);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status) {
+      localStorage.setItem("status", status);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const statusSalvo = localStorage.getItem("filtro_status");
+    const dataInicioSalva = localStorage.getItem("filtro_data_inicio");
+    const dataFimSalva = localStorage.getItem("filtro_data_fim");
+    
+    if (statusSalvo) setStatus(statusSalvo);
+    if (dataInicioSalva) setDataInicio(dataInicioSalva);
+    if (dataFimSalva) setDataFim(dataFimSalva);
+
+    // Espera 1 ciclo para garantir atualização
+    setTimeout(() => {
+      setFiltrosCarregados(true);
+    }, 0);
+  }, []);
+
+
+
   const [porcentagem, setPorcentagem] = useState("");
 
   const [paginaAtual, setPaginaAtual] = useState(1);
@@ -99,10 +147,12 @@ export function FiltrosLancamentos() {
     if(status === "Pendente") {
        buscarContas();
     } else {
-      buscarContasPagas();
+      if (filtrosCarregados) {
+        buscarContasPagas();
+      }
     }
     buscarJuros();
-  }, [paginaAtual, status])
+  }, [paginaAtual, status, filtrosCarregados])
 
   useEffect(() => {
     calcularValorReceber();
@@ -194,14 +244,6 @@ export function FiltrosLancamentos() {
 
       if (cidade !== "") {
         query = query.eq("cidade", cidade);
-      }
-
-      if (dataInicio.trim() !== "") {
-        query = query.gte("data_pagamento", dataInicio);
-      }
-
-      if (dataFim.trim() !== "") {
-        query = query.lte("data_pagamento", dataFim);
       }
 
       if (data === "asc" || data === "desc") {
@@ -384,6 +426,28 @@ export function FiltrosLancamentos() {
         query = query.in("id_conta_receber", idsContas);
       }
 
+      if (modalidade.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("tipo_lancamento", modalidade);
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
       if (idDocumento.trim() !== "") {
         query = query.eq("id_conta_receber", Number(idDocumento));
       }
@@ -480,8 +544,21 @@ export function FiltrosLancamentos() {
     router.push(`/lancamentos/${id}`);
   }
 
+  function detalhesPagos(id: number) {
+    router.push(`/lancamentos/pagos/${id}`);
+  }
+
   const aplicarFiltro = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+
+    if (inicio.getTime() > fim.getTime()) {
+      toast.error("A data inicial não pode ser maior que a data final.");
+      return;
+    } 
+
     setPaginaAtual(1);
     if(status === "Pendente") {
       buscarContas();
@@ -701,6 +778,17 @@ export function FiltrosLancamentos() {
                 <option value="Pendente">Pendente</option>
               </select>
 
+              <select 
+                className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={modalidade}
+                onChange={ (e) => setModalidade(e.target.value)}
+              >
+                <option value=""> Modalidade </option>
+                <option value="Mensal">Mensal</option>
+                <option value="Semanal">Semanal</option>
+                <option value="Diario">Diário</option>
+              </select>
+
                 <select 
                   className="w-full h-10 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
                   value={consultorFiltro}
@@ -740,11 +828,11 @@ export function FiltrosLancamentos() {
                 ))}
               </select>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  
                   <input
                     type="date"
+                    placeholder="Teste"
                     value={dataInicio}
                     onChange={(e) => setDataInicio(e.target.value)}
                     className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
@@ -752,7 +840,6 @@ export function FiltrosLancamentos() {
                 </div>
 
                 <div>
-                 
                   <input
                     type="date"
                     value={dataFim}
@@ -861,7 +948,7 @@ export function FiltrosLancamentos() {
                 })} </td>
                     <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info?.data_pagamento)} </td>
                     <td className="px-4 py-2 flex justify-center">
-                      <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                      <button onClick={() => detalhesPagos(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                     </td>
                   </tr>
                 ))

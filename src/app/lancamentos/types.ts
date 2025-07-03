@@ -102,3 +102,36 @@ export interface ConsultorBusca {
   id: number;
   nome_completo: string;
 }
+
+export interface EmprestimoPago {
+  id: number;
+  valor_pago: number;
+  observacao: string;
+  data_pagamento: string;
+  contas_receber: {
+    id: number;
+    cidade: string;
+    estado: string;
+    clientes: {
+      id: number;
+      cpf: string;
+      nome_completo: string;
+    }
+    consultores: {
+      id: number;
+      nome_completo: string;
+    }
+    valor_receber: number;
+    status: string;
+    valor_emprestado: number;
+    tipo_lancamento: string;
+    data_emprestimo: string;
+    data_vencimento: string;
+    status_comissao: string;
+    numero_promissoria: number;
+    comissao: number;
+  }
+  formas_pagamento: {
+    descricao: string;
+  }
+}
