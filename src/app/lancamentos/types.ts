@@ -127,6 +127,7 @@ export interface EmprestimoPago {
     valor_emprestado: number;
     tipo_lancamento: string;
     data_emprestimo: string;
+    valor_pago: number;
     data_vencimento: string;
     status_comissao: string;
     numero_promissoria: number;
@@ -136,3 +137,7 @@ export interface EmprestimoPago {
     descricao: string;
   }
 }
+
+export type Props = {
+  informacoesPago: EmprestimoPago;
+};

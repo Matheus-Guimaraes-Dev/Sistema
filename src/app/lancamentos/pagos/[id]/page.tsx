@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { EmprestimoPago } from "../../types";
 import Link from "next/link";
 import { formatarCPF, formatarData, formatarDinheiro } from "@/funcoes/formatacao";
+import OpcoesPagos from "../opcoesPagos";
 
 
 export default async function DetalhesPagos( { params }: { params: { id: string } } ) {
@@ -37,6 +38,7 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
             estado,
             valor_emprestado,
             valor_receber,
+            valor_pago,
             data_emprestimo,
             data_vencimento,
             status,
@@ -138,6 +140,13 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
           </div>
 
         </section>
+
+        <section>
+
+          <OpcoesPagos informacoesPago={emprestimo} />
+
+        </section>
+
       </div>
     </div>
     )

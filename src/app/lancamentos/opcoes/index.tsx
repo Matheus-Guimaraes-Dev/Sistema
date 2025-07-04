@@ -200,27 +200,37 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   async function deletarEmprestimo() {
 
-    const { error: erroEmprestimo } = await supabase
-      .from("contas_receber")
-      .delete()
-      .eq("id", informacoesEmprestimo.id)
+    const { data: ContasPagas, error: ErroBuscar } = await supabase
+      .from("pagamentos_conta_receber")
+      .select("id_conta_receber")
+      .eq("id_conta_receber", informacoesEmprestimo.id)
 
-    if(erroEmprestimo) {
-      toast.error("Erro ao deletar emprestimo");
-      return false;
-    }
+    if(ContasPagas && ContasPagas.length >= 1) {
+      toast.error("Existem empréstimos já quitados. Estorne os lançamentos correspondentes para prosseguir com a exclusão")
+    } else {
+      const { error: erroEmprestimo } = await supabase
+        .from("contas_receber")
+        .delete()
+        .eq("id", informacoesEmprestimo.id)
 
-    const { error: erroComissao } = await supabase
-      .from("comissoes_consultores")
-      .delete()
-      .eq("id_conta_receber", informacoesEmprestimo.id);
-      
-    if(erroComissao) {
-      toast.error("Erro ao deletar Comissão");
-      return false;
+      if(erroEmprestimo) {
+        toast.error("Erro ao deletar emprestimo");
+        return false;
+      }
+
+      const { error: erroComissao } = await supabase
+        .from("comissoes_consultores")
+        .delete()
+        .eq("id_conta_receber", informacoesEmprestimo.id);
+        
+      if(erroComissao) {
+        toast.error("Erro ao deletar Comissão");
+        return false;
+      }
+
+      return true;
+
     }
-      
-    return true;
 
   }
 

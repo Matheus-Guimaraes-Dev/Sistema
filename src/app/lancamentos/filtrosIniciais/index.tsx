@@ -124,7 +124,7 @@ export function FiltrosLancamentos() {
     const statusSalvo = localStorage.getItem("filtro_status");
     const dataInicioSalva = localStorage.getItem("filtro_data_inicio");
     const dataFimSalva = localStorage.getItem("filtro_data_fim");
-    
+
     if (statusSalvo) setStatus(statusSalvo);
     if (dataInicioSalva) setDataInicio(dataInicioSalva);
     if (dataFimSalva) setDataFim(dataFimSalva);
@@ -135,6 +135,17 @@ export function FiltrosLancamentos() {
     }, 0);
   }, []);
 
+  const handleDataInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    setDataInicio(valor);
+    localStorage.setItem("filtro_data_inicio", valor);
+  };
+
+  const handleDataFimChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    setDataFim(valor);
+    localStorage.setItem("filtro_data_fim", valor);
+  };
 
 
   const [porcentagem, setPorcentagem] = useState("");
@@ -226,29 +237,110 @@ export function FiltrosLancamentos() {
           valor_receber,
           data_vencimento,
           data_cadastro,
-          clientes:clientes!id_cliente ( id, nome_completo ),
+          clientes:clientes!id_cliente ( id, nome_completo, cpf ),
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
 
-      // if (id.trim() !== "") {
-      //   query = query.eq("id", Number(id));
-      // }
-
-      if (status !== "") {
-        query = query.eq("status", status);
+      if(idCliente.trim() !== "") {
+        query = query.eq("id_cliente", Number(idCliente))
       }
 
-      if (estado !== "") {
+      if (consultorFiltro.trim() !== "") {
+        query = query.eq("id_consultor", Number(consultorFiltro));
+      }
+
+      if (cpf.trim() !== "") {
+
+        const { data: clientesEncontrados, error: erroClientes } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("cpf", `%${cpf.trim()}%`);
+
+        if (erroClientes || !clientesEncontrados?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsClientes = clientesEncontrados.map((item) => item.id);
+
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .in("id_cliente", idsClientes);
+
+        if (erroContas || !contasRelacionadas?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsContas = contasRelacionadas.map((item) => item.id);
+
+        query = query.in("id_cliente", idsContas);
+      }
+
+      if (nome.trim() !== "") {
+
+        const { data: clientesEncontrados, error: erroClientes } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("nome_completo", `%${nome.trim()}%`);
+
+        if (erroClientes || !clientesEncontrados?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsClientes = clientesEncontrados.map((item) => item.id);
+
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .in("id_cliente", idsClientes);
+
+        if (erroContas || !contasRelacionadas?.length) {
+          setContasPagas([]);
+          setTotalPaginas(0);
+          return;
+        }
+
+        const idsContas = contasRelacionadas.map((item) => item.id);
+
+        query = query.in("id_cliente", idsContas);
+      }
+
+      if(modalidade.trim() !== "") {
+        query = query.eq("tipo_lancamento", modalidade);
+      }
+
+      if(idDocumento.trim() !== "") {
+        query = query.eq("id", Number(idDocumento));
+      }
+
+      if (ordenarValor === "asc" || ordenarValor === "desc") {
+        query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
+      }
+
+      if(estado.trim() !== "") {
         query = query.eq("estado", estado);
       }
 
-      if (cidade !== "") {
+      if(cidade.trim() !== "") {
         query = query.eq("cidade", cidade);
       }
 
-      if (data === "asc" || data === "desc") {
-        query = query.order("data_cadastro", { ascending: data === "asc" });
+      if (dataInicio.trim() !== "") {
+        query = query.gte("data_emprestimo", dataInicio);
       }
+
+      if (dataFim.trim() !== "") {
+        query = query.lte("data_emprestimo", dataFim);
+      }
+
+
+      // ----------------------------- 
 
       query = query.range(inicio, fim);
 
@@ -563,9 +655,6 @@ export function FiltrosLancamentos() {
     if(status === "Pendente") {
       buscarContas();
     } else {
-      console.log("teste");
-      console.log("Id do documento", idDocumento)
-      console.log("Id cliente", idCliente)
       buscarContasPagas();
     }
   };
@@ -834,7 +923,7 @@ export function FiltrosLancamentos() {
                     type="date"
                     placeholder="Teste"
                     value={dataInicio}
-                    onChange={(e) => setDataInicio(e.target.value)}
+                    onChange={handleDataInicioChange}
                     className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
                   />
                 </div>
@@ -843,7 +932,7 @@ export function FiltrosLancamentos() {
                   <input
                     type="date"
                     value={dataFim}
-                    onChange={(e) => setDataFim(e.target.value)}
+                    onChange={handleDataFimChange}
                     className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
                   />
                 </div>
