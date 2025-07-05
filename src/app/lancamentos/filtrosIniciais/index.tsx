@@ -129,7 +129,6 @@ export function FiltrosLancamentos() {
     if (dataInicioSalva) setDataInicio(dataInicioSalva);
     if (dataFimSalva) setDataFim(dataFimSalva);
 
-    // Espera 1 ciclo para garantir atualização
     setTimeout(() => {
       setFiltrosCarregados(true);
     }, 0);
@@ -342,9 +341,19 @@ export function FiltrosLancamentos() {
 
       // ----------------------------- 
 
-      query = query.range(inicio, fim);
+      const { count } = await query.range(0, 0);
+      const total = count ?? 0;
 
-      const { data: resultado, error, count } = await query;
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina - 1;
+
+      if (inicio >= total && total > 0) {
+        setPaginaAtual(1);
+        return;
+      }
+
+      query = query.range(inicio, fim);
+      const { data: resultado, error } = await query;
 
       if (error) {
         setErro("Erro ao buscar empréstimos.");
@@ -600,9 +609,19 @@ export function FiltrosLancamentos() {
         query = query.lte("data_pagamento", dataFim);
       }
 
-      query = query.range(inicio, fim);
+      const { count } = await query.range(0, 0);
+      const total = count ?? 0;
 
-      const { data, error, count } = await query;
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina - 1;
+
+      if (inicio >= total && total > 0) {
+        setPaginaAtual(1);
+        return;
+      }
+
+      query = query.range(inicio, fim);
+      const { data, error } = await query;
 
       if (error) {
         toast.error("Erro ao buscar empréstimos pagos");

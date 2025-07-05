@@ -57,9 +57,19 @@ export default function FiltrosConsultores() {
         query = query.eq("status", status);
       }
 
-      query = query.range(inicio, fim);
+      const { count } = await query.range(0, 0);
+      const total = count ?? 0;
 
-      const { data: resultado, error, count } = await query;
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina - 1;
+
+      if (inicio >= total && total > 0) {
+        setPaginaAtual(1);
+        return;
+      }
+
+      query = query.range(inicio, fim);
+      const { data: resultado, error } = await query;
 
       if (error) {
         setErro("Erro ao buscar clientes.");
