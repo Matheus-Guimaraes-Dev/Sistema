@@ -121,11 +121,9 @@ export function FiltrosLancamentos() {
   }, [status]);
 
   useEffect(() => {
-    const statusSalvo = localStorage.getItem("filtro_status");
     const dataInicioSalva = localStorage.getItem("filtro_data_inicio");
     const dataFimSalva = localStorage.getItem("filtro_data_fim");
 
-    if (statusSalvo) setStatus(statusSalvo);
     if (dataInicioSalva) setDataInicio(dataInicioSalva);
     if (dataFimSalva) setDataFim(dataFimSalva);
 

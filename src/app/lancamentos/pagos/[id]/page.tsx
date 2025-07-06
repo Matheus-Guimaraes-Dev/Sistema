@@ -10,16 +10,18 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
 
   const supabase = await createClient();
 
-    const { data, error } = await supabase.auth.getUser()
-    if (error || !data?.user) {
-      redirect('/auth/login')
-    }
+  const { data, error } = await supabase.auth.getUser();
 
-    const { id } = await params;
-    const idConvertido = parseInt(id);
-    if (isNaN(idConvertido)) {
-      redirect("/lancamentos");
-    }
+  if (error || !data?.user) {
+    redirect('/auth/login')
+  }
+
+  const { id } = await params;
+  const idConvertido = parseInt(id);
+  
+  if (isNaN(idConvertido)) {
+    redirect("/lancamentos");
+  }
 
     async function buscarEmprestimoPago(id: number): Promise<EmprestimoPago | null> {
 
@@ -75,8 +77,6 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
     if(!emprestimo) {
       redirect("/lancamentos");
     }
-
-    console.log(emprestimo);
 
     return (
     <div className="bg-[#002956] min-h-screen">

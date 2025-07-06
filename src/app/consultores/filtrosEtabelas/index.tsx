@@ -29,17 +29,18 @@ export default function FiltrosETabelas() {
 
   const supabase = createClient();
 
-  const [nome, setNome] = useState("");
   const [id, setId] = useState("");
-  const [cpf, setCpf] = useState("");
   const [status, setStatus] = useState("");
-  const [data, setData] = useState("");
   const [modalidade, setModalidade] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
 
   const [comissoes, setComissoes] = useState<Comissoes[]>([]);
 
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
+  const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
   const router = useRouter(); 
 
@@ -47,15 +48,56 @@ export default function FiltrosETabelas() {
   const itensPorPagina = 5;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
+  const handleDataInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    setDataInicio(valor);
+    localStorage.setItem("filtro_data_inicio_comissoes", valor);
+  };
+
+  const handleDataFimChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    setDataFim(valor);
+    localStorage.setItem("filtro_data_fim_comissoes", valor);
+  };
+
   useEffect( () => {
 
-    buscarComissoes();
+    if(filtrosCarregados) {
+      buscarComissoes();
+    }
 
-  }, [paginaAtual])
+  }, [paginaAtual, filtrosCarregados])
 
   useEffect( () => {
     consultoresBuscando();
   }, [])
+
+  useEffect(() => {
+    const statusSalvo = localStorage.getItem("filtro_status_comissoes");
+    const dataInicioSalva = localStorage.getItem("filtro_data_inicio_comissoes");
+    const dataFimSalva = localStorage.getItem("filtro_data_fim_comissoes");
+
+    if (statusSalvo) setStatus(statusSalvo);
+    if (dataInicioSalva) setDataInicio(dataInicioSalva);
+    if (dataFimSalva) setDataFim(dataFimSalva);
+
+    setTimeout(() => {
+      setFiltrosCarregados(true);
+    }, 0);
+  }, []);
+
+  useEffect(() => {
+    const statusAtual = localStorage.getItem("status_comissoes");
+    if (statusAtual) {
+      setStatus(statusAtual);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status) {
+      localStorage.setItem("status_comissoes", status);
+    }
+  }, [status]);
 
   async function buscarComissoes() {
 
@@ -81,8 +123,67 @@ export default function FiltrosETabelas() {
             tipo_lancamento
           )
         `, { count: "exact" }); 
-        
 
+      if (consultorFiltro.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("id_consultor", Number(consultorFiltro));
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setComissoes([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if (modalidade.trim() !== "") {
+        const { data: contasRelacionadas, error: erroContas } = await supabase
+          .from("contas_receber")
+          .select("id")
+          .eq("tipo_lancamento", modalidade);
+
+        if (erroContas) {
+          toast.error("Erro ao buscar contas do cliente");
+          return;
+        }
+
+        const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+        if (ids.length > 0) {
+          query = query.in("id_conta_receber", ids);
+        } else {
+          setComissoes([]);
+          setTotalPaginas(0);
+          return;
+        }
+      }
+
+      if(id.trim() !== "") {
+        query = query.eq("id_conta_receber", Number(id));
+      }
+
+      if(status.trim() !== "") {
+        query = query.eq("status", status);
+      }
+
+      if (dataInicio.trim() !== "") {
+        query = query.gte("data_cadastro", dataInicio);
+      }
+
+      if (dataFim.trim() !== "") {
+        query = query.lte("data_cadastro", dataFim);
+      }
+        
       const { count } = await query.range(0,0);
       const total = count ?? 0;
 
@@ -124,6 +225,23 @@ export default function FiltrosETabelas() {
 
   }
 
+  const aplicarFiltro = (e:React.FormEvent) => {
+    e.preventDefault();
+
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+
+    if (inicio.getTime() > fim.getTime()) {
+      toast.error("A data inicial não pode ser maior que a data final.");
+      return;
+    } 
+
+    setPaginaAtual(1);
+
+    buscarComissoes();
+
+  }
+
   // ========== BUSCAR CONSULTORES ==========
 
   async function consultoresBuscando() {
@@ -148,6 +266,10 @@ export default function FiltrosETabelas() {
     router.push("/consultores/listaConsultores");
   }
 
+  function detalhesComissoes(id: number) {
+    router.push(`consultores/comissoesDetalhes/${id}`);
+  }
+
   return(
 
     <div className="flex-1">
@@ -156,25 +278,20 @@ export default function FiltrosETabelas() {
 
       {/* ========== FILTROS DE PESQUISA ========== */}
 
-      <form>
-        <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-3 
-          mb-6">
-            <select 
-              className="w-full h-10 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
-              value={consultorFiltro}
-              onChange={(e) => setConsultorFiltro(e.target.value)}
-            >
-              <option value="">Consultor</option>
-
-              {consultoresBusca.map((info) => (
-                <option key={info.id} value={info.id}>
-                  {info.nome_completo}
-                </option>
-              ))}
-            </select>
+      <form onSubmit={aplicarFiltro}>
+        <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+          <select 
+            className="w-full h-10 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+            value={consultorFiltro}
+            onChange={(e) => setConsultorFiltro(e.target.value)}
+          >
+            <option value="">Consultor</option>
+            {consultoresBusca.map((info) => (
+              <option key={info.id} value={info.id}>
+                {info.nome_completo}
+              </option>
+            ))}
+          </select>
           <InputCliente
             type="text"
             placeholder="Buscar por ID da conta"
@@ -189,7 +306,6 @@ export default function FiltrosETabelas() {
             value={status}
             onChange={ (e) => setStatus(e.target.value)}
           >
-            <option value="">Status</option>
             <option value="Pendente">Pendente</option>
             <option value="Parcial">Parcial</option>
             <option value="Pago">Pago</option>
@@ -206,15 +322,26 @@ export default function FiltrosETabelas() {
             <option value="Diario">Diário</option>
           </select>
 
-          <select 
-            className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-          >
-            <option value="">Ordenar por data</option>
-            <option value="asc">Mais antigos</option>
-            <option value="desc">Mais recentes</option>
-          </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <input
+                type="date"
+                placeholder="Teste"
+                value={dataInicio}
+                onChange={handleDataInicioChange}
+                className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+              />
+            </div>
+
+            <div>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={handleDataFimChange}
+                className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+              />
+            </div>
+          </div>
 
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10"> Atualizar </button>
 
@@ -245,9 +372,15 @@ export default function FiltrosETabelas() {
                   <td className="px-2 py-2 max-w-[120px]"> {info.consultores?.nome_completo} </td>
                   <td className="px-2 py-2"> {Number(info.valor_comissao).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })} </td>
                   <td className="px-2 py-2"> {info.contas_receber.tipo_lancamento} </td>
-                  <td className="px-2 py-2"> {info.status} </td>
+                   <td className="px-2 py-2">
+                    <span className={`px-3 py-1 rounded-full text-white font-semibold text-xs 
+                      ${info.status === "Pago" ? "bg-green-500" :
+                        info.status === "Parcial" ? "bg-[#950DF7]" : info.status === "Pendente" ? "bg-red-500" : "bg-red-500"}`}>
+                      {info.status}
+                    </span>
+                  </td>
                   <td className="px-4 py-2 flex justify-center">
-                    <button className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                    <button  onClick={() => detalhesComissoes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                   </td>
                 </tr>
               ))
