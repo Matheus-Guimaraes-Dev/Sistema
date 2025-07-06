@@ -338,9 +338,6 @@ export function FiltrosLancamentos() {
         query = query.lte("data_emprestimo", dataFim);
       }
 
-
-      // ----------------------------- 
-
       const { count } = await query.range(0, 0);
       const total = count ?? 0;
 
@@ -391,7 +388,7 @@ export function FiltrosLancamentos() {
   async function buscarContasPagas() {
 
     const inicio = (paginaAtual - 1) * itensPorPagina;
-    const fim = inicio + itensPorPagina -1;
+    const fim = inicio + itensPorPagina - 1;
 
     try {
 
