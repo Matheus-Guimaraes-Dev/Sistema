@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import Opcoes from "../opcoes";
 import { formatarCPF, formatarData, formatarDinheiro } from "@/funcoes/formatacao";
 import { Emprestimo } from "../types";
@@ -40,7 +39,6 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
       .single(); 
 
     if (error || !data) {
-      toast.error("Erro ao buscar percentual de juros");
       return 0;
     }
 
@@ -74,7 +72,6 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
       .single<Emprestimo>();
 
     if (error) {
-      toast.error("Erro ao buscar empréstimo");
       return null;
     }
 

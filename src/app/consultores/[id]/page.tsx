@@ -41,7 +41,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
   const consultor = await buscarCliente(idConvertido);
 
   if (!consultor) {
-    redirect("/clientes");
+    redirect("/consultores");
   }
 
   return (

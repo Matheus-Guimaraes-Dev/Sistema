@@ -183,6 +183,8 @@ export default function FiltrosETabelas() {
       if (dataFim.trim() !== "") {
         query = query.lte("data_cadastro", dataFim);
       }
+
+      query = query.order("id_conta_receber", { ascending: true });
         
       const { count } = await query.range(0,0);
       const total = count ?? 0;
@@ -216,7 +218,6 @@ export default function FiltrosETabelas() {
         setTotalPaginas(total);
 
       }
-
 
     } catch(error) {
       toast.error("erro inesperado ao buscar comissões");

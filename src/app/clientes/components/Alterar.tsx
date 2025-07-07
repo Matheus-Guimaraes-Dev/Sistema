@@ -12,6 +12,7 @@ import { limparValorMonetario, mostrarValor } from "@/funcoes/formatacao";
 import { limiteCpf, limiteRg, limiteWhatsapp, limiteTelefoneReserva, limiteCep } from "@/funcoes/limitacao";
 import { Label } from "@/app/formulario/components/componentes/label";
 import { Select } from "../componentes/select-cliente";
+import toast from "react-hot-toast";
 
 
 export default function Alterar({ informacoesCliente }: PropsAlterar ) {
@@ -124,44 +125,53 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   async function deletarCliente() {
 
-    const { data: arquivos, error: erroLista } = await supabase.storage
+    const { data:lancamento, error:erroLancamento } = await supabase  
+      .from("contas_receber")
+      .select("id_cliente")
+      .eq("id_cliente", informacoesCliente.id);
+
+    if(lancamento && lancamento.length >= 1) {
+      toast.error("Existem empréstimos relacionado a esse cliente. Realize a exclusão dos lançamentos correspondentes para prosseguir com a exclusão")
+      return
+    } else {
+      const { data: arquivos, error: erroLista } = await supabase.storage
       .from("clientes")
       .list(`clientes/${informacoesCliente.id}/`, { limit: 100 });
 
-    if (erroLista) {
-      console.log("Erro ao listar arquivos", erroLista.message);
-      return false;
-    }
-
-    if (arquivos && arquivos.length > 0) {
-      const caminhosArquivos = arquivos.map(
-        (arquivo) => `clientes/${informacoesCliente.id}/${arquivo.name}`
-      );
-
-      const { error: erroRemover } = await supabase.storage
-        .from("clientes")
-        .remove(caminhosArquivos);
-
-      if (erroRemover) {
-        console.error("Erro ao remover arquivos:", erroRemover.message);
+      if (erroLista) {
+        console.log("Erro ao listar arquivos", erroLista.message);
         return false;
       }
-    } else {
-      console.warn("Nenhum arquivo encontrado para deletar.");
+
+      if (arquivos && arquivos.length > 0) {
+        const caminhosArquivos = arquivos.map(
+          (arquivo) => `clientes/${informacoesCliente.id}/${arquivo.name}`
+        );
+
+        const { error: erroRemover } = await supabase.storage
+          .from("clientes")
+          .remove(caminhosArquivos);
+
+        if (erroRemover) {
+          console.error("Erro ao remover arquivos:", erroRemover.message);
+          return false;
+        }
+      } else {
+        console.warn("Nenhum arquivo encontrado para deletar.");
+      }
+
+      const { error: erroDeletarCliente } = await supabase
+        .from("clientes")
+        .delete()
+        .eq("id", informacoesCliente.id);
+
+      if (erroDeletarCliente) {
+        console.error("Erro ao deletar cliente:", erroDeletarCliente.message);
+        return false;
+      }
+
+      return true;
     }
-
-    const { error: erroDeletarCliente } = await supabase
-      .from("clientes")
-      .delete()
-      .eq("id", informacoesCliente.id);
-
-    if (erroDeletarCliente) {
-      console.error("Erro ao deletar cliente:", erroDeletarCliente.message);
-      return false;
-    }
-
-    return true;
-
   }
 
   async function buscarCep(cep: string) {

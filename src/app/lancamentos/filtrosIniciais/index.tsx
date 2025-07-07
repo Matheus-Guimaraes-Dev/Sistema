@@ -336,6 +336,8 @@ export function FiltrosLancamentos() {
         query = query.lte("data_emprestimo", dataFim);
       }
 
+      query = query.order("id", { ascending: true });
+
       const { count } = await query.range(0, 0);
       const total = count ?? 0;
 
@@ -603,6 +605,8 @@ export function FiltrosLancamentos() {
       if (dataFim.trim() !== "") {
         query = query.lte("data_pagamento", dataFim);
       }
+
+      query = query.order("id_conta_receber", { ascending: true });
 
       const { count } = await query.range(0, 0);
       const total = count ?? 0;

@@ -57,6 +57,8 @@ export default function FiltrosConsultores() {
         query = query.eq("status", status);
       }
 
+      query = query.order("id", { ascending: true });
+
       const { count } = await query.range(0, 0);
       const total = count ?? 0;
 

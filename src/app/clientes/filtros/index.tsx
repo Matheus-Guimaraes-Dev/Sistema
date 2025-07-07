@@ -78,6 +78,8 @@ export function FiltrosClientes() {
 
       if (data === "asc" || data === "desc") {
         query = query.order("data_cadastro", { ascending: data === "asc" });
+      } else {
+        query = query.order("id", { ascending: true });
       }
 
       const { count } = await query.range(0, 0);
