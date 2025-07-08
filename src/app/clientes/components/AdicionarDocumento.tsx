@@ -28,7 +28,6 @@ export default function AdicionarDocumento({ clienteId }: { clienteId: string })
 
       if (erroLista) {
         console.error("Erro ao listar arquivos:", erroLista)
-        alert("Erro ao verificar arquivos existentes")
         return
       }
 
@@ -53,14 +52,12 @@ export default function AdicionarDocumento({ clienteId }: { clienteId: string })
 
       if (error) {
         console.error("Erro ao fazer upload:", error)
-        alert("Erro ao enviar arquivo")
         return
       }
 
-      alert("Arquivo enviado com sucesso!")
+      window.location.reload();
     } catch (erro) {
       console.error("Erro geral:", erro)
-      alert("Erro ao processar arquivo")
     }
   }
 

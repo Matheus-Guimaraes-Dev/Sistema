@@ -40,6 +40,12 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     setTipo(valor === tipo ? null : valor);
   };
 
+  useEffect(() => {
+    if (informacoesEmprestimo.status === "Pago") {
+      router.push("/lancamentos");
+    }
+  }, [informacoesEmprestimo.status]);
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
 
@@ -121,7 +127,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     if(!tipo) return toast.error("Selecione o tipo");
 
     const valorEmprestadoCorreto = limparValorMonetario(valorEmprestado);
-    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento)
+    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento);
 
     if (isNaN(valorEmprestadoCorreto) || valorEmprestadoCorreto <= 0) {
       return toast.error("Digite o valor do empréstimo");
@@ -129,6 +135,14 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
     if (isNaN(valorRecebimentoCorreto) || valorRecebimentoCorreto <= 0) {
       return toast.error("Digite o valor do recebimento");
+    }
+    
+    let status = "";
+
+    if(informacoesEmprestimo.valor_pago >= valorRecebimentoCorreto) {
+      status = "Pago";
+    } else {
+      status = "Pendente";
     }
 
     const dadosAtualizados = {
@@ -140,6 +154,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       data_emprestimo: dataEmprestimo,
       data_vencimento: dataVencimento,
       descricao: observacoes,
+      status: status,
     }
 
     const { error } = await supabase

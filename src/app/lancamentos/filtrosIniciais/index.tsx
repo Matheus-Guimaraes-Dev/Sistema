@@ -238,6 +238,8 @@ export function FiltrosLancamentos() {
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
 
+      query = query.eq("status", "Pendente");
+
       if(idCliente.trim() !== "") {
         query = query.eq("id_cliente", Number(idCliente))
       }
@@ -276,7 +278,8 @@ export function FiltrosLancamentos() {
 
         query = query.in("id_cliente", idsContas);
       }
-
+      
+      
       if (nome.trim() !== "") {
 
         const { data: clientesEncontrados, error: erroClientes } = await supabase
@@ -335,6 +338,7 @@ export function FiltrosLancamentos() {
       if (dataFim.trim() !== "") {
         query = query.lte("data_emprestimo", dataFim);
       }
+
 
       query = query.order("id", { ascending: true });
 
