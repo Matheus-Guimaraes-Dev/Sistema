@@ -73,7 +73,7 @@ export function BuscarContas() {
       <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Relatório Financeiro</h1>
 
       <form className="flex w-full items-center">
-        <div className="max-w-200 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="sm:max-w-200 w-full grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <div>
             <label> Data Inicio </label>
             <input
@@ -96,7 +96,7 @@ export function BuscarContas() {
           </div>
 
           <div className="flex items-end w-full">
-            <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer max-w-50 h-10 flex-1"> Atualizar </button>
+            <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer sm:max-w-200 h-10 flex-1"> Atualizar </button>
           </div>
         </div>
       </form>

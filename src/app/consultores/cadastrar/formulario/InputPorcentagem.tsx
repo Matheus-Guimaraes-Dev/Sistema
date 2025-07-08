@@ -49,7 +49,7 @@ export default function InputPorcentagem({
           value={value}
           onChange={handleChange}
           required={required}
-          className="w-full h-8 border-2 mt-1 px-1 border-[#002956] rounded focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded focus:outline-[#4b8ed6]"
         />
       </div>
     </div>

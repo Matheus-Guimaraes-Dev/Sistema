@@ -20,7 +20,7 @@ interface Props {
 export function InputAlterar({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept, readOnly, disabled }: Props) {
   return (
     <div className="">
-      <label className="block font-semibold mb-1">{label}</label>
+      <label className="block font-semibold">{label}</label>
       <input
         type={type}
         name={name}
@@ -30,7 +30,7 @@ export function InputAlterar({ label, type = 'text', name, value, onChange, plac
         onBlur={onBlur}
         readOnly={readOnly}  
         disabled={disabled}
-        className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+        className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
       />
     </div>
   );

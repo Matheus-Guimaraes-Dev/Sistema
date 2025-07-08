@@ -80,7 +80,7 @@ export default function BuscarCliente({
           onSelecionar(null);
         }}
         placeholder="Buscar por nome, CPF ou ID"
-        className="w-full h-8 border-2 border-[#002956] rounded px-1 focus:outline-[#4b8ed6]"
+        className="w-full h-9 border-2 border-[#002956] rounded px-1 focus:outline-[#4b8ed6]"
       />
 
       {carregando && (

@@ -24,7 +24,7 @@ export function InputCliente({ label, type = 'text', name, value, onChange, plac
         onChange={onChange}
         placeholder={placeholder}
         onBlur={onBlur}
-        className="w-full h-10 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base px-1 mt-[-4px]"
+        className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base px-1 mt-[-4px]"
       />
     </div>
   );

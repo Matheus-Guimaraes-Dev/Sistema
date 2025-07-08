@@ -18,7 +18,7 @@ interface SelectProps {
 export function Select({ value, onChange, options, placeholder = "", disabled = false, className = "" }: SelectProps) {
   return (
     <select
-      className={`w-full h-8 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base ${className}`}
+      className={`w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base ${className}`}
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >

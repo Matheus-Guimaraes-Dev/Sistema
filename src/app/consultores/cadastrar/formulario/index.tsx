@@ -220,7 +220,7 @@ export function FormularioConsultor() {
       <div>
         <Label className="text-sm sm:text-base mb-3"> Data de Emissão RG </Label>
         <input 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
           value={dataRg}
           onChange={(e) => limiteDataRg(e, setDataRg)}
@@ -259,7 +259,7 @@ export function FormularioConsultor() {
       <div>
         <Label> Data Nascimento </Label>
         <input 
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
           type="date"
           value={dataNascimento}
           onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
@@ -273,7 +273,7 @@ export function FormularioConsultor() {
           value={whatsapp}
           onChange={ (e) => limiteWhatsapp(e, setWhatsapp)}
           maxLength={13}
-          className="w-full h-8 border-2 px-1 mt-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
         />
       </div>
       
@@ -345,7 +345,7 @@ export function FormularioConsultor() {
             setEstado(e.target.value);
             setCidade(""); 
           }}
-          className="w-full mt-1 h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
         >
           <option value="" disabled>Selecionar Estado...</option>
           {estados.map((uf) => (
@@ -359,7 +359,7 @@ export function FormularioConsultor() {
         <select
           value={cidade}
           onChange={(e) => setCidade(e.target.value)}
-          className="w-full mt-1 h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
         >
           <option value="" disabled>Selecionar Cidade...</option>
           {cidades.map((cidade) => (
@@ -407,7 +407,7 @@ export function FormularioConsultor() {
         />
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-end">
 
         <div className="cursor-pointer flex-1">
          <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center cursor-pointer w-full"> Enviar </button>
