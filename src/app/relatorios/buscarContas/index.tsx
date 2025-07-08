@@ -18,9 +18,25 @@ export function BuscarContas() {
   const [valorTotalFinal, setValorTotalFinal] = useState("");
   const [valorCaixa, setValorCaixa] = useState("");
 
+  const [dataInicio, setDataInicio] = useState<string>('');
+  const [dataFim, setDataFim] = useState<string>('');
+
   useEffect( () => {
     buscarValores();
   }, [])
+
+  useEffect(() => {
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+    const formatarData = (data: Date) => {
+      return data.toISOString().split("T")[0];
+    };
+
+    setDataInicio(formatarData(primeiroDia));
+    setDataFim(formatarData(ultimoDia));
+  }, []);
 
   const buscarValores = async () => {
 
@@ -52,10 +68,38 @@ export function BuscarContas() {
       
   }
 
-
   return(
     <div className="p-6 bg-gray-100 min-h-screen flex-1">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">Relatório Financeiro</h1>
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Relatório Financeiro</h1>
+
+      <form className="flex w-full items-center">
+        <div className="max-w-200 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div>
+            <label> Data Inicio </label>
+            <input
+              type="date"
+              placeholder="Teste"
+              value={dataInicio}
+              onChange={(e) => setDataInicio(e.target.value)}
+              className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+            />
+          </div>
+
+          <div>
+            <label> Data Final </label>
+            <input
+              type="date"
+              value={dataFim}
+              onChange={ (e) => setDataFim(e.target.value)}
+              className="w-full h-10 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+            />
+          </div>
+
+          <div className="flex items-end w-full">
+            <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer max-w-50 h-10 flex-1"> Atualizar </button>
+          </div>
+        </div>
+      </form>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
