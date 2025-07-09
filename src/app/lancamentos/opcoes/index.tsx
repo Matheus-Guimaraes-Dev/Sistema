@@ -103,7 +103,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   useEffect(() => {
     if (valorRecebimento && jurosDoVencimento) {
-      const valorBase = limparValorMonetario(valorRecebimento);
+      const valorBase = informacoesEmprestimo.valor_receber;
       const valorJuros = limparValorMonetario(jurosDoVencimento);
       const valoresPagos = informacoesEmprestimo.valor_pago;
       console.log(valoresPagos);
