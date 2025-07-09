@@ -10,7 +10,7 @@ export function AlterarStatusConsultor({ consultorId, status }: { consultorId: s
   async function atualizarStatusAtivo() {
 
     if(status == "Ativo") {
-      toast.success("Cliente já está em Ativo");
+      toast.success("Consultor já está em Ativo");
       return
     }
 
@@ -33,7 +33,7 @@ export function AlterarStatusConsultor({ consultorId, status }: { consultorId: s
   async function atualizarStatusInativo() {
 
     if(status == "Inativo") {
-      toast.success("Cliente já está Inativo");
+      toast.success("Consultor já está Inativo");
       return
     }
 
