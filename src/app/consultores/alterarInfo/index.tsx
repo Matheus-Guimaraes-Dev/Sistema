@@ -170,8 +170,8 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   }
 
   const sexoOptions = [
-    { label: "Masculino", value: "Feminino" },
-    { label: "Feminino", value: "Autorizado" }
+    { label: "Masculino", value: "Masculino" },
+    { label: "Feminino", value: "Feminino" }
   ];
 
   const estadoCivilOptions = [
@@ -241,7 +241,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
                 type="text"
                 inputMode="numeric"
                 value={rg}
-                onChange={(e) => limiteRg(e, setCpf)}
+                onChange={(e) => limiteRg(e, setRg)}
                 maxLength={7} 
               />
             </div>
@@ -298,7 +298,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
               <InputAlterar 
                 type="number"
                 value={whatsapp}
-                onChange={(e) => limiteWhatsapp(e, setCpf)}
+                onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
                 maxLength={13}
               />
             </div>
@@ -308,7 +308,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
               <InputAlterar 
                 type="number"
                 value={telefoneReserva}
-                onChange={(e) => limiteTelefoneReserva(e, setCpf)}
+                onChange={(e) => limiteTelefoneReserva(e, setTelefoneReserva)}
                 maxLength={13}
               />
             </div>
@@ -318,7 +318,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
               <InputAlterar 
                 type="number"
                 value={cep}
-                onChange={(e) => limiteCep(e, setCpf)}
+                onChange={(e) => limiteCep(e, setCep)}
                 onBlur={() => {
                   if (cep.length === 8) buscarCep(cep);
                 }}
