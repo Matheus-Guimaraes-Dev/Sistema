@@ -17,8 +17,8 @@ interface Props {
 
 export function Input({ label, type = 'text', name, value, onChange, placeholder, inputMode, pattern, maxLength, onBlur, aceept }: Props) {
   return (
-    <div className="mb-4">
-      <label className="block font-semibold mb-1">{label}</label>
+    <div className="mb-4 md:mb-0">
+      <label className="block font-semibold mb-1 md:mb-0">{label}</label>
       <input
         type={type}
         name={name}
@@ -26,7 +26,7 @@ export function Input({ label, type = 'text', name, value, onChange, placeholder
         onChange={onChange}
         placeholder={placeholder}
         onBlur={onBlur}
-        className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+        className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
       />
     </div>
   );

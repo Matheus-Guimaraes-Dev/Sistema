@@ -226,315 +226,317 @@ export function FomularioComponente() {
   ];
 
   return(
-    <form className="bg-white w-full sm:w-100 rounded-3xl pb-6 px-2" onSubmit={enviarFormulario}>
+    <form className="bg-white w-80 sm:w-full rounded-3xl pb-6 px-1 md:w-full" onSubmit={enviarFormulario}>
 
-      <h1 className="text-center mt-4 font-semibold text-2xl pt-4"> Formulário </h1>
+      <h1 className="text-center mt-4 font-semibold sm:text-2xl text-xl pt-4 "> Formulário de Cadastro </h1>
 
       {/* ======== FORMULARIO ========== */}
 
-      <div className="mx-2 mt-4">
+      <div className="md:grid md:grid-cols-2 md:p-2 md:my-2 md:gap-2">
+        <div className="mx-2 mt-4 md:mx-0 md:mt-0">
 
-        <Label> Nome Completo </Label>
-        <Input 
-          type="text"
-          value={nome}
-          onChange={ (e) => setNome(e.target.value)}
-          required
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Email </Label>
-        <Input 
-          type="text" 
-          value={email}
-          onChange={ (e) => setEmail(e.target.value)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> CPF </Label>
-        <Input 
-          type="text"
-          inputMode="numeric"
-          value={cpf}
-          onChange={(e) => limiteCpf(e, setCpf)}
-          maxLength={11}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> RG </Label>
-        <Input 
-          type="text"
-          inputMode="numeric"
-          value={rg}
-          onChange={(e) => limiteRg(e, setRg)}
-          maxLength={7} 
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 flex-col mb-4">
-        
-        <Label> Data de Emissão RG </Label>
-        <InputAlterar 
-          type="date"
-          value={dataRg}
-          onChange={(e) => limiteDataRg(e, setDataRg)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Orgão Expedidor </Label>
-        <Input 
-          type="text"
-          value={orgaoExpedidor}
-          onChange={ (e) => setOrgaoExpedidor(e.target.value)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 flex flex-col mb-4">
-        
-        <Label> Sexo </Label>
-        <Select 
-          value={sexo}
-          onChange={setSexo}
-          placeholder="Selecionar..."
-          options={sexoOptions}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
-        
-        <Label> Estado Civil </Label>
-        <Select 
-          value={estadoCivil}
-          onChange={setEstadoCivil}
-          placeholder="Selecionar..."
-          options={estadoCivilOptions}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
-        
-        <Label> Data Nascimento </Label>
-        <InputAlterar 
-          type="date"
-          value={dataNascimento}
-          onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Whatsapp </Label>
-        <Input 
-          type="number"
-          value={whatsapp}
-          onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
-          maxLength={13}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Telefone Reserva </Label>
-        <Input 
-          type="number"
-          value={telefoneReserva}
-          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
-          maxLength={13}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> CEP </Label>
-        <Input 
-          type="number"
-          value={cep}
-          onChange={ (e) => limiteCep(e, setCep)}
-          onBlur={() => {
-            if (cep.length === 8) buscarCep(cep);
-          }}
-          maxLength={9}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Bairro </Label>
-        <Input 
-          type="text"
-          value={bairro}
-          onChange={ (e) => setBairro(e.target.value)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Rua </Label>
-        <Input 
-          type="text"
-          value={rua}
-          onChange={ (e) => setRua(e.target.value)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Nº da Casa </Label>
-        <Input 
-          type="number" 
-          value={Ncasa}
-          onChange={ (e) => setNcasa(e.target.value)}
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
-        
-        <Label> Moradia </Label>
-        <Select 
-          value={moradia}
-          onChange={setMoradia} 
-          placeholder="Selecionar..."
-          options={moradiaOptions}
-        />
-        
-      </div>
-    
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
-
-        <Label> Estado </Label>
-
-        <select
-        value={estado}
-        onChange={(e) => {
-          setEstado(e.target.value);
-          setCidade(""); 
-        }}
-        className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-      >
-        <option value="" disabled>Selecionar Estado...</option>
-        {estados.map((uf) => (
-          <option key={uf} value={uf}>{uf}</option>
-        ))}
-      </select>
-
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-4">
-
-        <Label> Cidade </Label>
-
-        <select
-        value={cidade}
-        onChange={(e) => setCidade(e.target.value)}
-        className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-      >
-        <option value="" disabled>Selecionar Cidade...</option>
-        {cidades.map((cidade) => (
-          <option key={cidade} value={cidade}>{cidade}</option>
-        ))}
-      </select>
-
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Chave Pix </Label>
-        <Input 
-          type="text" 
-          value={pix}
-          onChange={ (e) => setPix(e.target.value)}
-        />
-        
-      </div>
-      
-      <div className="mt-[-12px] mx-2 sm:mt-4">
-        
-        <Label> Valor Solicitado </Label>
-        <Input 
-          type="text" 
-          value={valorSolicitado}
-          onChange={ (e) => mostrarValor(e, setValorSolicitado) }
-        />
-        
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
-
-        <Label> Foto do Comprovante de Renda </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          onChange={e => setComprovanteRenda(e.target.files?.[0] || null)}
-        />
-
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
-
-        <Label> Foto do Comprovante de Endereço </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          onChange={e => setComprovanteEndereco(e.target.files?.[0] || null)}
-        />
-
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px]">
-
-        <Label> Foto da identidade (FRENTE) </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          onChange={e => setDocumentoFrente(e.target.files?.[0] || null)}
-        />
-
-      </div>
-
-      <div className="mt-[-12px] mx-2 sm:mt-4 mb-6">
-
-        <Label> Foto da identidade (verso) </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
-        />
-
-      </div>
-
-      <div className="mt-[-12px] mx-2">
-
-        <div className="cursor-pointer">
-         <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center cursor-pointer w-full mt-2"> Enviar </button>
+          <Label> Nome Completo </Label>
+          <Input 
+            type="text"
+            value={nome}
+            onChange={ (e) => setNome(e.target.value)}
+            required 
+          />
+          
         </div>
 
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Email </Label>
+          <Input 
+            type="text" 
+            value={email}
+            onChange={ (e) => setEmail(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> CPF </Label>
+          <Input 
+            type="text"
+            inputMode="numeric"
+            value={cpf}
+            onChange={(e) => limiteCpf(e, setCpf)}
+            maxLength={11}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> RG </Label>
+          <Input 
+            type="text"
+            inputMode="numeric"
+            value={rg}
+            onChange={(e) => limiteRg(e, setRg)}
+            maxLength={7} 
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0 flex-col mb-4 md:mb-0">
+          
+          <Label> Data de Emissão RG </Label>
+          <InputAlterar 
+            type="date"
+            value={dataRg}
+            onChange={(e) => limiteDataRg(e, setDataRg)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Orgão Expedidor </Label>
+          <Input 
+            type="text"
+            value={orgaoExpedidor}
+            onChange={ (e) => setOrgaoExpedidor(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 flex flex-col mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Sexo </Label>
+          <Select 
+            value={sexo}
+            onChange={setSexo}
+            placeholder="Selecionar..."
+            options={sexoOptions}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Estado Civil </Label>
+          <Select 
+            value={estadoCivil}
+            onChange={setEstadoCivil}
+            placeholder="Selecionar..."
+            options={estadoCivilOptions}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Data Nascimento </Label>
+          <InputAlterar 
+            type="date"
+            value={dataNascimento}
+            onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Whatsapp </Label>
+          <Input 
+            type="number"
+            value={whatsapp}
+            onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
+            maxLength={13}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Telefone Reserva </Label>
+          <Input 
+            type="number"
+            value={telefoneReserva}
+            onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
+            maxLength={13}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> CEP </Label>
+          <Input 
+            type="number"
+            value={cep}
+            onChange={ (e) => limiteCep(e, setCep)}
+            onBlur={() => {
+              if (cep.length === 8) buscarCep(cep);
+            }}
+            maxLength={9}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Bairro </Label>
+          <Input 
+            type="text"
+            value={bairro}
+            onChange={ (e) => setBairro(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Rua </Label>
+          <Input 
+            type="text"
+            value={rua}
+            onChange={ (e) => setRua(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Nº da Casa </Label>
+          <Input 
+            type="number" 
+            value={Ncasa}
+            onChange={ (e) => setNcasa(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Moradia </Label>
+          <Select 
+            value={moradia}
+            onChange={setMoradia} 
+            placeholder="Selecionar..."
+            options={moradiaOptions}
+          />
+          
+        </div>
+      
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Estado </Label>
+
+          <select
+          value={estado}
+          onChange={(e) => {
+            setEstado(e.target.value);
+            setCidade(""); 
+          }}
+          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Estado...</option>
+          {estados.map((uf) => (
+            <option key={uf} value={uf}>{uf}</option>
+          ))}
+        </select>
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Cidade </Label>
+
+          <select
+          value={cidade}
+          onChange={(e) => setCidade(e.target.value)}
+          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidades.map((cidade) => (
+            <option key={cidade} value={cidade}>{cidade}</option>
+          ))}
+        </select>
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Chave Pix </Label>
+          <Input 
+            type="text" 
+            value={pix}
+            onChange={ (e) => setPix(e.target.value)}
+          />
+          
+        </div>
+        
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Valor Solicitado </Label>
+          <Input 
+            type="text" 
+            value={valorSolicitado}
+            onChange={ (e) => mostrarValor(e, setValorSolicitado) }
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Foto do Comprovante de Renda </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            onChange={e => setComprovanteRenda(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Foto do Comprovante de Endereço </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            onChange={e => setComprovanteEndereco(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Foto da identidade (FRENTE) </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            onChange={e => setDocumentoFrente(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Foto da identidade (VERSO) </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div className="col-span-2 mt-[-12px] mx-2 md:mt-0 md:mx-0">
+
+          <div className="cursor-pointer">
+          <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center cursor-pointer w-full mt-2"> Enviar </button>
+          </div>
+
+        </div>
       </div>
 
       {/* ========== LOADING ========== */}
