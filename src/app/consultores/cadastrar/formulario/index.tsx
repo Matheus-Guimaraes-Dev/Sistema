@@ -134,8 +134,8 @@ export function FormularioConsultor() {
   }
 
   const sexoOptions = [
-    { label: "Masculino", value: "Feminino" },
-    { label: "Feminino", value: "Autorizado" }
+    { label: "Masculino", value: "Masculino" },
+    { label: "Feminino", value: "Feminino" }
   ];
 
   const estadoCivilOptions = [
