@@ -35,6 +35,13 @@ export function FomularioComponente() {
   const [rua, setRua] = useState("");
   const [Ncasa, setNcasa] = useState("");
   const [moradia, setMoradia] = useState("");
+  const [condicaoMoradia, setCondicaoMoradia] = useState("");
+  const [valorFinanciamento, setValorFinanciamento] = useState("");
+  const [valorAluguel, setValorAluguel] = useState("");
+  const [verificarVeiculo, setVerificarVeiculo] = useState("");
+  const [veiculoSelecionado, setVeiculoSelecionado] = useState("");
+  const [condicaoVeiculo, setCondicaoVeiculo] = useState("");
+  const [valorFinanciamentoVeiculo, setValorFinanciamentoVeiculo] = useState(""); 
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [pix, setPix] = useState("");
@@ -72,6 +79,12 @@ export function FomularioComponente() {
     if (!rua.trim()) return toast.error("Digite a sua rua!");
     if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
     if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
+    if (!condicaoMoradia.trim()) return toast.error("Selecione a condição da moradia");
+    if (condicaoMoradia === "Alugada" && !valorAluguel) return toast.error("Informe o valor do Aluguel");
+    if (condicaoMoradia === "Própria Financiada" && !valorFinanciamento) return toast.error("Informe o valor do Financiamento");
+    if (verificarVeiculo && !veiculoSelecionado) return toast.error("Selecione o veículo");
+    if (veiculoSelecionado && !condicaoVeiculo) return toast.error("Selecione a condição do veículo");
+    if (condicaoVeiculo === "Financiado" && !valorFinanciamentoVeiculo) return toast.error("Digite o valor do financimento/consórcio do veículo");
     if (!estado.trim()) return toast.error("Selecione o seu estado!");
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
@@ -221,8 +234,32 @@ export function FomularioComponente() {
   const moradiaOptions = [
     { label: "Casa", value: "Casa" },
     { label: "Apartamento", value: "Apartamento" },
-    { label: "Aluguel", value: "Aluguel" },
     { label: "Área rural", value: "Area rural" },
+  ];
+
+  const condicaoMoradiaOptions = [
+    { label: "Próprio Quitado", value: "Próprio Quitado" },
+    { label: "Própria Financiada", value: "Própria Financiada" },
+    { label: "Alugada", value: "Alugada" },
+  ];
+
+  const verificarVeiculoOptions = [
+    { label: "Sim", value: "Sim" },
+    { label: "Não", value: "Não" },
+  ];
+
+  const veiculosOptions = [
+    { label: "Carro", value: "Carro" },
+    { label: "Moto", value: "Moto" },
+    { label: "Caminhão", value: "Caminhão" },
+    { label: "Van", value: "Van" },
+    { label: "Ônibus", value: "Ônibus" },
+  ];
+
+  const condicaoVeiculoOptions = [
+    { label: "Quitado", value: "Quitado" },
+    { label: "Financiado", value: "Financiado" },
+    { label: "Consórcio", value: "Consórcio" },
   ];
 
   return(
@@ -422,6 +459,106 @@ export function FomularioComponente() {
           />
           
         </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Condições de Moradia </Label>
+          <Select 
+            value={condicaoMoradia}
+            onChange={setCondicaoMoradia} 
+            placeholder="Selecionar..."
+            options={condicaoMoradiaOptions}
+          />
+          
+        </div>
+
+        {condicaoMoradia === "Própria Financiada" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Valor do Financiamento </Label>
+            <Input 
+              value={valorFinanciamento}
+              onChange={(e) => mostrarValor(e, setValorFinanciamento)} 
+            />
+            
+          </div>
+        )}
+
+        {condicaoMoradia === "Alugada" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Valor do Aluguel </Label>
+            <Input 
+              value={valorAluguel}
+              onChange={(e) => mostrarValor(e, setValorAluguel)} 
+            />
+
+          </div>
+        )}
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Possui Veículo </Label>
+          <Select 
+            value={verificarVeiculo}
+            onChange={setVerificarVeiculo} 
+            placeholder="Selecionar..."
+            options={verificarVeiculoOptions}
+          />
+          
+        </div>
+
+        {verificarVeiculo === "Sim" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Veículo que Possui </Label>
+            <Select 
+              value={veiculoSelecionado}
+              onChange={setVeiculoSelecionado} 
+              placeholder="Selecionar..."
+              options={veiculosOptions}
+            />
+
+          </div>
+        )}
+
+        {verificarVeiculo === "Sim" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Condições do Veículo </Label>
+            <Select 
+              value={condicaoVeiculo}
+              onChange={setCondicaoVeiculo} 
+              placeholder="Selecionar..."
+              options={condicaoVeiculoOptions}
+            />
+
+          </div>
+        )}
+
+        {condicaoVeiculo === "Financiado" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Valor do Financiamento </Label>
+            <Input 
+              value={valorFinanciamentoVeiculo}
+              onChange={(e) => mostrarValor(e, setValorFinanciamentoVeiculo)} 
+            />
+
+          </div>
+        )}
+
+        {condicaoVeiculo === "Consórcio" && (
+          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            
+            <Label> Valor do Consórcio </Label>
+            <Input 
+              value={valorFinanciamentoVeiculo}
+              onChange={(e) => mostrarValor(e, setValorFinanciamentoVeiculo)} 
+            />
+
+          </div>
+        )}
       
         <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
@@ -433,7 +570,7 @@ export function FomularioComponente() {
             setEstado(e.target.value);
             setCidade(""); 
           }}
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
         >
           <option value="" disabled>Selecionar Estado...</option>
           {estados.map((uf) => (
@@ -450,7 +587,7 @@ export function FomularioComponente() {
           <select
           value={cidade}
           onChange={(e) => setCidade(e.target.value)}
-          className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
         >
           <option value="" disabled>Selecionar Cidade...</option>
           {cidades.map((cidade) => (
