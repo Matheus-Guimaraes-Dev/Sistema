@@ -55,8 +55,6 @@ export function FomularioComponente() {
 
   async function enviarFormulario(e: React.FormEvent) {
 
-    setLoading(true);
-
     e.preventDefault()
 
     if (!nome.trim()) return toast.error("Digite o seu nome!");
@@ -79,6 +77,8 @@ export function FomularioComponente() {
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
     if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso) return toast.error("Envie todas as 4 imagens")
+
+    setLoading(true);
 
     const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
 

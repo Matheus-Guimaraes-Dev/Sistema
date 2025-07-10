@@ -45,7 +45,7 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
     const percentualMensal = Number(data.percentual);
     const jurosProporcional = (percentualMensal / 30) * diasAtraso;
 
-    const valorJuros = emprestimo.valor_emprestado * (jurosProporcional / 100);
+    const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
 
     return Number(valorJuros.toFixed(2));
     
