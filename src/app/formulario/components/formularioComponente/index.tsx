@@ -82,7 +82,8 @@ export function FomularioComponente() {
     if (!condicaoMoradia.trim()) return toast.error("Selecione a condição da moradia");
     if (condicaoMoradia === "Alugada" && !valorAluguel) return toast.error("Informe o valor do Aluguel");
     if (condicaoMoradia === "Própria Financiada" && !valorFinanciamento) return toast.error("Informe o valor do Financiamento");
-    if (verificarVeiculo && !veiculoSelecionado) return toast.error("Selecione o veículo");
+    if (!verificarVeiculo) return toast.error("Informe se possui veículo");
+    if (verificarVeiculo === "Sim" && !veiculoSelecionado) return toast.error("Selecione o veículo");
     if (veiculoSelecionado && !condicaoVeiculo) return toast.error("Selecione a condição do veículo");
     if (condicaoVeiculo === "Financiado" && !valorFinanciamentoVeiculo) return toast.error("Digite o valor do financimento/consórcio do veículo");
     if (!estado.trim()) return toast.error("Selecione o seu estado!");
@@ -114,12 +115,18 @@ export function FomularioComponente() {
         rua: rua.trim(),
         numero_casa: Ncasa.trim(),
         moradia,
+        condicoes_moradia: condicaoMoradia,
+        valor_financiamento_moradia: valorFinanciamento,
+        valor_aluguel: valorAluguel,
+        categoria_veiculo: veiculoSelecionado,
+        condicao_veiculo: condicaoVeiculo,
+        valor_financiamento_veiculo: valorFinanciamentoVeiculo,
         estado,
         cidade,
         pix: pix.trim(),
         valor_solicitado: valorMonetarioCorreto
       })
-      .select()
+      .select("id, nome_completo")
 
     if (insertError || !clienteData || clienteData.length === 0) {
       console.error("Erro ao criar cliente:", insertError)
@@ -185,6 +192,13 @@ export function FomularioComponente() {
     setEstado("");
     setCidade("");
     setPix("");
+    setCondicaoMoradia("");
+    setValorFinanciamento("");
+    setValorAluguel("");
+    setVerificarVeiculo("");
+    setVeiculoSelecionado("");
+    setCondicaoVeiculo("");
+    setValorFinanciamentoVeiculo("");
     setValorSolicitado("");
     setComprovanteRenda(null);
     setComprovanteEndereco(null);
