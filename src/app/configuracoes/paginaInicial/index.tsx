@@ -1,5 +1,6 @@
 "use client";
 
+import EntradaESaida from "../entradasEsaidas";
 import FormasDePagamento from "../formasDePagamento";
 import Juros from "../juros";
 import JurosVencimento from "../jurosVencimento";
@@ -17,6 +18,8 @@ export default function PaginaInicial() {
       <Juros />
 
       <JurosVencimento />
+
+      <EntradaESaida />
 
       <SaldoCaixa />
 
