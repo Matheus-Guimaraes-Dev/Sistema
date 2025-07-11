@@ -13,6 +13,7 @@ import { RiDashboard3Line } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { createClient } from '@/lib/client'
 import { FaGear } from "react-icons/fa6";
+import { RiMoneyDollarCircleLine } from "react-icons/ri";
 
 export function Menu() {
 
@@ -48,9 +49,14 @@ export function Menu() {
     router.push("/configuracoes");
   }
 
-    function paginaRelatorios() {
+  function paginaRelatorios() {
     setMostrarModal(false);
     router.push("/relatorios");
+  }
+
+  function paginaContas() {
+    setMostrarModal(false);
+    router.push("/contas");
   }
   
   async function sair() {
@@ -134,6 +140,17 @@ export function Menu() {
                   mostrarModal ? 'opacity-100 scale-100' : 'hidden'
                 }`}
               > Relatórios
+              </span>
+            </div>
+
+            <div className="flex items-center text-black gap-2 px-4 mt-6">
+              <RiMoneyDollarCircleLine  onClick={paginaContas} size={34} color="#111" className="cursor-pointer"  />
+              <span
+                onClick={paginaContas}
+                className={`transition-all duration-300 text-lg cursor-pointer ${
+                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                }`}
+              > Entradas / Saídas
               </span>
             </div>
 
@@ -237,6 +254,17 @@ export function Menu() {
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
           > Relatórios
+          </span>
+        </div>
+
+        <div className="flex items-center text-white gap-2 px-4 mt-6">
+          <RiMoneyDollarCircleLine  onClick={paginaContas} size={34} color="#fff" className="cursor-pointer"  />
+          <span
+            onClick={paginaContas}
+            className={`transition-all duration-300 text-lg cursor-pointer ${
+              menu ? 'opacity-100 scale-100' : 'hidden'
+            }`}
+          > Entradas / Saídas
           </span>
         </div>
 

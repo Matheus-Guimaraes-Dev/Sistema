@@ -312,11 +312,6 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
       return toast.error("Digite o valor do recebimento");
     }
 
-    console.log(valorRecebimento);
-    console.log(valorRecebimentoCorreto);
-    console.log(limparValorMonetario(valorComJuros));
-    console.log(informacoesEmprestimo.valor_receber);
-
     if(valorTotalRecebido < informacoesEmprestimo.valor_receber) {
       status = "Pendente";
     } else {
