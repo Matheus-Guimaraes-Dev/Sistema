@@ -13,7 +13,7 @@ import { limiteCpf, limiteRg, limiteWhatsapp, limiteTelefoneReserva, limiteCep }
 import { Label } from "@/app/formulario/components/componentes/label";
 import { Select } from "../componentes/select-cliente";
 import toast from "react-hot-toast";
-
+import { Input } from "@/app/formulario/components/componentes/input";
 
 export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
@@ -35,6 +35,13 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [rua, setRua] = useState("");
   const [Ncasa, setNcasa] = useState("");
   const [moradia, setMoradia] = useState("");
+  const [condicaoMoradia, setCondicaoMoradia] = useState("");
+  const [valorFinanciamento, setValorFinanciamento] = useState("");
+  const [valorAluguel, setValorAluguel] = useState("");
+  const [verificarVeiculo, setVerificarVeiculo] = useState("");
+  const [veiculoSelecionado, setVeiculoSelecionado] = useState("");
+  const [condicaoVeiculo, setCondicaoVeiculo] = useState("");
+  const [valorFinanciamentoVeiculo, setValorFinanciamentoVeiculo] = useState(""); 
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [pix, setPix] = useState("");
@@ -43,6 +50,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [loading, setLoading] = useState(false);
 
   const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
+  const valorFinanciamentoMoradiaCorreto = limparValorMonetario(valorFinanciamento);
+  const valorAluguelCorreto = limparValorMonetario(valorAluguel);
+  const valorFinanciamentoVeiculoCoreto = limparValorMonetario(valorFinanciamentoVeiculo);
 
   const [mostrarModal, setMostrarModal] = useState(false);
 
@@ -71,6 +81,13 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setRua(informacoesCliente.rua);
       setNcasa(informacoesCliente.numero_casa);
       setMoradia(informacoesCliente.moradia);
+      setVerificarVeiculo(informacoesCliente.categoria_veiculo ? "Sim" : "Não");
+      setCondicaoMoradia(informacoesCliente.condicoes_moradia);
+      setValorFinanciamento(Number(informacoesCliente.valor_financiamento_moradia).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
+      setValorAluguel(Number(informacoesCliente.valor_aluguel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
+      setVeiculoSelecionado(informacoesCliente.categoria_veiculo);
+      setCondicaoVeiculo(informacoesCliente.condicao_veiculo);
+      setValorFinanciamentoVeiculo(Number(informacoesCliente.valor_financiamento_veiculo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
       setEstado(informacoesCliente.estado);
       setCidade(informacoesCliente.cidade);
       setPix(informacoesCliente.pix);
@@ -100,6 +117,12 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       rua: rua,
       numero_casa: Ncasa,
       moradia: moradia,
+      condicoes_moradia: condicaoMoradia,
+      valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
+      valor_aluguel: valorAluguelCorreto,
+      categoria_veiculo: veiculoSelecionado,
+      condicao_veiculo: condicaoVeiculo,
+      valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
       cidade: cidade,
       estado: estado,
       pix: pix,
@@ -214,6 +237,31 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
     { label: "Apartamento", value: "Apartamento" },
     { label: "Aluguel", value: "Aluguel" },
     { label: "Área rural", value: "Area rural" },
+  ];
+
+  const condicaoMoradiaOptions = [
+    { label: "Próprio Quitado", value: "Próprio Quitado" },
+    { label: "Própria Financiada", value: "Própria Financiada" },
+    { label: "Alugada", value: "Alugada" },
+  ];
+
+  const verificarVeiculoOptions = [
+    { label: "Sim", value: "Sim" },
+    { label: "Não", value: "Não" },
+  ];
+
+  const veiculosOptions = [
+    { label: "Carro", value: "Carro" },
+    { label: "Moto", value: "Moto" },
+    { label: "Caminhão", value: "Caminhão" },
+    { label: "Van", value: "Van" },
+    { label: "Ônibus", value: "Ônibus" },
+  ];
+
+  const condicaoVeiculoOptions = [
+    { label: "Quitado", value: "Quitado" },
+    { label: "Financiado", value: "Financiado" },
+    { label: "Consórcio", value: "Consórcio" },
   ];
 
   return(
@@ -396,6 +444,106 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                 options={moradiaOptions}
               />
             </div>
+
+            <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                      
+              <Label> Condições de Moradia </Label>
+              <Select 
+                value={condicaoMoradia}
+                onChange={setCondicaoMoradia} 
+                placeholder="Selecionar..."
+                options={condicaoMoradiaOptions}
+              />
+              
+            </div>
+    
+            {condicaoMoradia === "Própria Financiada" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Valor do Financiamento </Label>
+                <Input 
+                  value={valorFinanciamento}
+                  onChange={(e) => mostrarValor(e, setValorFinanciamento)} 
+                />
+                
+              </div>
+            )}
+    
+            {condicaoMoradia === "Alugada" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Valor do Aluguel </Label>
+                <Input 
+                  value={valorAluguel}
+                  onChange={(e) => mostrarValor(e, setValorAluguel)} 
+                />
+    
+              </div>
+            )}
+    
+            <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              
+              <Label> Possui Veículo </Label>
+              <Select 
+                value={verificarVeiculo}
+                onChange={setVerificarVeiculo} 
+                placeholder="Selecionar..."
+                options={verificarVeiculoOptions}
+              />
+              
+            </div>
+    
+            {verificarVeiculo === "Sim" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Veículo que Possui </Label>
+                <Select 
+                  value={veiculoSelecionado}
+                  onChange={setVeiculoSelecionado} 
+                  placeholder="Selecionar..."
+                  options={veiculosOptions}
+                />
+    
+              </div>
+            )}
+    
+            {verificarVeiculo === "Sim" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Condições do Veículo </Label>
+                <Select 
+                  value={condicaoVeiculo}
+                  onChange={setCondicaoVeiculo} 
+                  placeholder="Selecionar..."
+                  options={condicaoVeiculoOptions}
+                />
+    
+              </div>
+            )}
+    
+            {condicaoVeiculo === "Financiado" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Valor do Financiamento </Label>
+                <Input 
+                  value={valorFinanciamentoVeiculo}
+                  onChange={(e) => mostrarValor(e, setValorFinanciamentoVeiculo)} 
+                />
+    
+              </div>
+            )}
+    
+            {condicaoVeiculo === "Consórcio" && (
+              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+                
+                <Label> Valor do Consórcio </Label>
+                <Input 
+                  value={valorFinanciamentoVeiculo}
+                  onChange={(e) => mostrarValor(e, setValorFinanciamentoVeiculo)} 
+                />
+    
+              </div>
+            )}
           
             <div>
               <Label> Estado </Label>

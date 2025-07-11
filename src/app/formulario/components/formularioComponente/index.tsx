@@ -95,6 +95,9 @@ export function FomularioComponente() {
     setLoading(true);
 
     const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
+    const valorFinanciamentoMoradiaCorreto = limparValorMonetario(valorFinanciamento);
+    const valorAluguelCorreto = limparValorMonetario(valorAluguel);
+    const valorFinanciamentoVeiculoCoreto = limparValorMonetario(valorFinanciamentoVeiculo);
 
     const { data: clienteData, error: insertError } = await supabase
       .from("clientes")
@@ -116,11 +119,11 @@ export function FomularioComponente() {
         numero_casa: Ncasa.trim(),
         moradia,
         condicoes_moradia: condicaoMoradia,
-        valor_financiamento_moradia: valorFinanciamento,
-        valor_aluguel: valorAluguel,
+        valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
+        valor_aluguel: valorAluguelCorreto,
         categoria_veiculo: veiculoSelecionado,
         condicao_veiculo: condicaoVeiculo,
-        valor_financiamento_veiculo: valorFinanciamentoVeiculo,
+        valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
         estado,
         cidade,
         pix: pix.trim(),

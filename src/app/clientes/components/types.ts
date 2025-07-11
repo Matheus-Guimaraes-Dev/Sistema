@@ -18,6 +18,12 @@ export interface infoClientes {
   rua: string;
   numero_casa: string;
   moradia: string;
+  condicoes_moradia: string;
+  valor_financiamento_moradia: number;
+  valor_aluguel: number;
+  categoria_veiculo: string;
+  condicao_veiculo: string;
+  valor_financiamento_veiculo: number;
   cidade: string;
   estado: string;
   pix: string;
