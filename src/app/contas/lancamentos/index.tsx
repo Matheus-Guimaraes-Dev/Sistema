@@ -66,7 +66,52 @@ export default function LancamentosContas() {
   useEffect(() => {
     formasDeRecebimento();
     buscarPlanoContas();
+    buscarLancamentos();
   }, [tipoLancamento]);
+
+  // ========== BUSCAR AS CONTAS ==========
+
+  async function buscarLancamentos() {
+
+    const inicio = (paginaAtual - 1) * itensPorPagina;
+    const fim = inicio + itensPorPagina - 1;
+
+    setTipoLancamento("Entrada");
+
+    try {
+
+      if(tipoLancamento === "Entrada") {
+
+        let query = supabase
+          .from("entradas_lancamentos")
+          .select(`
+            id,
+            descricao,
+            data_lancamento,
+            plano_conta_entrada_lancamento (
+              id, 
+              descricao
+            ),
+            formas_pagamento (
+              id, 
+              descricao
+            )
+          `)
+
+        query = query.range(inicio, fim);
+        const { data: resultado, error } = await query;
+
+        console.log(resultado);
+
+      }
+
+    } catch(error) {
+      console.log("Erro: ", error);
+    }
+    
+  }
+
+  // ========== ENVIAR OS LANÇAMENTOS ==========
 
   async function enviarLancamento(e: React.FormEvent) {
 
@@ -139,6 +184,8 @@ export default function LancamentosContas() {
 
   }
 
+  // ========== APLICAR OS FILTROS DE PESQUISA ==========
+
   const aplicarFiltro = (e:React.FormEvent) => {
     e.preventDefault();
 
@@ -153,6 +200,8 @@ export default function LancamentosContas() {
     setPaginaAtual(1);
 
   }
+
+  // ========== BUSCAR AS FORMAS DE RECEBIMENTO ==========
 
   async function formasDeRecebimento() {
 
@@ -171,6 +220,8 @@ export default function LancamentosContas() {
     }
 
   }
+
+  // ========== BUSCAR OS PLANOS DE CONTAS ==========
 
   async function buscarPlanoContas() {
 
