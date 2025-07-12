@@ -27,6 +27,21 @@ interface LancamentosEntrada {
   }
 }
 
+interface LancamentosSaida { 
+  id: number;
+  descricao: string;
+  data_lancamento: string,
+  valor_recebido: number,
+  formas_pagamento: {
+    id: number,
+    descricao: string,
+  },
+  plano_conta_despesa_lancamento: {
+    id: number,
+    descricao: string,
+  }
+}
+
 export default function LancamentosContas() {
 
   const supabase = createClient();
@@ -36,6 +51,7 @@ export default function LancamentosContas() {
   const [tipoLancamento, setTipoLancamento] = useState<string | null>("Entrada");
   const [lancamentosEntrada, setLancamentosEntrada] = useState<LancamentosEntrada[]>([]);
   const [conta, setConta] = useState("");
+  const [lancamentosSaida, setLancamentosSaida] = useState<LancamentosSaida[]>([]);
   const [selecionarTipoLancamento, setSelecionarTipoLancamento] = useState<string | null>(null);
   const [selecionarTipoLancamentoFiltro, setSelecionarTipoLancamentoFiltro] = useState<string>('Entrada');
   const [abrirModal, setAbrirModal] = useState(false);
@@ -46,6 +62,7 @@ export default function LancamentosContas() {
 
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
   const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
   const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
@@ -57,8 +74,10 @@ export default function LancamentosContas() {
   const [planoContaSelecionadaFiltro, setPlanoContaSelecionadaFiltro] = useState("");
 
   const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 5;
+  const itensPorPagina = 2;
   const [totalPaginas, setTotalPaginas] = useState(1);
+
+  const [valorAntigo, setValorAntigo] = useState("");
 
   const router = useRouter(); 
 
@@ -85,8 +104,10 @@ export default function LancamentosContas() {
   };
 
   useEffect( () => {
-    buscarLancamentos();
-  }, [])
+    if (filtrosCarregados) {
+      buscarLancamentos();
+    }
+  }, [paginaAtual, filtrosCarregados, selecionarTipoLancamentoFiltro])
 
   useEffect(() => {
     formasDeRecebimento();
@@ -95,7 +116,34 @@ export default function LancamentosContas() {
 
   useEffect(() => {
     buscarPlanoContas();
-  }, [selecionarTipoLancamentoFiltro])
+  }, [selecionarTipoLancamentoFiltro]);
+
+  useEffect(() => {
+
+    const dataInicioSalva = localStorage.getItem("filtro_data_inicio_lancamentoContas");
+    const dataFimSalva = localStorage.getItem("filtro_data_fim_lancamentoContas");
+
+    if (dataInicioSalva) setDataInicio(dataInicioSalva);
+    if (dataFimSalva) setDataFim(dataFimSalva);
+
+    setTimeout(() => {
+      setFiltrosCarregados(true);
+    }, 0);
+
+  }, []);
+
+  useEffect(() => {
+    const statusAtual = localStorage.getItem("status_tipoConta");
+    if (statusAtual) {
+      setTipoLancamentoFiltro(statusAtual);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tipoLancamentoFiltro) {
+      localStorage.setItem("status_tipoConta", tipoLancamentoFiltro);
+    }
+  }, [tipoLancamentoFiltro]);
 
   // ========== BUSCAR AS CONTAS ==========
 
@@ -104,11 +152,14 @@ export default function LancamentosContas() {
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
-    setTipoLancamento("Entrada");
+    console.log(tipoLancamento);
 
     try {
 
-      if(tipoLancamento === "Entrada") {
+      const inicio = (paginaAtual - 1) * itensPorPagina 
+      const fim = inicio + itensPorPagina - 1;
+
+      if(selecionarTipoLancamentoFiltro === "Entrada") {
 
         let query = supabase
           .from("entradas_lancamentos")
@@ -125,14 +176,22 @@ export default function LancamentosContas() {
               id, 
               descricao
             )
-          `)
-
+          `, { count: "exact" })
+        
         if (id.trim() !== "") {
           query = query.eq("id", Number(id));
         }
 
-        if (id.trim() !== "") {
+        if(planoContaSelecionadaFiltro.trim() !== "") {
           query = query.eq("id_plano_conta_entrada_lancamento", Number(planoContaSelecionadaFiltro))
+        }
+
+        if (dataInicio.trim() !== "") {
+          query = query.gte("data_lancamento", dataInicio);
+        }
+
+        if (dataFim.trim() !== "") {
+          query = query.lte("data_lancamento", dataFim);
         }
 
         const { count } = await query.range(0, 0);
@@ -153,18 +212,86 @@ export default function LancamentosContas() {
           console.log("Erro ao buscar contas: ", error);
         } else {
 
-          console.log(resultado);
-
           let resultadoFiltrado = (resultado || []).map( (item) => ({
             ...item,
             formas_pagamento: Array.isArray(item.formas_pagamento) ? item.formas_pagamento[0] : item.formas_pagamento,
             plano_conta_entrada_lancamento: Array.isArray(item.plano_conta_entrada_lancamento) ? item.plano_conta_entrada_lancamento[0] : item.plano_conta_entrada_lancamento,
-            teste: "Teste matheus"
           }));
 
           setLancamentosEntrada(resultadoFiltrado);
 
+          const total = Math.ceil((count ?? 0) / itensPorPagina);
+          setTotalPaginas(total);
+
+        } 
+
+      } else if (selecionarTipoLancamentoFiltro === "Saída") {
+
+        let query = supabase
+          .from("despesas_lancamentos")
+          .select(`
+            id,
+            descricao,
+            data_lancamento,
+            valor_recebido,
+            plano_conta_despesa_lancamento (
+              id, 
+              descricao
+            ),
+            formas_pagamento (
+              id, 
+              descricao
+            )
+          `, { count: "exact" })
+
+        console.log("Ola")
+
+        if (id.trim() !== "") {
+          query = query.eq("id", Number(id));
         }
+
+        if(planoContaSelecionadaFiltro.trim() !== "") {
+          query = query.eq("id_plano_conta_despesa_lancamento", Number(planoContaSelecionadaFiltro))
+        }
+
+        if (dataInicio.trim() !== "") {
+          query = query.gte("data_lancamento", dataInicio);
+        }
+
+        if (dataFim.trim() !== "") {
+          query = query.lte("data_lancamento", dataFim);
+        }
+
+        const { count } = await query.range(0, 0);
+        const total = count ?? 0;
+
+        const inicio = (paginaAtual - 1) * itensPorPagina;
+        const fim = inicio + itensPorPagina - 1;
+
+        if (inicio >= total && total > 0) {
+          setPaginaAtual(1);
+          return;
+        }
+
+        query = query.range(inicio, fim);
+        const { data: resultado, error } = await query;
+
+        if(error) {
+          console.log("Erro ao buscar contas: ", error);
+        } else {
+
+          let resultadoFiltrado = (resultado || []).map( (item) => ({
+            ...item,
+            formas_pagamento: Array.isArray(item.formas_pagamento) ? item.formas_pagamento[0] : item.formas_pagamento,
+            plano_conta_despesa_lancamento: Array.isArray(item.plano_conta_despesa_lancamento) ? item.plano_conta_despesa_lancamento[0] : item.plano_conta_despesa_lancamento
+          }));
+
+          setLancamentosSaida(resultadoFiltrado);
+
+          const total = Math.ceil((count ?? 0) / itensPorPagina);
+          setTotalPaginas(total);
+
+        } 
 
       }
 
@@ -196,12 +323,6 @@ export default function LancamentosContas() {
 
     if(selecionarTipoLancamento === "Entrada") {
 
-      console.log(planoContaSelecionada);
-      console.log(recebimentoSelecionado);
-      console.log(observacoes);
-      console.log(valorLancamentoCorreto);
-      console.log(dataLancamento);
-
       const { data, error } = await supabase
         .from("entradas_lancamentos")
         .insert({
@@ -225,10 +346,6 @@ export default function LancamentosContas() {
       }
 
     } else if (selecionarTipoLancamento === "Saída") {
-
-      console.log(planoContaSelecionada);
-      console.log(recebimentoSelecionado);
-      console.log(observacoes);
       
       const { data, error } = await supabase
         .from("despesas_lancamentos")
@@ -236,6 +353,8 @@ export default function LancamentosContas() {
           id_plano_conta_despesa_lancamento: planoContaSelecionada,
           id_forma_pagamento: recebimentoSelecionado,
           descricao: observacoes,
+          valor_recebido: valorLancamentoCorreto,
+          data_lancamento: dataLancamento
         })
 
       if(error) {
@@ -270,6 +389,9 @@ export default function LancamentosContas() {
     } 
 
     setPaginaAtual(1);
+
+    buscarLancamentos();
+
 
   }
 
@@ -313,11 +435,10 @@ export default function LancamentosContas() {
         
         setPlanoContaFiltro(data);
 
-        console.log(planoContaFiltro);
-
       }
 
     } else if (selecionarTipoLancamento === "Saída" || selecionarTipoLancamentoFiltro === "Saída") {
+
       
       const { data, error } = await supabase
         .from("plano_conta_despesa_lancamento")
@@ -344,8 +465,9 @@ export default function LancamentosContas() {
 
   }
 
-  function detalhesComissoes(id: number) {
-    router.push(`consultores/comissoesDetalhes/${id}`);
+
+  function detalhesContas(id: number) {
+    router.push(`contas/${id}`);
   }
 
   return(
@@ -419,7 +541,11 @@ export default function LancamentosContas() {
 
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9"> Atualizar </button>
 
-          <button type="button" onClick={() => setAbrirModal(true)} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Lançamento </button>
+          <button type="button" onClick={() => {
+            setValorAntigo(selecionarTipoLancamentoFiltro)
+            setSelecionarTipoLancamentoFiltro("");
+            setAbrirModal(true);
+          }} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Lançamento </button>
 
         </div>
       </form>
@@ -438,7 +564,7 @@ export default function LancamentosContas() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {lancamentosEntrada && (
+            {selecionarTipoLancamentoFiltro === "Entrada" ? (
               lancamentosEntrada.map( (info) => (
                 <tr key={info.id} className="border-b-3 border-gray-600">
                   <td className="px-2 py-2"> {info.id} </td>
@@ -446,7 +572,19 @@ export default function LancamentosContas() {
                   <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
                   <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
                   <td className="px-4 py-2 flex justify-center">
-                    <button  onClick={() => detalhesComissoes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                    <button  onClick={() => detalhesContas(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              lancamentosSaida.map( (info) => (
+                <tr key={info.id} className="border-b-3 border-gray-600">
+                  <td className="px-2 py-2"> {info.id} </td>
+                  <td className="px-2 py-2"> {info.plano_conta_despesa_lancamento?.descricao} </td>
+                  <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
+                  <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
+                  <td className="px-4 py-2 flex justify-center">
+                    <button  onClick={() => detalhesContas(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                   </td>
                 </tr>
               ))
@@ -598,6 +736,7 @@ export default function LancamentosContas() {
                     setObservacoes("");
                     setFormasRecebimento([]);
                     setRecebimentoSelecionado("");
+                    setSelecionarTipoLancamentoFiltro(valorAntigo);
                   }} 
                   className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
               </div>

@@ -73,17 +73,17 @@ export default function FiltrosETabelas() {
   }, [])
 
   useEffect(() => {
-    const statusSalvo = localStorage.getItem("filtro_status_comissoes");
+
     const dataInicioSalva = localStorage.getItem("filtro_data_inicio_comissoes");
     const dataFimSalva = localStorage.getItem("filtro_data_fim_comissoes");
 
-    if (statusSalvo) setStatus(statusSalvo);
     if (dataInicioSalva) setDataInicio(dataInicioSalva);
     if (dataFimSalva) setDataFim(dataFimSalva);
 
     setTimeout(() => {
       setFiltrosCarregados(true);
     }, 0);
+    
   }, []);
 
   useEffect(() => {
