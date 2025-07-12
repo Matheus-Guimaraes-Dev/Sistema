@@ -126,6 +126,18 @@ export function limiteDataVencimento(
   }
 }
 
+export function limiteDataLancamento(
+  e: React.ChangeEvent<HTMLInputElement>,
+  setDataLancamento: (valor: string) => void
+) {
+  const value = e.target.value;
+  const regex = /^\d{0,4}(-\d{0,2})?(-\d{0,2})?$/;
+
+  if (regex.test(value)) {
+    setDataLancamento(value);
+  }
+}
+
 export function limiteDataPagamento(
   e: React.ChangeEvent<HTMLInputElement>,
   setDataPagamento: (valor: string) => void
