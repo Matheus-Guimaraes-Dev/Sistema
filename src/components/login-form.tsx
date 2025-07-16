@@ -47,11 +47,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         .single();
 
       if (!dadosUsuario) {
-        alert("Usuário sem grupo!");
-        return;
+        console.log("")
+      } else {
+        setGrupo(dadosUsuario.grupo);
       }
-
-      setGrupo(dadosUsuario.grupo);
 
       if (error) throw error
       router.push('/')
