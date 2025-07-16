@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/client";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/contexts/UserContext";
 
 interface InformacoesConta {
   infoConta: number;
@@ -12,6 +13,8 @@ interface InformacoesConta {
 export default function DeletarConta({ infoConta }: InformacoesConta ) {
 
   const supabase = createClient();
+
+  const {grupo} = useUser();
 
   const [loading, setLoading] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -45,11 +48,13 @@ export default function DeletarConta({ infoConta }: InformacoesConta ) {
 
       {/* ========== CAMPO DE OPÇÕES ========== */}
 
-      <div className="flex gap-3 flex-wrap">
+      {(grupo === "Administrador" || grupo === "Proprietario") && (
+        <div className="flex gap-3 flex-wrap">
 
-        <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
+          <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
 
-      </div>
+        </div>
+      )}
 
       {/* ========== MOSTRAR MODAL DE EXCLUIR ========== */}
 

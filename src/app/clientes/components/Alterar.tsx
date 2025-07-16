@@ -14,10 +14,13 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import { Select } from "../componentes/select-cliente";
 import toast from "react-hot-toast";
 import { Input } from "@/app/formulario/components/componentes/input";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   const supabase = createClient();
+
+  const { grupo } = useUser();
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -271,13 +274,19 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
       <div className="flex gap-3 flex-wrap">
 
-        <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
-        
-        <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
+        {(grupo === "Administrador" || grupo === "Proprietario") && (
+          <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+        )}
 
+        {(grupo === "Administrador" || grupo === "Proprietario") && (
+          <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
+        )}
+        
         <AdicionarDocumento clienteId={informacoesCliente.id} />
 
-        <AlterarStatus clienteId={informacoesCliente.id} status={informacoesCliente.status} />
+        {(grupo === "Administrador" || grupo === "Proprietario") && (
+          <AlterarStatus clienteId={informacoesCliente.id} status={informacoesCliente.status} />
+        )}
 
       </div>
 

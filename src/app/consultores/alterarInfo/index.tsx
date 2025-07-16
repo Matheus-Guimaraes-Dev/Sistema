@@ -11,10 +11,13 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import { limiteCpf, limiteCep, limiteWhatsapp, limiteTelefoneReserva, limiteRg } from "@/funcoes/limitacao";
 import { Select } from "@/app/clientes/componentes/select-cliente";
 import InputPorcentagem from "../cadastrar/formulario/InputPorcentagem";
+import { useUser } from "@/contexts/UserContext";
 
 export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar ) {
 
   const supabase = createClient();
+
+  const { grupo } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [nome, setNome] = useState("");
@@ -192,13 +195,15 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   return(
     <div>
 
-      <div className="flex gap-3 flex-wrap">
+      {(grupo === "Administrador" || grupo === "Proprietario") && (
+        <div className="flex gap-3 flex-wrap">
 
-        <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
-        
-        <AlterarStatusConsultor consultorId={informacoesConsultor.id} status={informacoesConsultor.status} />
+          <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+          
+          <AlterarStatusConsultor consultorId={informacoesConsultor.id} status={informacoesConsultor.status} />
 
-      </div>
+        </div>
+      )}
 
       {ativar && (
         <form onSubmit={atualizarCliente} className="bg-white shadow rounded-xl p-6 my-5">

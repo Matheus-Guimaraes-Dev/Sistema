@@ -11,10 +11,13 @@ import toast from "react-hot-toast";
 import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar, Recebimentos} from "../types";
 import { limiteDataEmprestimo, limiteDataPagamento, limiteDataVencimento } from "@/funcoes/limitacao";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   const supabase = createClient();
+
+  const {grupo} = useUser();
 
   const [loading, setLoading] = useState(false);
   const [clienteSelecionado, setClienteSelecionado] = useState<ClienteInfo | null>(null);
@@ -455,15 +458,17 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
       {/* ========== CAMPO DE OPÇÕES ========== */}
 
-      <div className="flex gap-3 flex-wrap">
+      {(grupo === "Administrador" || grupo === "Proprietario") && (
+        <div className="flex gap-3 flex-wrap">
 
-        <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
-        
-        <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
+          <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+          
+          <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
 
-        <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+          <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
 
-      </div>
+        </div>
+      )}
 
       {/* ========== MOSTRAR TELA DE ALTERAÇÃO ========== */}
 

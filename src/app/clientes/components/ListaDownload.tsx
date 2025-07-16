@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";
 import { FaTrashAlt } from "react-icons/fa";
+import { useUser } from "@/contexts/UserContext";
 
 interface Props {
   clienteId: string;
@@ -15,6 +16,9 @@ interface Arquivo {
 export default function ListaDownloads({ clienteId }: Props) {
 
   const supabase = createClient();
+
+  const { grupo } = useUser();
+
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -149,7 +153,9 @@ const baixar = async (nomeArquivo: string) => {
               Baixar {formatarNomeAmigavel(arquivo.name.replace(".webp", ""))}
             </button>
 
-            <FaTrashAlt onClick={() => abrirModalExcluir(arquivo.name)} size={20} color="red" className="cursor-pointer" />
+            {(grupo === "Administrador" || grupo === "Proprietario") && (
+              <FaTrashAlt onClick={() => abrirModalExcluir(arquivo.name)} size={20} color="red" className="cursor-pointer" />
+            )}
 
           </div>
         ))}

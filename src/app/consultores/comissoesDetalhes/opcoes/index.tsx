@@ -11,6 +11,7 @@ import { ConsultorInfo, Recebimentos} from "@/app/lancamentos/types";
 import { limiteDataPagamento } from "@/funcoes/limitacao";
 import { useRouter } from "next/navigation";
 import { Comissao } from "../[id]/page";
+import { useUser } from "@/contexts/UserContext";
 
 export interface PropsAlterar {
   informacoesComissoes: Comissao;
@@ -19,6 +20,8 @@ export interface PropsAlterar {
 export default function OpcoesComissoes({ informacoesComissoes }: PropsAlterar ) {
 
   const supabase = createClient();
+
+  const { grupo } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [consultorSelecionado, setConsultorSelecionado] = useState<ConsultorInfo | null>(null);
@@ -223,21 +226,23 @@ export default function OpcoesComissoes({ informacoesComissoes }: PropsAlterar )
 
       {/* ========== CAMPO DE OPÇÕES ========== */}
 
-      <div className="flex gap-3 flex-wrap">
+      {(grupo === "Administrador" || grupo === "Proprietario") && (
+        <div className="flex gap-3 flex-wrap">
 
-        {informacoesComissoes.status === "Pendente" && (
-          <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
-        )} 
+          {informacoesComissoes.status === "Pendente" && (
+            <button onClick={() => setAtivar(!ativar)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Alterar </button>
+          )} 
 
-        {informacoesComissoes.status !== "Pendente" && (
-          <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
-        )} 
-        
-        {informacoesComissoes.status === "Pendente" && (
-          <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
-        )}
+          {informacoesComissoes.status !== "Pendente" && (
+            <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
+          )} 
+          
+          {informacoesComissoes.status === "Pendente" && (
+            <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+          )}
 
-      </div>
+        </div>
+      )}
 
       {/* ========== MOSTRAR TELA DE ALTERAÇÃO ========== */}
 
