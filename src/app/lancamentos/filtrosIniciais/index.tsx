@@ -45,7 +45,7 @@ export function FiltrosLancamentos() {
 
   const supabase = createClient();
 
-  const {grupo} = useUser(); 
+  const { grupo, id } = useUser(); 
 
   const [loading, setLoading] = useState(false);
   
@@ -73,12 +73,16 @@ export function FiltrosLancamentos() {
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [modalidade, setModalidade] = useState("");
+  const [verificarIdConsultor, setVerificarIdConsultor] = useState("");
 
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
   const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
   const [filtrosCarregados, setFiltrosCarregados] = useState(false);
+
+ const [idConsultorCarregado, setIdConsultorCarregado] = useState(false);
+
 
 
   const trocarTipo = (valor: string) => {
@@ -93,6 +97,9 @@ export function FiltrosLancamentos() {
     } else {
       setFiltros(false); 
     }
+
+    verificarConsultor(); 
+
   }, []);
 
   useEffect(() => {
@@ -163,7 +170,7 @@ export function FiltrosLancamentos() {
       }
     }
     buscarJuros();
-  }, [paginaAtual, status, filtrosCarregados])
+  }, [paginaAtual, status, filtrosCarregados, idConsultorCarregado])
 
   useEffect(() => {
     calcularValorReceber();
@@ -195,6 +202,29 @@ export function FiltrosLancamentos() {
     }
 
   }
+
+  // ========== VERIFICAR CONSULTOR ==========
+
+  async function verificarConsultor() {
+    if (grupo === "Consultor") {
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("id_consultor")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        toast.error("Erro ao buscar consultor");
+        return;
+      } else {
+        setVerificarIdConsultor(data.id_consultor);
+        setIdConsultorCarregado(true);
+      }
+    } else {
+      setIdConsultorCarregado(true);
+  }
+}
+
 
   // ========== VALOR A RECEBER ==========
 
@@ -247,8 +277,8 @@ export function FiltrosLancamentos() {
         query = query.eq("id_cliente", Number(idCliente))
       }
 
-      if (consultorFiltro.trim() !== "") {
-        query = query.eq("id_consultor", Number(consultorFiltro));
+      if(grupo === "Consultor") {
+        query = query.eq("id_consultor", Number(verificarIdConsultor));
       }
 
       if (cpf.trim() !== "") {
@@ -442,25 +472,48 @@ export function FiltrosLancamentos() {
         }
       }
 
-      if (consultorFiltro.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_consultor", Number(consultorFiltro));
+      if(grupo === "Consultor") {
 
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
+          const { data: contasRelacionadas, error: erroContas } = await supabase
+            .from("contas_receber")
+            .select("id")
+            .eq("id_consultor", Number(verificarIdConsultor));
 
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
+          if (erroContas) {
+            toast.error("Erro ao buscar contas do cliente");
+            return;
+          }
 
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
+          const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+          if (ids.length > 0) {
+            query = query.in("id_conta_receber", ids);
+          } else {
+            setContasPagas([]);
+            setTotalPaginas(0);
+            return;
+          }
+      } else {
+        if (consultorFiltro.trim() !== "") {
+          const { data: contasRelacionadas, error: erroContas } = await supabase
+            .from("contas_receber")
+            .select("id")
+            .eq("id_consultor", Number(consultorFiltro));
+
+          if (erroContas) {
+            toast.error("Erro ao buscar contas do cliente");
+            return;
+          }
+
+          const ids = contasRelacionadas?.map((item) => item.id) || [];
+
+          if (ids.length > 0) {
+            query = query.in("id_conta_receber", ids);
+          } else {
+            setContasPagas([]);
+            setTotalPaginas(0);
+            return;
+          }
         }
       }
 
@@ -903,6 +956,7 @@ export function FiltrosLancamentos() {
                 <option value="Diario">Diário</option>
               </select>
 
+              {grupo !== "Consultor" && (
                 <select 
                   className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
                   value={consultorFiltro}
@@ -916,6 +970,7 @@ export function FiltrosLancamentos() {
                     </option>
                   ))}
                 </select>
+              )}
 
               <select
                 value={estado}
