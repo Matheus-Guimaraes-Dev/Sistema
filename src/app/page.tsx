@@ -8,9 +8,9 @@ export default async function Home() {
 
   const supabase = await createClient()
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser();
 
-  if (error || !data?.user) {
+  if (error || !data?.user) { 
     redirect('/auth/login')
   }
 
@@ -32,6 +32,7 @@ export default async function Home() {
               sizes="(max-width: 768px) 100vw, 600px"
             />
           </div>
+
         </div>
       </div>
     </div>

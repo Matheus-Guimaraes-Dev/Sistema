@@ -7,11 +7,21 @@ export default async function CadastrarConsultor() {
 
   const supabase = await createClient()
   
-    const { data, error } = await supabase.auth.getUser()
-  
-    if (error || !data?.user) {
-      redirect('/auth/login')
-    }
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    redirect("/auth/login");
+  }
+
+  const { data: usuario } = await supabase
+    .from("usuarios")
+    .select("grupo")
+    .eq("id", user.id)
+    .single();
+
+  if (!usuario || usuario.grupo === "Consultor") {
+    redirect("/auth/login");
+  }
 
   return(
     <div className="bg-[#002956] min-h-screen">

@@ -5,12 +5,22 @@ import PaginaInicial from "./paginaInicial"
 
 export default async function Configuracoes() {
 
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-  if (error || !data?.user) {
-    redirect('/auth/login')
+  if (error || !user) {
+    redirect("/auth/login");
+  }
+
+  const { data: usuario } = await supabase
+    .from("usuarios")
+    .select("grupo")
+    .eq("id", user.id)
+    .single();
+
+  if (!usuario || !["Administrador", "Proprietario"].includes(usuario.grupo)) {
+    redirect("/auth/login");
   }
 
   return(

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast'
+import { UserProvider } from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
   title: "Lang Consultoria",
@@ -26,8 +27,10 @@ export default function RootLayout({
       </head>
 
       <body className="font-poppins">
-        {children}
-        <Toaster position="top-right" reverseOrder={false} />
+        <UserProvider>
+          {children}
+          <Toaster position="top-right" reverseOrder={false} />
+        </UserProvider>
       </body>
     </html>
   );

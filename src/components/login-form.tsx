@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useUser } from "@/contexts/UserContext";
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 
@@ -24,6 +25,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const { setGrupo } = useUser();
+
   const handleLogin = async (e: React.FormEvent) => {
 
     e.preventDefault()
@@ -32,10 +35,24 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      })
+      });
+
+      const { data: dadosUsuario } = await supabase
+        .from("usuarios")
+        .select("grupo")
+        .eq("id", data.user?.id)
+        .single();
+
+      if (!dadosUsuario) {
+        alert("Usuário sem grupo!");
+        return;
+      }
+
+      setGrupo(dadosUsuario.grupo);
+
       if (error) throw error
       router.push('/')
     } catch (error: unknown) {

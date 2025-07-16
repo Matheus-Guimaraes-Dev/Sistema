@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import { Label } from "@/app/formulario/components/componentes/label";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Recebimentos } from "@/app/lancamentos/types";
+import { useUser } from '@/contexts/UserContext';
 
 interface LancamentosEntrada { 
   id: number;
@@ -59,6 +60,8 @@ export default function LancamentosContas() {
   const [valorLancamento, setValorLancamento] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { grupo } = useUser();
 
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
@@ -473,6 +476,8 @@ export default function LancamentosContas() {
     console.log(id);
     router.push(`contas/pagamentosDespesa/${id}`);
   }
+
+  
 
   return(
 

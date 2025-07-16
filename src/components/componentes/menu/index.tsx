@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from '@/lib/client'
 import { FaGear } from "react-icons/fa6";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
+import { useUser } from "@/contexts/UserContext";
 
 export function Menu() {
 
@@ -22,6 +23,8 @@ export function Menu() {
   const router = useRouter();
 
   const [mostrarModal, setMostrarModal] = useState(false);
+
+  const { grupo, setGrupo } = useUser();
 
   function abrirMenu() {
     
@@ -62,6 +65,7 @@ export function Menu() {
   async function sair() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    setGrupo(null);
     router.push('/auth/login')
   }
 
@@ -100,16 +104,18 @@ export function Menu() {
               </span>
             </div>
 
-            <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <GrUserManager onClick={paginaConsultores} size={34} color="#111" className="cursor-pointer"  />
-              <span
-                onClick={paginaConsultores}
-                className={`transition-all duration-300 text-lg cursor-pointer ${
-                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                }`}
-              > Consultores
-              </span>
-            </div>
+            {grupo !== "Consultor" && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <GrUserManager onClick={paginaConsultores} size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  onClick={paginaConsultores}
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > Consultores
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
               <GrMoney onClick={paginaLancamentos} size={34} color="#111" className="cursor-pointer"  />
@@ -122,48 +128,56 @@ export function Menu() {
               </span>
             </div>
 
-            <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <CgNotes size={34} color="#111" className="cursor-pointer"  />
-              <span
-                className={`transition-all duration-300 text-lg cursor-pointer ${
-                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                }`}
-              > Notas Promissórias
-              </span>
-            </div>
+            {grupo !== "Consultor" && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <CgNotes size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > Notas Promissórias
+                </span>
+              </div>
+            )}
 
-            <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <RiDashboard3Line onClick={paginaRelatorios} size={34} color="#111" className="cursor-pointer"  />
-              <span
-                onClick={paginaRelatorios}
-                className={`transition-all duration-300 text-lg cursor-pointer ${
-                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                }`}
-              > Relatórios
-              </span>
-            </div>
+            {grupo !== "Consultor" && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <RiDashboard3Line onClick={paginaRelatorios} size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  onClick={paginaRelatorios}
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > Relatórios
+                </span>
+              </div>
+            )}
 
-            <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <RiMoneyDollarCircleLine  onClick={paginaContas} size={34} color="#111" className="cursor-pointer"  />
-              <span
-                onClick={paginaContas}
-                className={`transition-all duration-300 text-lg cursor-pointer ${
-                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                }`}
-              > Entradas / Saídas
-              </span>
-            </div>
+            {grupo !== "Consultor" && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <RiMoneyDollarCircleLine  onClick={paginaContas} size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  onClick={paginaContas}
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > Entradas / Saídas
+                </span>
+              </div>
+            )}
 
-            <div className="flex items-center text-black gap-2 px-4 mt-6">
-              <FaGear onClick={paginaConfiguracoes} size={34} color="#111" className="cursor-pointer"  />
-              <span
-                onClick={paginaConfiguracoes}
-                className={`transition-all duration-300 text-lg cursor-pointer ${
-                  mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                }`}
-              > Configurações
-              </span>
-            </div>
+            {(grupo === "Administrador" || grupo === "Proprietario") && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <FaGear onClick={paginaConfiguracoes} size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  onClick={paginaConfiguracoes}
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > Configurações
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center text-black gap-2 px-4 mt-6">
               <RiLogoutBoxLine onClick={sair} size={34} color="#111" className="cursor-pointer"  />
@@ -214,16 +228,18 @@ export function Menu() {
           </span>
         </div>
 
-        <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <GrUserManager onClick={paginaConsultores} size={34} color="#fff" className="cursor-pointer"  />
-          <span
-            onClick={paginaConsultores}
-            className={`transition-all duration-300 text-lg cursor-pointer ${
-              menu ? 'opacity-100 scale-100' : 'hidden'
-            }`}
-          > Consultores
-          </span>
-        </div>
+        {grupo !== "Consultor" && (
+          <div className="flex items-center text-white gap-2 px-4 mt-6">
+            <GrUserManager onClick={paginaConsultores} size={34} color="#fff" className="cursor-pointer"  />
+            <span
+              onClick={paginaConsultores}
+              className={`transition-all duration-300 text-lg cursor-pointer ${
+                menu ? 'opacity-100 scale-100' : 'hidden'
+              }`}
+            > Consultores
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <GrMoney onClick={paginaLancamentos} size={34} color="#fff" className="cursor-pointer"  />
@@ -236,16 +252,19 @@ export function Menu() {
           </span>
         </div>
 
-        <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <CgNotes size={34} color="#fff" className="cursor-pointer"  />
-          <span
-            className={`transition-all duration-300 text-lg cursor-pointer ${
-              menu ? 'opacity-100 scale-100' : 'hidden'
-            }`}
-          > Notas Promissórias
-          </span>
-        </div>
+        {grupo !== "Consultor" && (
+          <div className="flex items-center text-white gap-2 px-4 mt-6">
+            <CgNotes size={34} color="#fff" className="cursor-pointer"  />
+            <span
+              className={`transition-all duration-300 text-lg cursor-pointer ${
+                menu ? 'opacity-100 scale-100' : 'hidden'
+              }`}
+            > Notas Promissórias
+            </span>
+          </div>
+        )}
 
+      {grupo !== "Consultor" && (
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <RiDashboard3Line onClick={paginaRelatorios} size={34} color="#fff" className="cursor-pointer"  />
           <span
@@ -256,7 +275,9 @@ export function Menu() {
           > Relatórios
           </span>
         </div>
+      )}
 
+      {grupo !== "Consultor" && (
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <RiMoneyDollarCircleLine  onClick={paginaContas} size={34} color="#fff" className="cursor-pointer"  />
           <span
@@ -267,7 +288,9 @@ export function Menu() {
           > Entradas / Saídas
           </span>
         </div>
+      )}
 
+      {(grupo === "Administrador" || grupo === "Proprietario") && (
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <FaGear onClick={paginaConfiguracoes} size={32} color="#fff" className="cursor-pointer"  />
           <span
@@ -278,6 +301,7 @@ export function Menu() {
           > Configurações
           </span>
         </div>
+      )}
 
         <div className="flex items-center text-white gap-2 px-4 mt-6">
           <RiLogoutBoxLine onClick={sair} size={34} color="#fff" className="cursor-pointer"  />
