@@ -21,9 +21,11 @@ export function BuscarContas() {
   const [dataInicio, setDataInicio] = useState<string>('');
   const [dataFim, setDataFim] = useState<string>('');
 
-  useEffect( () => {
-    buscarValores();
-  }, [])
+  useEffect(() => {
+    if (dataInicio && dataFim) {
+      buscarValores();
+    }
+  }, [dataInicio, dataFim]);
 
   useEffect(() => {
     const hoje = new Date();
@@ -40,13 +42,21 @@ export function BuscarContas() {
 
   const buscarValores = async () => {
 
-    const { data: relatorioContasReceber, error: erroContasReceber } = await supabase.rpc("relatorio_completo_contas_receber");
+    if (!dataInicio || !dataFim) return;
+
+    setLoading(true);
+
+    const { data: relatorioContasReceber, error: erroContasReceber } = await supabase
+      .rpc("relatorio_completo_contas_receber", {
+        data_inicio: dataInicio,
+        data_fim: dataFim
+      });
 
     if (erroContasReceber) {
       console.error("Erro ao buscar relatório:", erroContasReceber);
     } else {
       const relatorio = relatorioContasReceber?.[0];
-      console.log("Relatório completo:", relatorio);
+
       setValorEmprestado(relatorio.valor_emprestado);
       setValorAReceber(relatorio.valor_receber);
       setValorPago(relatorio.valor_pago);
@@ -59,20 +69,16 @@ export function BuscarContas() {
 
       setValorTotalFinal(calculo.toString());
       setValorCaixa(calculoCaixa.toString());
-
     }
 
-    console.log(relatorioContasReceber);
-
     setLoading(false);
-      
-  }
+  };
 
   return(
     <div className="p-6 bg-gray-100 min-h-screen flex-1">
       <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Relatório Financeiro</h1>
 
-      <form className="flex w-full items-center">
+      <form onSubmit={(e) => { e.preventDefault(); buscarValores(); }} className="flex w-full items-center">
         <div className="sm:max-w-200 w-full grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <div>
             <label> Data Inicio </label>
