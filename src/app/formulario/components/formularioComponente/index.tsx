@@ -53,6 +53,7 @@ export function FomularioComponente() {
   const [comprovanteEndereco, setComprovanteEndereco] = useState<File | null>(null);
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
+  const [segurandoDocumento, setSegurandoDocumento] = useState<File | null>(null); 
 
   const [loading, setLoading] = useState(false);
 
@@ -102,7 +103,7 @@ export function FomularioComponente() {
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso) return toast.error("Envie todas as 4 imagens")
+    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento) return toast.error("Envie todas as 5 imagens")
 
     setLoading(true);
 
@@ -152,8 +153,8 @@ export function FomularioComponente() {
     }
 
     const idCliente = clienteData[0].id
-    const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso]
-    const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso"]
+    const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
+    const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
     const urls: Record<string, string> = {}
 
     for (let i = 0; i < arquivos.length; i++) {
@@ -225,6 +226,7 @@ export function FomularioComponente() {
     setComprovanteEndereco(null);
     setDocumentoFrente(null);
     setDocumentoVerso(null);
+    setSegurandoDocumento(null);
 
     setLoading(false);
 
@@ -742,6 +744,18 @@ export function FomularioComponente() {
             type="file" 
             accept="image/*"
             onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Fotografia do titular segurando seu documento oficial </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            onChange={e => setSegurandoDocumento(e.target.files?.[0] || null)}
           />
 
         </div>

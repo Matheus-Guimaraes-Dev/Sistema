@@ -70,6 +70,7 @@ export default function ListaDownloads({ clienteId }: Props) {
       "foto_comprovante_renda": "Comprovante (Renda)",
       "foto_identidade_frente": "Identidade (Frente)",
       "foto_identidade_verso": "Identidade (Verso)",
+      "segurando_documento": "Fotografia do titular segurando seu documento oficial"
     };
 
     const chave = nome.split("-")[0];

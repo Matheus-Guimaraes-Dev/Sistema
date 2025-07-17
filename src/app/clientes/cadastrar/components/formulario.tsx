@@ -53,6 +53,7 @@ export function Formulario() {
   const [comprovanteEndereco, setComprovanteEndereco] = useState<File | null>(null);
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
+  const [segurandoDocumento, setSegurandoDocumento] = useState<File | null>(null); 
   const [arquivo, setArquivo] = useState<File | null>(null); 
   const [loading, setLoading] = useState(false);
 
@@ -60,6 +61,7 @@ export function Formulario() {
   const enderecoRef = useRef<HTMLInputElement>(null);
   const frenteRef = useRef<HTMLInputElement>(null);
   const versoRef = useRef<HTMLInputElement>(null);
+  const segurandoDocRef = useRef<HTMLInputElement>(null);
   const outroRef = useRef<HTMLInputElement>(null);
 
   const estados = Object.keys(cidadesPorEstado);
@@ -180,6 +182,7 @@ export function Formulario() {
       frenteRef.current!.value = "";
       versoRef.current!.value = "";
       outroRef.current!.value = "";
+      segurandoDocRef.current!.value = "";
       toast.success('Cliente Cadastrado com Sucesso!')
     }
 
@@ -189,6 +192,7 @@ export function Formulario() {
       { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
       { arquivo: documentoFrente, campo: "foto_identidade_frente" },
       { arquivo: documentoVerso, campo: "foto_identidade_verso" },
+      { arquivo: segurandoDocumento, campo: "segurando_documento" },
       { arquivo: arquivo, campo: "outro_arquivo" },
     ];
     const urls: Record<string, string> = {}
@@ -716,14 +720,27 @@ export function Formulario() {
       </div>
 
       <div className="sm:mt-2 mb-2 sm:mb-[0px]">
-        <Label> Arquivo (Outros) </Label>
+        <Label> Titular segurando seu documento oficial </Label>
         <input 
           className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
           type="file" 
-          accept="image/*,.pdf"
-          ref={outroRef}
-          onChange={e => setArquivo(e.target.files?.[0] || null)}
+          accept="image/*"
+          ref={segurandoDocRef}
+          onChange={e => setSegurandoDocumento(e.target.files?.[0] || null)}
         />
+      </div>
+
+      <div className="flex items-end"> 
+        <div className="sm:mt-2 mb-2 sm:mb-[0px]">
+          <Label> Arquivo (Outros) </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*,.pdf"
+            ref={outroRef}
+            onChange={e => setArquivo(e.target.files?.[0] || null)}
+          />
+        </div>
       </div>
 
       <div className="flex items-end">
