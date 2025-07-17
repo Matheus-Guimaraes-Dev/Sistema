@@ -1,8 +1,9 @@
 "use client"
 
-import { formatarDinheiro } from "@/funcoes/formatacao";
+import { formatarData, formatarDinheiro } from "@/funcoes/formatacao";
 import { createClient } from "@/lib/client"
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export function BuscarContas() {
 
@@ -17,6 +18,10 @@ export function BuscarContas() {
   const [valorPagoComissao, setValorPagoComissao] = useState("");
   const [valorTotalFinal, setValorTotalFinal] = useState("");
   const [valorCaixa, setValorCaixa] = useState("");
+  const [valorEntradas, setValorEntradas] = useState("");
+  const [valorDespesas, setValorDespesas] = useState("");
+  const [dataSaldoAjustado, setDataSaldoAjustado] = useState("");
+  const [valorTotalLancamentos, setValorTotalLancamentos] = useState("");
 
   const [dataInicio, setDataInicio] = useState<string>('');
   const [dataFim, setDataFim] = useState<string>('');
@@ -46,6 +51,17 @@ export function BuscarContas() {
 
     setLoading(true);
 
+    const { data: DataSaldo, error: ErroSaldo} = await supabase
+      .from("saldo_caixa")
+      .select("data_registro")
+      .single()
+    
+    if(DataSaldo) {
+      setDataSaldoAjustado(DataSaldo.data_registro);
+    } else {
+      toast.error("Erro ao buscar informações completas");
+    }
+
     const { data: relatorioContasReceber, error: erroContasReceber } = await supabase
       .rpc("relatorio_completo_contas_receber", {
         data_inicio: dataInicio,
@@ -63,12 +79,18 @@ export function BuscarContas() {
       setTotalLiquido(relatorio.total_liquido);
       setValorComissao(relatorio.valor_comissao);
       setValorPagoComissao(relatorio.valor_pago_comissoes);
+      setValorEntradas(relatorio.valor_total_entradas);
+      setValorDespesas(relatorio.valor_total_despesas);
+
 
       const calculo = relatorio.total_liquido - relatorio.valor_comissao;
-      const calculoCaixa = relatorio.valor_inicial - relatorio.valor_emprestado + relatorio.valor_pago - relatorio.valor_pago_comissoes;
+      const calculoCaixa = relatorio.valor_inicial + relatorio.valor_total_entradas - relatorio.valor_total_despesas - relatorio.valor_emprestado + relatorio.valor_pago - relatorio.valor_pago_comissoes;
+      const calculoLancamentos = relatorio.valor_total_entradas - relatorio.valor_total_despesas
 
       setValorTotalFinal(calculo.toString());
       setValorCaixa(calculoCaixa.toString());
+      setValorTotalLancamentos(calculoLancamentos.toString());
+
     }
 
     setLoading(false);
@@ -139,13 +161,28 @@ export function BuscarContas() {
           <p className="text-2xl font-bold text-amber-600 mt-2">{Number(valorPagoComissao).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
         </div>
 
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h2 className="text-lg font-semibold text-gray-700">Entradas</h2>
+          <p className="text-2xl font-bold text-green-600 mt-2">{Number(valorEntradas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
+        </div>
+
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h2 className="text-lg font-semibold text-gray-700">Saídas</h2>
+          <p className="text-2xl font-bold text-red-600 mt-2"> {Number(valorDespesas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
+        </div>
+
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <h2 className="text-lg font-semibold text-gray-700">Total Líquido</h2>
+          <p className="text-2xl font-bold text-gray-800 mt-2">{Number(valorTotalLancamentos).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
+        </div>
+
         <div className="bg-white shadow-md rounded-lg p-5 md:col-span-2 lg:col-span-3">
           <h2 className="text-lg font-semibold text-gray-700">Total Líquido Final</h2>
           <p className="text-3xl font-bold text-gray-900 mt-2">{Number(valorTotalFinal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
         </div>
 
         <div className="bg-white shadow-md rounded-lg p-5 md:col-span-2 lg:col-span-3">
-          <h2 className="text-lg font-semibold text-gray-700">Valor em Caixa</h2>
+          <h2 className="text-lg font-semibold text-gray-700">Valor em Caixa <span className="text-[10px]"> Saldo Ajustado em: {formatarData(dataSaldoAjustado)} </span></h2>
           <p className="text-3xl font-bold text-emerald-700 mt-2">{Number(valorCaixa).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', })}</p>
         </div>
       </div>

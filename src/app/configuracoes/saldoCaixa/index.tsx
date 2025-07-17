@@ -56,9 +56,16 @@ export default function SaldoCaixa() {
     if(!valorInformado) return toast.error("Digite o valor do empréstimo");
     const valorEmprestimoCorreto = limparValorMonetario(valorInformado);
 
+    const dataAtualPortoVelho = new Date().toLocaleDateString("en-CA", {
+      timeZone: "America/Porto_Velho"
+    });
+
     const { error } = await supabase
       .from("saldo_caixa")
-      .update({ valor_inicial: valorEmprestimoCorreto })
+      .update({ 
+        valor_inicial: valorEmprestimoCorreto,
+        data_registro: dataAtualPortoVelho
+       })
       .eq("id", 1);
 
     if(error) {
