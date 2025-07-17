@@ -26,6 +26,9 @@ export interface infoClientes {
   valor_financiamento_veiculo: number;
   cidade: string;
   estado: string;
+  nome_completo_companheiro: string;
+  cpf_companheiro: string;
+  whatsapp_companheiro: string;
   pix: string;
   valor_solicitado: string;
   observacao: string;

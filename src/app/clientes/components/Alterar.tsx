@@ -47,6 +47,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [valorFinanciamentoVeiculo, setValorFinanciamentoVeiculo] = useState(""); 
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
+  const [nomeCompanheiro, setNomeCompanheiro] = useState("");
+  const [cpfCompanheiro, setCpfCompanheiro] = useState("");
+  const [whatsappCompanheiro, setWhatsappCompanheiro] = useState("");
   const [pix, setPix] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [observacao, setObservacao] = useState("");
@@ -93,6 +96,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setValorFinanciamentoVeiculo(Number(informacoesCliente.valor_financiamento_veiculo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
       setEstado(informacoesCliente.estado);
       setCidade(informacoesCliente.cidade);
+      setNomeCompanheiro(informacoesCliente.nome_completo_companheiro || ""),
+      setCpfCompanheiro(informacoesCliente.cpf_companheiro || ""),
+      setWhatsappCompanheiro(informacoesCliente.whatsapp_companheiro || ""),
       setPix(informacoesCliente.pix);
       setValorSolicitado(Number(informacoesCliente.valor_solicitado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
       setObservacao(informacoesCliente.observacao)
@@ -112,6 +118,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       orgao_expedidor: orgaoExpedidor,
       sexo: sexo,
       estado_civil: estadoCivil,
+      nome_completo_companheiro: nomeCompanheiro.trim(),
+      cpf_companheiro: cpfCompanheiro.trim(),
+      whatsapp_companheiro: whatsappCompanheiro,
       data_nascimento: dataNascimento,
       whatsapp: whatsapp,
       telefone_reserva: telefoneReserva,
@@ -228,11 +237,12 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   ];
 
   const estadoCivilOptions = [
-    { label: "Solteiro", value: "Solteiro" },
-    { label: "Casado", value: "Casado" },
-    { label: "Seperado", value: "Separado" },
-    { label: "Divorciado", value: "Divorciado" },
-    { label: "Viúvo", value: "Viuvo" },
+    { label: "Solteiro(a)", value: "Solteiro(a)" },
+    { label: "Casado(a)", value: "Casado(a)" },
+    { label: "Companheiro(a)", value: "Companheiro(a)"},
+    { label: "Seperado(a)", value: "Separado(a)" },
+    { label: "Divorciado(a)", value: "Divorciado(a)" },
+    { label: "Viúvo(a)", value: "Viuvo(a)" },
   ];
 
   const moradiaOptions = [
@@ -374,6 +384,42 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                 options={estadoCivilOptions}
               />
             </div>
+
+            {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+            <div>
+              <Label> Nome Completo do Companheiro(a) </Label>
+              <InputAlterar 
+                type="text"
+                value={nomeCompanheiro}
+                onChange={ (e) => setNomeCompanheiro(e.target.value)}
+              />
+            </div>
+            )}
+
+            {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+            <div>
+              <Label> CPF do Companheiro(a) </Label>
+              <InputAlterar 
+                type="text"
+                inputMode="numeric"
+                value={cpfCompanheiro}
+                onChange={(e) => limiteCpf(e, setCpfCompanheiro)}
+                maxLength={11}
+              />
+            </div>
+            )}
+
+            {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+            <div>
+              <Label> Celular do Companheiro(a) </Label>
+              <InputAlterar 
+                type="number"
+                value={whatsappCompanheiro}
+                onChange={(e) => limiteWhatsapp(e, setWhatsappCompanheiro)}
+                maxLength={13}
+              />
+            </div>
+            )}
       
             <div>
               <Label> Data Nascimento </Label>

@@ -44,6 +44,9 @@ export function FomularioComponente() {
   const [valorFinanciamentoVeiculo, setValorFinanciamentoVeiculo] = useState(""); 
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
+  const [nomeCompanheiro, setNomeCompanheiro] = useState("");
+  const [cpfCompanheiro, setCpfCompanheiro] = useState("");
+  const [whatsappCompanheiro, setWhatsappCompanheiro] = useState("");
   const [pix, setPix] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [comprovanteRenda, setComprovanteRenda] = useState<File | null>(null);
@@ -72,6 +75,15 @@ export function FomularioComponente() {
     if (!orgaoExpedidor.trim()) return toast.error("Digite o seu Orgão Expedidor!");
     if (!sexo.trim()) return toast.error("Selecione o seu sexo!");
     if (!estadoCivil.trim()) return toast.error("Selecione seu estado civil!");
+    if ((estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && !nomeCompanheiro) {
+      return toast.error("Informe o nome completo do Companheiro(a)");
+    };
+    if ((estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && !cpfCompanheiro) {
+      return toast.error("Informe o cpf do Companheiro(a)");
+    }
+    if ((estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && !whatsappCompanheiro) {
+      return toast.error("Informe o whatsapp do Companheiro(a)");
+    }
     if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
     if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
     if (!cep.trim()) return toast.error("Digite o seu cep!");
@@ -110,6 +122,9 @@ export function FomularioComponente() {
         orgao_expedidor: orgaoExpedidor.trim(),
         sexo,
         estado_civil: estadoCivil,
+        nome_completo_companheiro: nomeCompanheiro.trim(),
+        cpf_companheiro: cpfCompanheiro.trim(),
+        whatsapp_companheiro: whatsappCompanheiro,
         data_nascimento: dataNascimento,
         whatsapp,
         telefone_reserva: telefoneReserva,
@@ -184,6 +199,9 @@ export function FomularioComponente() {
     setOrgaoExpedidor("");
     setSexo("");
     setEstadoCivil("");
+    setNomeCompanheiro("");
+    setCpfCompanheiro("");
+    setWhatsappCompanheiro("");
     setDataNascimento("");
     setWhatsapp("");
     setTelefoneReserva("");
@@ -241,11 +259,12 @@ export function FomularioComponente() {
   ];
 
   const estadoCivilOptions = [
-    { label: "Solteiro", value: "Solteiro" },
-    { label: "Casado", value: "Casado" },
-    { label: "Seperado", value: "Separado" },
-    { label: "Divorciado", value: "Divorciado" },
-    { label: "Viúvo", value: "Viuvo" },
+    { label: "Solteiro(a)", value: "Solteiro(a)" },
+    { label: "Casado(a)", value: "Casado(a)" },
+    { label: "Companheiro(a)", value: "Companheiro(a)"},
+    { label: "Seperado(a)", value: "Separado(a)" },
+    { label: "Divorciado(a)", value: "Divorciado(a)" },
+    { label: "Viúvo(a)", value: "Viuvo(a)" },
   ];
 
   const moradiaOptions = [
@@ -381,6 +400,49 @@ export function FomularioComponente() {
           />
           
         </div>
+
+        {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+          <div className="mx-2 mt-[-8px] md:mx-0 md:mt-0">
+
+            <Label> Nome Completo do Companheiro(a) </Label>
+            <Input 
+              type="text"
+              value={nomeCompanheiro}
+              onChange={ (e) => setNomeCompanheiro(e.target.value)}
+              required 
+            />
+            
+          </div>
+        )}
+
+        {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+          <div className="mx-2 mt-[-8px] md:mx-0 md:mt-0">
+
+            <Label> CPF do Companheiro(a) </Label>
+            <Input 
+              type="text"
+              inputMode="numeric"
+              value={cpfCompanheiro}
+              onChange={(e) => limiteCpf(e, setCpfCompanheiro)}
+              maxLength={11}
+            />
+            
+          </div>
+        )}
+
+        {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
+          <div className="mx-2 mt-[-8px] md:mx-0 md:mt-0">
+
+            <Label> Celular do Companheiro(a) </Label>
+            <Input 
+              type="number"
+              value={whatsappCompanheiro}
+              onChange={ (e) => limiteTelefoneReserva(e, setWhatsappCompanheiro)}
+              maxLength={13}
+            />
+            
+          </div>
+        )}
 
         <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
           

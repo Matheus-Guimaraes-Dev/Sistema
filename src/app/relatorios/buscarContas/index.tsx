@@ -83,7 +83,7 @@ export function BuscarContas() {
       setValorDespesas(relatorio.valor_total_despesas);
 
 
-      const calculo = relatorio.total_liquido - relatorio.valor_comissao;
+      const calculo = relatorio.total_liquido - relatorio.valor_comissao + relatorio.valor_total_entradas - relatorio.valor_total_despesas;
       const calculoCaixa = relatorio.valor_inicial + relatorio.valor_total_entradas - relatorio.valor_total_despesas - relatorio.valor_emprestado + relatorio.valor_pago - relatorio.valor_pago_comissoes;
       const calculoLancamentos = relatorio.valor_total_entradas - relatorio.valor_total_despesas
 
