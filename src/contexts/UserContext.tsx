@@ -37,11 +37,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      setId(user.id);
-
       const { data, error: erroGrupo } = await supabase
         .from("usuarios")
-        .select("grupo")
+        .select("grupo, id_consultor")
         .eq("id", user.id)
         .single();
 
@@ -49,6 +47,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setGrupo(null);
       } else {
         setGrupo(data.grupo as GrupoUsuario);
+        setId(data.id_consultor);
       }
 
       setCarregando(false);

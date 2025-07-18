@@ -81,10 +81,6 @@ export function FiltrosLancamentos() {
   const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
   const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
- const [idConsultorCarregado, setIdConsultorCarregado] = useState(false);
-
-
-
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
@@ -97,8 +93,6 @@ export function FiltrosLancamentos() {
     } else {
       setFiltros(false); 
     }
-
-    verificarConsultor(); 
 
   }, []);
 
@@ -162,6 +156,10 @@ export function FiltrosLancamentos() {
   const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
   useEffect(() => {
+
+    console.log(id)
+    console.log(grupo)
+
     if(status === "Pendente") {
        buscarContas();
     } else {
@@ -170,7 +168,7 @@ export function FiltrosLancamentos() {
       }
     }
     buscarJuros();
-  }, [paginaAtual, status, filtrosCarregados, idConsultorCarregado])
+  }, [paginaAtual, status, filtrosCarregados])
 
   useEffect(() => {
     calcularValorReceber();
@@ -183,7 +181,7 @@ export function FiltrosLancamentos() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
   
-  const itensPorPagina = 5
+  const itensPorPagina = 2
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   // ========== BUSCAR E CALCULAR JUROS ==========
@@ -202,29 +200,6 @@ export function FiltrosLancamentos() {
     }
 
   }
-
-  // ========== VERIFICAR CONSULTOR ==========
-
-  async function verificarConsultor() {
-    if (grupo === "Consultor") {
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("id_consultor")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        toast.error("Erro ao buscar consultor");
-        return;
-      } else {
-        setVerificarIdConsultor(data.id_consultor);
-        setIdConsultorCarregado(true);
-      }
-    } else {
-      setIdConsultorCarregado(true);
-  }
-}
-
 
   // ========== VALOR A RECEBER ==========
 
@@ -278,7 +253,11 @@ export function FiltrosLancamentos() {
       }
 
       if(grupo === "Consultor") {
-        query = query.eq("id_consultor", Number(verificarIdConsultor));
+        query = query.eq("id_consultor", Number(id));
+      } else {
+        if(consultorFiltro.trim() !== "") {
+          query = query.eq("id_consultor", consultorFiltro)
+        }
       }
 
       if (cpf.trim() !== "") {
@@ -477,7 +456,7 @@ export function FiltrosLancamentos() {
           const { data: contasRelacionadas, error: erroContas } = await supabase
             .from("contas_receber")
             .select("id")
-            .eq("id_consultor", Number(verificarIdConsultor));
+            .eq("id_consultor", Number(id));
 
           if (erroContas) {
             toast.error("Erro ao buscar contas do cliente");

@@ -25,7 +25,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const { setGrupo } = useUser();
+  const { setGrupo, setId } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
 
@@ -42,7 +42,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
       const { data: dadosUsuario } = await supabase
         .from("usuarios")
-        .select("grupo")
+        .select("grupo, id_consultor")
         .eq("id", data.user?.id)
         .single();
 
@@ -50,6 +50,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         console.log("")
       } else {
         setGrupo(dadosUsuario.grupo);
+        setId(dadosUsuario.id_consultor || null);
       }
 
       if (error) throw error
