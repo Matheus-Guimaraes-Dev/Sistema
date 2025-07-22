@@ -108,8 +108,6 @@ export default async function Comissoes({ params }: { params: { id: string } } )
     redirect("consultores");
   }
 
-  console.log(comissao);
-
   return(
 
     <div className="bg-[#002956] min-h-screen">

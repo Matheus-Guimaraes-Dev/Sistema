@@ -71,37 +71,37 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   useEffect( () => {
     if(informacoesCliente) {
-      setNome(informacoesCliente.nome_completo);
-      setEmail(informacoesCliente.email);
-      setCpf(informacoesCliente.cpf);
-      setRg(informacoesCliente.rg);
-      setDataRg(informacoesCliente.data_emissao_rg);
-      setOrgaoExpedidor(informacoesCliente.orgao_expedidor);
-      setSexo(informacoesCliente.sexo);
-      setEstadoCivil(informacoesCliente.estado_civil);
-      setDataNascimento(informacoesCliente.data_nascimento);
-      setWhatsapp(informacoesCliente.whatsapp);
-      setTelefoneReserva(informacoesCliente.telefone_reserva);
-      setCep(informacoesCliente.cep);
-      setBairro(informacoesCliente.bairro);
-      setRua(informacoesCliente.rua);
-      setNcasa(informacoesCliente.numero_casa);
-      setMoradia(informacoesCliente.moradia);
+      setNome(informacoesCliente.nome_completo || "");
+      setEmail(informacoesCliente.email || "");
+      setCpf(informacoesCliente.cpf || "");
+      setRg(informacoesCliente.rg || "");
+      setDataRg(informacoesCliente.data_emissao_rg || "01/01/2025");
+      setOrgaoExpedidor(informacoesCliente.orgao_expedidor || "");
+      setSexo(informacoesCliente.sexo || "");
+      setEstadoCivil(informacoesCliente.estado_civil || "");
+      setDataNascimento(informacoesCliente.data_nascimento || "01/01/2025");
+      setWhatsapp(informacoesCliente.whatsapp || "");
+      setTelefoneReserva(informacoesCliente.telefone_reserva || "");
+      setCep(informacoesCliente.cep || "");
+      setBairro(informacoesCliente.bairro || "");
+      setRua(informacoesCliente.rua || "");
+      setNcasa(informacoesCliente.numero_casa || "");
+      setMoradia(informacoesCliente.moradia || "");
       setVerificarVeiculo(informacoesCliente.categoria_veiculo ? "Sim" : "Não");
-      setCondicaoMoradia(informacoesCliente.condicoes_moradia);
-      setValorFinanciamento(Number(informacoesCliente.valor_financiamento_moradia).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
-      setValorAluguel(Number(informacoesCliente.valor_aluguel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
-      setVeiculoSelecionado(informacoesCliente.categoria_veiculo);
-      setCondicaoVeiculo(informacoesCliente.condicao_veiculo);
-      setValorFinanciamentoVeiculo(Number(informacoesCliente.valor_financiamento_veiculo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
-      setEstado(informacoesCliente.estado);
-      setCidade(informacoesCliente.cidade);
+      setCondicaoMoradia(informacoesCliente.condicoes_moradia || "");
+      setValorFinanciamento(Number(informacoesCliente.valor_financiamento_moradia).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
+      setValorAluguel(Number(informacoesCliente.valor_aluguel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
+      setVeiculoSelecionado(informacoesCliente.categoria_veiculo || "");
+      setCondicaoVeiculo(informacoesCliente.condicao_veiculo || "");
+      setValorFinanciamentoVeiculo(Number(informacoesCliente.valor_financiamento_veiculo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
+      setEstado(informacoesCliente.estado || "");
+      setCidade(informacoesCliente.cidade || "");
       setNomeCompanheiro(informacoesCliente.nome_completo_companheiro || ""),
       setCpfCompanheiro(informacoesCliente.cpf_companheiro || ""),
       setWhatsappCompanheiro(informacoesCliente.whatsapp_companheiro || ""),
-      setPix(informacoesCliente.pix);
-      setValorSolicitado(Number(informacoesCliente.valor_solicitado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
-      setObservacao(informacoesCliente.observacao)
+      setPix(informacoesCliente.pix || "");
+      setValorSolicitado(Number(informacoesCliente.valor_solicitado || "").toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
+      setObservacao(informacoesCliente.observacao || "")
     }
   }, [informacoesCliente] );
 
@@ -216,7 +216,6 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
-      console.log(data);
 
       setBairro(data.bairro);
       setRua(data.logradouro);
@@ -256,6 +255,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
     { label: "Próprio Quitado", value: "Próprio Quitado" },
     { label: "Própria Financiada", value: "Própria Financiada" },
     { label: "Alugada", value: "Alugada" },
+    { label: "Imóvel Cedido", value: "Imóvel Cedido"}
   ];
 
   const verificarVeiculoOptions = [

@@ -103,7 +103,6 @@ export function FormularioConsultor() {
       console.error("Erro ao criar cliente:", insertError)
       return toast.error("Erro ao criar cliente")
     } else {
-      console.log('Cliente cadastrado com sucesso:', clienteData);
       setNome("");
       setEmail("");
       setCpf("");
@@ -160,7 +159,7 @@ export function FormularioConsultor() {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
-      console.log(data);
+
       setBairro(data.bairro ?? '');
       setRua(data.logradouro ?? '');
       setEstado(data.uf ?? ''); 

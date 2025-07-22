@@ -137,7 +137,6 @@ export function Formulario() {
       .select()
 
     if (insertError || !clienteData || clienteData.length === 0) {
-      console.error("Erro ao criar cliente:", insertError)
       return toast.error("Erro ao criar cliente")
     } else { 
       setNome("");
@@ -230,7 +229,6 @@ export function Formulario() {
           });
 
         if (uploadError) {
-          console.error(uploadError);
           return alert(`Erro ao enviar ${campo}`);
         }
 
@@ -242,7 +240,6 @@ export function Formulario() {
         urls[campo] = urlData.publicUrl;
 
       } catch (erro) {
-        console.error("Erro no processamento do arquivo:", erro);
         return alert(`Erro ao processar o arquivo: ${campo}`);
       }
     }
@@ -258,7 +255,6 @@ export function Formulario() {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
-      console.log(data);
 
       setBairro(data.bairro ?? '');
       setRua(data.logradouro ?? '');
@@ -266,7 +262,7 @@ export function Formulario() {
       setCidade(data.localidade ?? '');
 
     } catch(error) {
-      console.log("Deu errado!");
+      console.log("Erro!");
     }
 
     setLoading(false);
@@ -298,6 +294,7 @@ export function Formulario() {
     { label: "Próprio Quitado", value: "Próprio Quitado" },
     { label: "Própria Financiada", value: "Própria Financiada" },
     { label: "Alugada", value: "Alugada" },
+    { label: "Imóvel Cedido", value: "Imóvel Cedido"}
   ];
 
   const verificarVeiculoOptions = [

@@ -155,8 +155,6 @@ export default function LancamentosContas() {
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
-    console.log(tipoLancamento);
-
     try {
 
       const inicio = (paginaAtual - 1) * itensPorPagina 
@@ -246,8 +244,6 @@ export default function LancamentosContas() {
               descricao
             )
           `, { count: "exact" })
-
-        console.log("Ola")
 
         if (id.trim() !== "") {
           query = query.eq("id", Number(id));
@@ -473,7 +469,6 @@ export default function LancamentosContas() {
   }
 
   function detalhesContasDespesas(id: number) {
-    console.log(id);
     router.push(`contas/pagamentosDespesa/${id}`);
   }
 

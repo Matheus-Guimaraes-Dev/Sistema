@@ -241,7 +241,7 @@ export function FomularioComponente() {
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
-      console.log(data);
+
       setBairro(data.bairro ?? '');
       setRua(data.logradouro ?? '');
       setEstado(data.uf ?? ''); 
@@ -279,6 +279,7 @@ export function FomularioComponente() {
     { label: "Próprio Quitado", value: "Próprio Quitado" },
     { label: "Própria Financiada", value: "Própria Financiada" },
     { label: "Alugada", value: "Alugada" },
+    { label: "Imóvel Cedido", value: "Imóvel Cedido"}
   ];
 
   const verificarVeiculoOptions = [

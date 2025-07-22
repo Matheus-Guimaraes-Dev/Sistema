@@ -27,7 +27,6 @@ export default function AdicionarDocumento({ clienteId }: { clienteId: string })
         .list(`clientes/${idConvertido}/`)
 
       if (erroLista) {
-        console.error("Erro ao listar arquivos:", erroLista)
         return
       }
 

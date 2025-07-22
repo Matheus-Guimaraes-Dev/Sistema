@@ -157,9 +157,6 @@ export function FiltrosLancamentos() {
 
   useEffect(() => {
 
-    console.log(id)
-    console.log(grupo)
-
     if(status === "Pendente") {
        buscarContas();
     } else {

@@ -55,29 +55,29 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
 
   useEffect( () => {
     if(informacoesConsultor) {
-      setNome(informacoesConsultor.nome_completo);
-      setEmail(informacoesConsultor.email);
-      setCpf(informacoesConsultor.cpf);
-      setRg(informacoesConsultor.rg);
-      setDataRg(informacoesConsultor.data_emissao_rg);
-      setOrgaoExpedidor(informacoesConsultor.orgao_expedidor);
-      setSexo(informacoesConsultor.sexo);
-      setEstadoCivil(informacoesConsultor.estado_civil);
-      setDataNascimento(informacoesConsultor.data_nascimento);
-      setWhatsapp(informacoesConsultor.whatsapp);
-      setTelefoneReserva(informacoesConsultor.telefone_reserva);
-      setCep(informacoesConsultor.cep);
-      setBairro(informacoesConsultor.bairro);
-      setRua(informacoesConsultor.rua);
-      setNcasa(informacoesConsultor.numero_casa);
-      setMoradia(informacoesConsultor.moradia);
-      setEstado(informacoesConsultor.estado);
-      setCidade(informacoesConsultor.cidade);
-      setObservacao(informacoesConsultor.observacao);
+      setNome(informacoesConsultor.nome_completo || "");
+      setEmail(informacoesConsultor.email || "");
+      setCpf(informacoesConsultor.cpf || "");
+      setRg(informacoesConsultor.rg || "");
+      setDataRg(informacoesConsultor.data_emissao_rg || "");
+      setOrgaoExpedidor(informacoesConsultor.orgao_expedidor || "");
+      setSexo(informacoesConsultor.sexo || "");
+      setEstadoCivil(informacoesConsultor.estado_civil || "");
+      setDataNascimento(informacoesConsultor.data_nascimento || "");
+      setWhatsapp(informacoesConsultor.whatsapp || "");
+      setTelefoneReserva(informacoesConsultor.telefone_reserva || "");
+      setCep(informacoesConsultor.cep || "");
+      setBairro(informacoesConsultor.bairro || "");
+      setRua(informacoesConsultor.rua || "");
+      setNcasa(informacoesConsultor.numero_casa || "");
+      setMoradia(informacoesConsultor.moradia || "");
+      setEstado(informacoesConsultor.estado || "");
+      setCidade(informacoesConsultor.cidade || "");
+      setObservacao(informacoesConsultor.observacao || "");
       setPorcentagem(informacoesConsultor.porcentagem);
-      setComissacaoMensal(informacoesConsultor.comissao_mensal?.toString() || "");
-      setComissacaoSemanal(informacoesConsultor.comissao_semanal?.toString() || "");
-      setComissacaoDiario(informacoesConsultor.comissao_diaria?.toString() || "");
+      setComissacaoMensal(informacoesConsultor.comissao_mensal?.toString() || "0");
+      setComissacaoSemanal(informacoesConsultor.comissao_semanal?.toString() || "0");
+      setComissacaoDiario(informacoesConsultor.comissao_diaria?.toString() || "0");
     }
   }, [informacoesConsultor] );
 
@@ -157,7 +157,6 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
       const data: viaCep = await response.json();
-      console.log(data);
 
       setBairro(data.bairro ?? "");
       setRua(data.logradouro ?? "");
