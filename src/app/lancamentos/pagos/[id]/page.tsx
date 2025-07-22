@@ -96,21 +96,21 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
             <p> <strong> ID:</strong> {emprestimo.contas_receber.id}.{emprestimo.id} </p>
             <p> <strong> ID do Cliente:</strong> {emprestimo.contas_receber.clientes.id} </p>
             <p><strong>Cliente:</strong> {emprestimo.contas_receber.clientes.nome_completo} </p>
-            <p><strong>CPF do Cliente:</strong> {formatarCPF(emprestimo.contas_receber.clientes.cpf)} </p>
+            <p><strong>CPF do Cliente:</strong> {formatarCPF(emprestimo.contas_receber.clientes?.cpf) || ""} </p>
             <p> <strong> ID do Consultor:</strong> {emprestimo.contas_receber.consultores.id} </p>
             <p><strong>Consultor:</strong> {emprestimo.contas_receber.consultores.nome_completo} </p>
             <p><strong>Tipo Lançamento:</strong> {emprestimo.contas_receber.tipo_lancamento} </p>
-            <p><strong>Estado:</strong> {emprestimo.contas_receber.estado} </p>
-            <p><strong>Cidade:</strong> {emprestimo.contas_receber.cidade} </p>
+            <p><strong>Estado:</strong> {emprestimo.contas_receber?.estado || ""} </p>
+            <p><strong>Cidade:</strong> {emprestimo.contas_receber?.cidade || ""} </p>
           </div>
 
           <div>
-            <p><strong>Status do Pagamento Total:</strong> {emprestimo.contas_receber.status} </p>
-            <p><strong>Data de Emprestimo:</strong> {formatarData(emprestimo.contas_receber.data_emprestimo)} </p>
-            <p><strong>Data de Vencimento:</strong> {formatarData(emprestimo.contas_receber.data_vencimento)} </p>
-            <p><strong>Status da Comissão:</strong> {emprestimo.contas_receber.status_comissao} </p>
-            <p><strong>Descrição:</strong> {emprestimo.observacao} </p>
-            <p><strong>Forma de Pagamento:</strong> {emprestimo.formas_pagamento.descricao} </p>
+            <p><strong>Status do Pagamento Total:</strong> {emprestimo.contas_receber?.status} </p>
+            <p><strong>Data de Emprestimo:</strong> {formatarData(emprestimo.contas_receber?.data_emprestimo) || ""} </p>
+            <p><strong>Data de Vencimento:</strong> {formatarData(emprestimo.contas_receber?.data_vencimento) || ""} </p>
+            <p><strong>Status da Comissão:</strong> {emprestimo.contas_receber?.status_comissao || ""} </p>
+            <p><strong>Descrição:</strong> {emprestimo?.observacao || ""} </p>
+            <p><strong>Forma de Pagamento:</strong> {emprestimo.formas_pagamento?.descricao || ""} </p>
           </div>
 
         </section>
