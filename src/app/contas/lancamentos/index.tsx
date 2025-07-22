@@ -77,7 +77,7 @@ export default function LancamentosContas() {
   const [planoContaSelecionadaFiltro, setPlanoContaSelecionadaFiltro] = useState("");
 
   const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 2;
+  const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const [valorAntigo, setValorAntigo] = useState("");

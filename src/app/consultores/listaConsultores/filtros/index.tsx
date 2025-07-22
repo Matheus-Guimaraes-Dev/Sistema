@@ -29,7 +29,7 @@ export default function FiltrosConsultores() {
     buscarConsultor()
   }, [paginaAtual])
 
-  const itensPorPagina = 5
+  const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const router = useRouter();

@@ -45,7 +45,7 @@ export default function FiltrosETabelas() {
   const router = useRouter(); 
 
   const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 5;
+  const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const handleDataInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {

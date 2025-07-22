@@ -38,7 +38,7 @@ export function FiltrosClientes() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
   
-  const itensPorPagina = 10
+  const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const buscarClientes = async () => {

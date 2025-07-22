@@ -181,7 +181,7 @@ export function FiltrosLancamentos() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
   
-  const itensPorPagina = 5
+  const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   // ========== BUSCAR E CALCULAR JUROS ==========
