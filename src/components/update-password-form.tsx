@@ -32,7 +32,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
-      router.push('/')
+      router.push('/protected')
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Erro ao alterar')
     } finally {
