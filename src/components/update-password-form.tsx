@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function UpdatePasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 
@@ -21,6 +21,17 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+    useEffect(() => {
+    const supabase = createClient()
+    const hash = window.location.hash
+    if (hash.includes('access_token')) {
+      supabase.auth.exchangeCodeForSession(hash).catch((err) => {
+        console.error('Erro ao autenticar token:', err.message)
+        setError('Erro ao autenticar o link de redefinição.')
+      })
+    }
+  }, [])
 
   const handleForgotPassword = async (e: React.FormEvent) => {
 
