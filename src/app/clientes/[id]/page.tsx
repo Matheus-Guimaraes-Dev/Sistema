@@ -96,7 +96,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Data de Cadastro:</strong> {formatarData(cliente.data_cadastro) || ""} </p>
             <p> <strong>Valor Solicitado:</strong>{formatarDinheiro(cliente.valor_solicitado) || ""} </p>
             <p><strong>Chave Pix:</strong> {cliente.pix} </p>
-            <p><strong>Consultor:</strong> {cliente?.consultores.nome_completo || ""} </p>
+            <p><strong>Consultor:</strong> {cliente.consultores?.nome_completo || ""} </p>
             <p><strong>Observação: </strong> {cliente.observacao || ""} </p>
           </div>
 

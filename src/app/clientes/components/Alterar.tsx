@@ -130,7 +130,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setCpfCompanheiro(informacoesCliente.cpf_companheiro || ""),
       setWhatsappCompanheiro(informacoesCliente.whatsapp_companheiro || ""),
       setPix(informacoesCliente.pix || "");
-      setConsultorSelecionado(informacoesCliente.consultores.id.toString())
+      setConsultorSelecionado(informacoesCliente.consultores?.id.toString() || "")
       setValorSolicitado(Number(informacoesCliente.valor_solicitado || "").toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
       setObservacao(informacoesCliente.observacao || "")
     }
