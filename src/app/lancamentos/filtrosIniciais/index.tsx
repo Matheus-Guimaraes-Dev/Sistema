@@ -225,7 +225,6 @@ export function FiltrosLancamentos() {
   // ========== BUSCAR AS CONTAS PENDENTES ==========
 
   const buscarContas = async () => {
-
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
@@ -245,86 +244,62 @@ export function FiltrosLancamentos() {
 
       query = query.eq("status", "Pendente");
 
-      if(idCliente.trim() !== "") {
-        query = query.eq("id_cliente", Number(idCliente))
+      if (idCliente.trim() !== "") {
+        query = query.eq("id_cliente", Number(idCliente));
       }
 
-      if(grupo === "Consultor") {
+      if (grupo === "Consultor") {
         query = query.eq("id_consultor", Number(id));
       } else {
-        if(consultorFiltro.trim() !== "") {
-          query = query.eq("id_consultor", consultorFiltro)
+        if (consultorFiltro.trim() !== "") {
+          query = query.eq("id_consultor", consultorFiltro);
         }
       }
 
       if (cpf.trim() !== "") {
-
         const { data: clientesEncontrados, error: erroClientes } = await supabase
           .from("clientes")
           .select("id")
           .ilike("cpf", `%${cpf.trim()}%`);
 
-        if (erroClientes || !clientesEncontrados?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
+        if (!erroClientes && clientesEncontrados?.length) {
+          const idsClientes = clientesEncontrados.map((item) => item.id);
+          query = query.in("id_cliente", idsClientes);
+        } else {
+          query = query.in("id", [-1]);
         }
-
-        const idsClientes = clientesEncontrados.map((item) => item.id);
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .in("id_cliente", idsClientes);
-
-        if (erroContas || !contasRelacionadas?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
-        }
-
-        const idsContas = contasRelacionadas.map((item) => item.id);
-
-        query = query.in("id_cliente", idsContas);
       }
-      
-      
-      if (nome.trim() !== "") {
 
+      if (nome.trim() !== "") {
         const { data: clientesEncontrados, error: erroClientes } = await supabase
           .from("clientes")
           .select("id")
           .ilike("nome_completo", `%${nome.trim()}%`);
 
-        if (erroClientes || !clientesEncontrados?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
+        if (!erroClientes && clientesEncontrados?.length) {
+          const idsClientes = clientesEncontrados.map((item) => item.id);
+
+          const { data: contasRelacionadas, error: erroContas } = await supabase
+            .from("contas_receber")
+            .select("id")
+            .in("id_cliente", idsClientes);
+
+          if (!erroContas && contasRelacionadas?.length) {
+            const idsContas = contasRelacionadas.map((item) => item.id);
+            query = query.in("id", idsContas);
+          } else {
+            query = query.in("id", [-1]);
+          }
+        } else {
+          query = query.in("id", [-1]);
         }
-
-        const idsClientes = clientesEncontrados.map((item) => item.id);
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .in("id_cliente", idsClientes);
-
-        if (erroContas || !contasRelacionadas?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
-        }
-
-        const idsContas = contasRelacionadas.map((item) => item.id);
-
-        query = query.in("id_cliente", idsContas);
       }
 
-      if(modalidade.trim() !== "") {
+      if (modalidade.trim() !== "") {
         query = query.eq("tipo_lancamento", modalidade);
       }
 
-      if(idDocumento.trim() !== "") {
+      if (idDocumento.trim() !== "") {
         query = query.eq("id", Number(idDocumento));
       }
 
@@ -332,11 +307,11 @@ export function FiltrosLancamentos() {
         query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
       }
 
-      if(estado.trim() !== "") {
+      if (estado.trim() !== "") {
         query = query.eq("estado", estado);
       }
 
-      if(cidade.trim() !== "") {
+      if (cidade.trim() !== "") {
         query = query.eq("cidade", cidade);
       }
 
@@ -348,14 +323,10 @@ export function FiltrosLancamentos() {
         query = query.lte("data_emprestimo", dataFim);
       }
 
-
       query = query.order("id", { ascending: true });
 
       const { count } = await query.range(0, 0);
       const total = count ?? 0;
-
-      const inicio = (paginaAtual - 1) * itensPorPagina;
-      const fim = inicio + itensPorPagina - 1;
 
       if (inicio >= total && total > 0) {
         setPaginaAtual(1);
@@ -369,32 +340,25 @@ export function FiltrosLancamentos() {
         setErro("Erro ao buscar empréstimos.");
         console.error("Erro Supabase:", error);
       } else {
-
-        let resultadoFiltrado = (resultado || []).map((item) => ({
+        const resultadoFiltrado = (resultado || []).map((item) => ({
           ...item,
           clientes: Array.isArray(item.clientes) ? item.clientes[0] : item.clientes,
           consultores: Array.isArray(item.consultores) ? item.consultores[0] : item.consultores,
         }));
 
-        if (nome.trim() !== "") {
-          resultadoFiltrado = resultadoFiltrado.filter((item) =>
-            item.clientes?.nome_completo?.toLowerCase().includes(nome.trim().toLowerCase())
-          );
-        }
-
         setContas(resultadoFiltrado);
         setErro("");
 
-        const total = Math.ceil((count ?? 0) / itensPorPagina);
-        setTotalPaginas(total);
+        const totalPaginas = Math.ceil((count ?? 0) / itensPorPagina);
+        setTotalPaginas(totalPaginas);
+      }
 
-      }
-      
     } catch (erro) {
-        console.error("Erro geral:", erro);
-        setErro("Erro inesperado ao buscar constas.");
-      }
+      console.error("Erro geral:", erro);
+      setErro("Erro inesperado ao buscar contas.");
+    }
   };
+
 
   // ========== BUSCAR AS CONTAS PAGAS ==========
 
@@ -1015,6 +979,19 @@ export function FiltrosLancamentos() {
           ) : <FaArrowDown size={24} color="FFF" /> }
 
         </div>
+{/*
+                <button
+          type="button"
+          onClick={() => setFiltros(!filtros)}
+          className="flex items-center justify-between px-4 gap-2 text-white font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full bg-[linear-gradient(90deg,_rgba(147,51,234,1)_0%,_rgba(126,34,206,1)_50%,_rgba(109,15,179,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(170,73,255,1)_0%,_rgba(147,51,234,1)_50%,_rgba(126,34,206,1)_100%)] transition duration-200"
+        >
+          <span className="text-lg">Filtros</span>
+          {filtros ? (
+            <FaArrowUp size={24} color="white" />
+          ) : (
+            <FaArrowDown size={24} color="white" />
+          )}
+        </button> */}
 
         <div className="mt-4">
 

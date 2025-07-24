@@ -263,9 +263,6 @@ export function FiltrosClientes() {
             ))}
           </select>
 
-{/*
-          <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9"> Atualizar </button> */}
-
           <button
             type="submit"
             className="text-white font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(59,130,246,1)_0%,_rgba(37,99,235,1)_50%,_rgba(29,78,216,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(37,99,235,1)_0%,_rgba(29,78,216,1)_50%,_rgba(30,64,175,1)_100%)] transition duration-200"
