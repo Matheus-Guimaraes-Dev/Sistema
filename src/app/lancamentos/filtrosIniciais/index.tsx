@@ -970,6 +970,7 @@ export function FiltrosLancamentos() {
       </AnimatePresence>
 
       <div className="px-4 sm:hidden mb-4">
+        {/*
         <div onClick={() => setFiltros(!filtros)} className='flex items-center justify-between px-4 gap-2 text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full'>
           
           <button type="button" className="text-lg cursor-pointer"> Filtros </button>
@@ -979,8 +980,9 @@ export function FiltrosLancamentos() {
           ) : <FaArrowDown size={24} color="FFF" /> }
 
         </div>
-{/*
-                <button
+        */}
+
+        <button
           type="button"
           onClick={() => setFiltros(!filtros)}
           className="flex items-center justify-between px-4 gap-2 text-white font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full bg-[linear-gradient(90deg,_rgba(147,51,234,1)_0%,_rgba(126,34,206,1)_50%,_rgba(109,15,179,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(170,73,255,1)_0%,_rgba(147,51,234,1)_50%,_rgba(126,34,206,1)_100%)] transition duration-200"
@@ -991,7 +993,7 @@ export function FiltrosLancamentos() {
           ) : (
             <FaArrowDown size={24} color="white" />
           )}
-        </button> */}
+        </button> 
 
         <div className="mt-4">
 
