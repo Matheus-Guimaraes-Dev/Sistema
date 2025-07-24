@@ -11,6 +11,11 @@ import { Cliente } from "../types";
 import { cidadesPorEstado } from "../estados-cidades";
 import { Select } from "../componentes/select-cliente";
 
+interface ConsultorBusca {
+  id: number;
+  nome_completo: string;
+}
+
 export function FiltrosClientes() {
 
   const supabase = createClient();
@@ -25,7 +30,32 @@ export function FiltrosClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [erro, setErro] = useState("");
 
+  const [consultorFiltro, setConsultorFiltro] = useState("");
+  const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
   const [paginaAtual, setPaginaAtual] = useState(1);
+
+  useEffect( () => {
+    consultoresBuscando();
+  })
+
+  async function consultoresBuscando() {
+
+    const { data, error } = await supabase  
+      .from("consultores")
+      .select("id, nome_completo")
+      .eq("status", "Ativo")
+
+    if(error) {
+      console.error("Erro ao buscar consultores");
+      return
+    }
+
+    if(data) {
+      setConsultoresBusca(data);
+    }
+
+  }
 
   useEffect(() => {
     buscarClientes()
@@ -66,6 +96,10 @@ export function FiltrosClientes() {
 
       if (status !== "") {
         query = query.eq("status", status);
+      }
+
+      if (consultorFiltro.trim() !== "") {
+        query = query.eq("id_consultor", consultorFiltro);
       }
 
       if (estado !== "") {
@@ -189,6 +223,20 @@ export function FiltrosClientes() {
             options={dataOptions}
             placeholder="Ordenar por data"
           />
+
+          <select 
+            className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+            value={consultorFiltro}
+            onChange={(e) => setConsultorFiltro(e.target.value)}
+          >
+            <option value="">Consultor</option>
+
+            {consultoresBusca.map((info) => (
+              <option key={info.id} value={info.id}>
+                {info.nome_completo}
+              </option>
+            ))}
+          </select>
 
           <select
             value={estado}

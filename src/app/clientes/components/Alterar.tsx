@@ -16,6 +16,11 @@ import toast from "react-hot-toast";
 import { Input } from "@/app/formulario/components/componentes/input";
 import { useUser } from "@/contexts/UserContext";
 
+interface ConsultorBusca {
+  id: number;
+  nome_completo: string;
+}
+
 export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   const supabase = createClient();
@@ -60,6 +65,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const valorAluguelCorreto = limparValorMonetario(valorAluguel);
   const valorFinanciamentoVeiculoCoreto = limparValorMonetario(valorFinanciamentoVeiculo);
 
+  const [consultorSelecionado, setConsultorSelecionado] = useState("");
+  const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const [ativar, setAtivar] = useState(false);
@@ -68,6 +76,28 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
+
+  async function consultoresBuscando() {
+
+    const { data, error } = await supabase  
+      .from("consultores")
+      .select("id, nome_completo")
+      .eq("status", "Ativo")
+
+    if(error) {
+      toast.error("Erro ao buscar consultores");
+      return
+    }
+
+    if(data) {
+      setConsultoresBusca(data);
+    }
+
+  }
+
+  useEffect( () => {
+    consultoresBuscando();
+  }, [])
 
   useEffect( () => {
     if(informacoesCliente) {
@@ -100,6 +130,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setCpfCompanheiro(informacoesCliente.cpf_companheiro || ""),
       setWhatsappCompanheiro(informacoesCliente.whatsapp_companheiro || ""),
       setPix(informacoesCliente.pix || "");
+      setConsultorSelecionado(informacoesCliente.consultores.id.toString())
       setValorSolicitado(Number(informacoesCliente.valor_solicitado || "").toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
       setObservacao(informacoesCliente.observacao || "")
     }
@@ -138,6 +169,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       cidade: cidade,
       estado: estado,
       pix: pix,
+      id_consultor: consultorSelecionado,
       valor_solicitado: valorMonetarioCorreto,
       observacao: observacao,
     }
@@ -500,7 +532,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
               />
             </div>
 
-            <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            <div className="">
                       
               <Label> Condições de Moradia </Label>
               <Select 
@@ -513,7 +545,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             </div>
     
             {condicaoMoradia === "Própria Financiada" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="mb-[-16px] sm:mb-0">
                 
                 <Label> Valor do Financiamento </Label>
                 <Input 
@@ -525,7 +557,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             )}
     
             {condicaoMoradia === "Alugada" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="mb-[-16px] sm:mb-0">
                 
                 <Label> Valor do Aluguel </Label>
                 <Input 
@@ -536,7 +568,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
               </div>
             )}
     
-            <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+            <div className="">
               
               <Label> Possui Veículo </Label>
               <Select 
@@ -549,7 +581,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             </div>
     
             {verificarVeiculo === "Sim" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="">
                 
                 <Label> Veículo que Possui </Label>
                 <Select 
@@ -563,7 +595,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             )}
     
             {verificarVeiculo === "Sim" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="">
                 
                 <Label> Condições do Veículo </Label>
                 <Select 
@@ -577,7 +609,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             )}
     
             {condicaoVeiculo === "Financiado" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="mb-[-16px] sm:mb-0">
                 
                 <Label> Valor do Financiamento </Label>
                 <Input 
@@ -589,7 +621,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             )}
     
             {condicaoVeiculo === "Consórcio" && (
-              <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+              <div className="">
                 
                 <Label> Valor do Consórcio </Label>
                 <Input 
@@ -647,6 +679,23 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                 value={valorSolicitado}
                 onChange={(e) => mostrarValor(e, setValorSolicitado)}
               />
+            </div>
+
+            <div>
+              <Label> Consultor </Label>
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={consultorSelecionado}
+                onChange={(e) => setConsultorSelecionado(e.target.value)}
+              >
+                <option value="">Consultor</option>
+
+                {consultoresBusca.map((info) => (
+                  <option key={info.id} value={info.id}>
+                    {info.nome_completo}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

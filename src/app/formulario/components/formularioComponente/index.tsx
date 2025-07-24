@@ -1,7 +1,7 @@
 "use client"
 
 import { Input } from "../componentes/input"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import toast from 'react-hot-toast'
 import { converterImagemParaWebP } from "../conversao";
 import { createClient } from "@/lib/client";
@@ -14,6 +14,11 @@ import { viaCep } from "@/components/types/types";
 import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Select } from "@/app/clientes/componentes/select-cliente";
+
+interface ConsultorBusca {
+  id: number;
+  nome_completo: string;
+}
 
 export function FomularioComponente() {
 
@@ -55,6 +60,9 @@ export function FomularioComponente() {
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
   const [segurandoDocumento, setSegurandoDocumento] = useState<File | null>(null); 
 
+  const [consultorSelecionado, setConsultorSelecionado] = useState("");
+  const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
   const [loading, setLoading] = useState(false);
 
   const estados = Object.keys(cidadesPorEstado);
@@ -63,6 +71,28 @@ export function FomularioComponente() {
   : [];
 
   const router = useRouter();
+
+  async function consultoresBuscando() {
+
+    const { data, error } = await supabase  
+      .from("consultores")
+      .select("id, nome_completo")
+      .eq("status", "Ativo")
+
+    if(error) {
+      toast.error("Erro ao buscar consultores");
+      return
+    }
+
+    if(data) {
+      setConsultoresBusca(data);
+    }
+
+  }
+
+  useEffect( () => {
+    consultoresBuscando();
+  }, [])
 
   async function enviarFormulario(e: React.FormEvent) {
 
@@ -102,6 +132,7 @@ export function FomularioComponente() {
     if (!estado.trim()) return toast.error("Selecione o seu estado!");
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
+    if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
     if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento) return toast.error("Envie todas as 5 imagens")
 
@@ -112,125 +143,269 @@ export function FomularioComponente() {
     const valorAluguelCorreto = limparValorMonetario(valorAluguel);
     const valorFinanciamentoVeiculoCoreto = limparValorMonetario(valorFinanciamentoVeiculo);
 
-    const { data: clienteData, error: insertError } = await supabase
+    const { data: verificarTelefone, error:verificarTelefoneErro } = await supabase
       .from("clientes")
-      .insert({ 
-        nome_completo: nome.trim(),
-        email: email.trim(),
-        cpf: cpf.trim(),
-        rg: rg.trim(),
+      .select("id, whatsapp")
+      .eq("whatsapp", whatsapp)
+
+    if(verificarTelefoneErro) {
+      console.log("Erro:", verificarTelefoneErro);
+      return;
+    }
+
+    if(verificarTelefone && verificarTelefone.length > 0) {
+
+      const dadosAtualizados = {
+        nome_completo: nome,
+        email: email,
+        cpf: cpf,
+        rg: rg,
         data_emissao_rg: dataRg,
-        orgao_expedidor: orgaoExpedidor.trim(),
-        sexo,
+        orgao_expedidor: orgaoExpedidor,
+        sexo: sexo,
         estado_civil: estadoCivil,
         nome_completo_companheiro: nomeCompanheiro.trim(),
         cpf_companheiro: cpfCompanheiro.trim(),
         whatsapp_companheiro: whatsappCompanheiro,
         data_nascimento: dataNascimento,
-        whatsapp,
+        whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
-        cep,
-        bairro: bairro.trim(),
-        rua: rua.trim(),
-        numero_casa: Ncasa.trim(),
-        moradia,
+        cep: cep,
+        bairro: bairro,
+        rua: rua,
+        numero_casa: Ncasa,
+        moradia: moradia,
         condicoes_moradia: condicaoMoradia,
         valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
         valor_aluguel: valorAluguelCorreto,
         categoria_veiculo: veiculoSelecionado,
         condicao_veiculo: condicaoVeiculo,
         valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-        estado,
-        cidade,
-        pix: pix.trim(),
+        cidade: cidade,
+        estado: estado,
+        pix: pix,
+        id_consultor: consultorSelecionado,
         valor_solicitado: valorMonetarioCorreto
-      })
-      .select("id, nome_completo")
-
-    if (insertError || !clienteData || clienteData.length === 0) {
-      console.error("Erro ao criar cliente:", insertError)
-      return toast.error("Erro ao criar cliente")
-    }
-
-    const idCliente = clienteData[0].id
-    const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
-    const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
-    const urls: Record<string, string> = {}
-
-    for (let i = 0; i < arquivos.length; i++) {
-
-      const arquivo = arquivos[i]
-      const nomeCampo = campos[i]
-
-      try {
-
-        const imagemConvertida = await converterImagemParaWebP(arquivo!)
-        const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
-
-        const { error: uploadError } = await supabase
-          .storage
-          .from("clientes")
-          .upload(nomeArquivo, imagemConvertida, {
-            contentType: "image/webp"
-          })
-
-        if (uploadError) {
-          console.error(uploadError)
-          return alert(`Erro ao enviar ${nomeCampo}`)
-        }
-
-        const { data: urlData } = supabase
-          .storage
-          .from("clientes")
-          .getPublicUrl(nomeArquivo)
-
-        urls[nomeCampo] = urlData.publicUrl
-
-      } catch (erro) {
-        console.error("Erro na conversão:", erro)
-        return alert(`Erro ao processar imagem de ${nomeCampo}`)
       }
+
+      const { error } = await supabase
+        .from("clientes")
+        .update(dadosAtualizados)
+        .eq("id", verificarTelefone[0].id)
+
+      if(error) {
+        console.error("Erro ao atualizar cliente:", error.message);
+        return false;
+      }
+
+      const idCliente = verificarTelefone[0].id
+      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
+      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
+      const urls: Record<string, string> = {}
+
+      for (let i = 0; i < arquivos.length; i++) {
+
+        const arquivo = arquivos[i]
+        const nomeCampo = campos[i]
+
+        try {
+
+          const imagemConvertida = await converterImagemParaWebP(arquivo!)
+          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
+
+          const { error: uploadError } = await supabase
+            .storage
+            .from("clientes")
+            .upload(nomeArquivo, imagemConvertida, {
+              contentType: "image/webp"
+            })
+
+          if (uploadError) {
+            console.error(uploadError)
+            return alert(`Erro ao enviar ${nomeCampo}`)
+          }
+
+          const { data: urlData } = supabase
+            .storage
+            .from("clientes")
+            .getPublicUrl(nomeArquivo)
+
+          urls[nomeCampo] = urlData.publicUrl
+
+        } catch (erro) {
+          console.error("Erro na conversão:", erro)
+          return alert(`Erro ao processar imagem de ${nomeCampo}`)
+        }
+      }
+
+      setNome("");
+      setEmail("");
+      setCpf("");
+      setRg("");
+      setDataRg("");
+      setOrgaoExpedidor("");
+      setSexo("");
+      setEstadoCivil("");
+      setNomeCompanheiro("");
+      setCpfCompanheiro("");
+      setWhatsappCompanheiro("");
+      setDataNascimento("");
+      setWhatsapp("");
+      setTelefoneReserva("");
+      setCep("");
+      setBairro("");
+      setRua("");
+      setNcasa("");
+      setMoradia("");
+      setEstado("");
+      setCidade("");
+      setConsultorSelecionado("");
+      setPix("");
+      setCondicaoMoradia("");
+      setValorFinanciamento("");
+      setValorAluguel("");
+      setVerificarVeiculo("");
+      setVeiculoSelecionado("");
+      setCondicaoVeiculo("");
+      setValorFinanciamentoVeiculo("");
+      setValorSolicitado("");
+      setComprovanteRenda(null);
+      setComprovanteEndereco(null);
+      setDocumentoFrente(null);
+      setDocumentoVerso(null);
+      setSegurandoDocumento(null);
+
+      setLoading(false);
+
+      router.push("/formulario/obrigado");
+
+      return;
+
+    } else {
+
+      const { data: clienteData, error: insertError } = await supabase
+        .from("clientes")
+        .insert({ 
+          nome_completo: nome.trim(),
+          email: email.trim(),
+          cpf: cpf.trim(),
+          rg: rg.trim(),
+          data_emissao_rg: dataRg,
+          orgao_expedidor: orgaoExpedidor.trim(),
+          sexo,
+          estado_civil: estadoCivil,
+          nome_completo_companheiro: nomeCompanheiro.trim(),
+          cpf_companheiro: cpfCompanheiro.trim(),
+          whatsapp_companheiro: whatsappCompanheiro,
+          data_nascimento: dataNascimento,
+          whatsapp,
+          telefone_reserva: telefoneReserva,
+          cep,
+          bairro: bairro.trim(),
+          rua: rua.trim(),
+          numero_casa: Ncasa.trim(),
+          moradia,
+          condicoes_moradia: condicaoMoradia,
+          valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
+          valor_aluguel: valorAluguelCorreto,
+          categoria_veiculo: veiculoSelecionado,
+          condicao_veiculo: condicaoVeiculo,
+          valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
+          estado,
+          cidade,
+          pix: pix.trim(),
+          id_consultor: consultorSelecionado,
+          valor_solicitado: valorMonetarioCorreto
+        })
+        .select("id, nome_completo")
+
+      if (insertError || !clienteData || clienteData.length === 0) {
+        console.error("Erro ao criar cliente:", insertError)
+        return toast.error("Erro ao criar cliente")
+      }
+
+      const idCliente = clienteData[0].id
+      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
+      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
+      const urls: Record<string, string> = {}
+
+      for (let i = 0; i < arquivos.length; i++) {
+
+        const arquivo = arquivos[i]
+        const nomeCampo = campos[i]
+
+        try {
+
+          const imagemConvertida = await converterImagemParaWebP(arquivo!)
+          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
+
+          const { error: uploadError } = await supabase
+            .storage
+            .from("clientes")
+            .upload(nomeArquivo, imagemConvertida, {
+              contentType: "image/webp"
+            })
+
+          if (uploadError) {
+            console.error(uploadError)
+            return alert(`Erro ao enviar ${nomeCampo}`)
+          }
+
+          const { data: urlData } = supabase
+            .storage
+            .from("clientes")
+            .getPublicUrl(nomeArquivo)
+
+          urls[nomeCampo] = urlData.publicUrl
+
+        } catch (erro) {
+          console.error("Erro na conversão:", erro)
+          return alert(`Erro ao processar imagem de ${nomeCampo}`)
+        }
+      }
+
+      setNome("");
+      setEmail("");
+      setCpf("");
+      setRg("");
+      setDataRg("");
+      setOrgaoExpedidor("");
+      setSexo("");
+      setEstadoCivil("");
+      setNomeCompanheiro("");
+      setCpfCompanheiro("");
+      setWhatsappCompanheiro("");
+      setDataNascimento("");
+      setWhatsapp("");
+      setTelefoneReserva("");
+      setCep("");
+      setBairro("");
+      setRua("");
+      setNcasa("");
+      setMoradia("");
+      setEstado("");
+      setCidade("");
+      setConsultorSelecionado("");
+      setPix("");
+      setCondicaoMoradia("");
+      setValorFinanciamento("");
+      setValorAluguel("");
+      setVerificarVeiculo("");
+      setVeiculoSelecionado("");
+      setCondicaoVeiculo("");
+      setValorFinanciamentoVeiculo("");
+      setValorSolicitado("");
+      setComprovanteRenda(null);
+      setComprovanteEndereco(null);
+      setDocumentoFrente(null);
+      setDocumentoVerso(null);
+      setSegurandoDocumento(null);
+
+      setLoading(false);
+
+      router.push("/formulario/obrigado");
+
     }
-
-    setNome("");
-    setEmail("");
-    setCpf("");
-    setRg("");
-    setDataRg("");
-    setOrgaoExpedidor("");
-    setSexo("");
-    setEstadoCivil("");
-    setNomeCompanheiro("");
-    setCpfCompanheiro("");
-    setWhatsappCompanheiro("");
-    setDataNascimento("");
-    setWhatsapp("");
-    setTelefoneReserva("");
-    setCep("");
-    setBairro("");
-    setRua("");
-    setNcasa("");
-    setMoradia("");
-    setEstado("");
-    setCidade("");
-    setPix("");
-    setCondicaoMoradia("");
-    setValorFinanciamento("");
-    setValorAluguel("");
-    setVerificarVeiculo("");
-    setVeiculoSelecionado("");
-    setCondicaoVeiculo("");
-    setValorFinanciamentoVeiculo("");
-    setValorSolicitado("");
-    setComprovanteRenda(null);
-    setComprovanteEndereco(null);
-    setDocumentoFrente(null);
-    setDocumentoVerso(null);
-    setSegurandoDocumento(null);
-
-    setLoading(false);
-
-    router.push("/formulario/obrigado");
 
   }
 
@@ -698,6 +873,25 @@ export function FomularioComponente() {
             value={valorSolicitado}
             onChange={ (e) => mostrarValor(e, setValorSolicitado) }
           />
+          
+        </div>
+
+        <div className="mt-[-12px] mb-6 mx-2 sm:mt-4 md:mt-0 md:mx-0 sm:mb-0">
+          
+          <Label> Consultor </Label>
+          <select 
+            className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+            value={consultorSelecionado}
+            onChange={(e) => setConsultorSelecionado(e.target.value)}
+          >
+            <option value="">Consultor</option>
+
+            {consultoresBusca.map((info) => (
+              <option key={info.id} value={info.id}>
+                {info.nome_completo}
+              </option>
+            ))}
+          </select>
           
         </div>
 

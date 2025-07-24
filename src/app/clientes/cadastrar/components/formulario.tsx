@@ -1,7 +1,7 @@
 "use client"
 
 import { InputAlterar } from "../../components/InputAlterar";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import toast from 'react-hot-toast'
 import { converterImagemParaWebP } from "@/app/formulario/components/conversao";
 import { createClient } from "@/lib/client";
@@ -13,6 +13,11 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import { Select } from "../../componentes/select-cliente";
 import { useRef } from "react";
 import { Input } from "./input";
+
+interface ConsultorBusca {
+  id: number;
+  nome_completo: string;
+}
 
 export function Formulario() {
 
@@ -57,6 +62,9 @@ export function Formulario() {
   const [arquivo, setArquivo] = useState<File | null>(null); 
   const [loading, setLoading] = useState(false);
 
+  const [consultorSelecionado, setConsultorSelecionado] = useState("");
+  const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
+
   const rendaRef = useRef<HTMLInputElement>(null);
   const enderecoRef = useRef<HTMLInputElement>(null);
   const frenteRef = useRef<HTMLInputElement>(null);
@@ -68,6 +76,28 @@ export function Formulario() {
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
+
+  async function consultoresBuscando() {
+
+    const { data, error } = await supabase  
+      .from("consultores")
+      .select("id, nome_completo")
+      .eq("status", "Ativo")
+
+    if(error) {
+      toast.error("Erro ao buscar consultores");
+      return
+    }
+
+    if(data) {
+      setConsultoresBusca(data);
+    }
+
+  }
+
+  useEffect( () => {
+    consultoresBuscando();
+  }, [])
 
   async function enviarFormulario(e: React.FormEvent) {
 
@@ -92,6 +122,7 @@ export function Formulario() {
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
+    if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
 
     setLoading(true);
 
@@ -100,151 +131,461 @@ export function Formulario() {
     const valorAluguelCorreto = limparValorMonetario(valorAluguel);
     const valorFinanciamentoVeiculoCoreto = limparValorMonetario(valorFinanciamentoVeiculo);
 
-    const { data: clienteData, error: insertError } = await supabase
+    const { data: verificarTelefone, error:verificarTelefoneErro } = await supabase
       .from("clientes")
-      .insert({ 
-        nome_completo: nome.trim(),
-        email: email.trim(),
-        cpf: cpf.trim(),
-        rg: rg.trim(),
+      .select("id, whatsapp")
+      .eq("whatsapp", whatsapp)
+
+    if(verificarTelefoneErro) {
+      console.log("Erro:", verificarTelefoneErro);
+      return;
+    }
+
+    if(verificarTelefone && verificarTelefone.length > 0) { 
+
+      const dadosAtualizados = {
+        nome_completo: nome,
+        email: email,
+        cpf: cpf,
+        rg: rg,
         data_emissao_rg: dataRg,
-        orgao_expedidor: orgaoExpedidor.trim(),
-        sexo,
+        orgao_expedidor: orgaoExpedidor,
+        sexo: sexo,
         estado_civil: estadoCivil,
         nome_completo_companheiro: nomeCompanheiro.trim(),
         cpf_companheiro: cpfCompanheiro.trim(),
         whatsapp_companheiro: whatsappCompanheiro,
         data_nascimento: dataNascimento,
-        whatsapp,
+        whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
-        cep,
-        bairro: bairro.trim(),
-        rua: rua.trim(),
-        numero_casa: Ncasa.trim(),
-        moradia,
+        cep: cep,
+        bairro: bairro,
+        rua: rua,
+        numero_casa: Ncasa,
+        moradia: moradia,
         condicoes_moradia: condicaoMoradia,
         valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
         valor_aluguel: valorAluguelCorreto,
         categoria_veiculo: veiculoSelecionado,
         condicao_veiculo: condicaoVeiculo,
         valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-        estado,
-        cidade,
-        pix: pix.trim(),
-        observacao: observacao,
+        cidade: cidade,
+        estado: estado,
+        pix: pix,
+        id_consultor: consultorSelecionado,
         valor_solicitado: valorMonetarioCorreto
-      })
-      .select()
-
-    if (insertError || !clienteData || clienteData.length === 0) {
-      return toast.error("Erro ao criar cliente")
-    } else { 
-      setNome("");
-      setEmail("");
-      setCpf("");
-      setRg("");
-      setDataRg("");
-      setOrgaoExpedidor("");
-      setSexo("");
-      setEstadoCivil("");
-      setNomeCompanheiro("");
-      setCpfCompanheiro("");
-      setWhatsappCompanheiro("");
-      setDataNascimento("");
-      setWhatsapp("");
-      setTelefoneReserva("");
-      setCep("");
-      setBairro("");
-      setRua("");
-      setNcasa("");
-      setMoradia("");
-      setEstado("");
-      setCidade("");
-      setPix("");
-      setCondicaoMoradia("");
-      setValorFinanciamento("");
-      setValorAluguel("");
-      setVerificarVeiculo("");
-      setVeiculoSelecionado("");
-      setCondicaoVeiculo("");
-      setValorFinanciamentoVeiculo("");
-      setValorSolicitado("");
-      setObservacao("");
-      setComprovanteRenda(null);
-      setComprovanteEndereco(null);
-      setDocumentoFrente(null);
-      setDocumentoVerso(null);
-      setArquivo(null);
-
-      rendaRef.current!.value = "";
-      enderecoRef.current!.value = "";
-      frenteRef.current!.value = "";
-      versoRef.current!.value = "";
-      outroRef.current!.value = "";
-      segurandoDocRef.current!.value = "";
-      toast.success('Cliente Cadastrado com Sucesso!')
-    }
-
-    const idCliente = clienteData[0].id
-    const arquivos: { arquivo: File | null, campo: string }[] = [
-      { arquivo: comprovanteRenda, campo: "foto_comprovante_renda" },
-      { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
-      { arquivo: documentoFrente, campo: "foto_identidade_frente" },
-      { arquivo: documentoVerso, campo: "foto_identidade_verso" },
-      { arquivo: segurandoDocumento, campo: "segurando_documento" },
-      { arquivo: arquivo, campo: "outro_arquivo" },
-    ];
-    const urls: Record<string, string> = {}
-
-    for (const { arquivo, campo } of arquivos) {
-      
-      if (!arquivo) continue;
-
-      try {
-        
-        const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
-        const isPDF = arquivo.type === "application/pdf";
-
-        let arquivoFinal: Blob;
-        let extensao: string;
-
-        if (isPDF) {
-          arquivoFinal = arquivo;
-          extensao = "pdf";
-        } else {
-          const convertido = await converterImagemParaWebP(arquivo);
-          arquivoFinal = convertido;
-          extensao = "webp";
-        }
-
-        const nomeArquivo = campo === "outro_arquivo"
-          ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
-          : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
-
-        const { error: uploadError } = await supabase
-          .storage
-          .from("clientes")
-          .upload(nomeArquivo, arquivoFinal, {
-            contentType: arquivoFinal.type,
-          });
-
-        if (uploadError) {
-          return alert(`Erro ao enviar ${campo}`);
-        }
-
-        const { data: urlData } = supabase
-          .storage
-          .from("clientes")
-          .getPublicUrl(nomeArquivo);
-
-        urls[campo] = urlData.publicUrl;
-
-      } catch (erro) {
-        return alert(`Erro ao processar o arquivo: ${campo}`);
       }
+
+      const { error } = await supabase
+        .from("clientes")
+        .update(dadosAtualizados)
+        .eq("id", verificarTelefone[0].id)
+
+      if (error) {
+        return toast.error("Erro ao atualizar cliente")
+      } else { 
+        setNome("");
+        setEmail("");
+        setCpf("");
+        setRg("");
+        setDataRg("");
+        setOrgaoExpedidor("");
+        setSexo("");
+        setEstadoCivil("");
+        setNomeCompanheiro("");
+        setCpfCompanheiro("");
+        setWhatsappCompanheiro("");
+        setDataNascimento("");
+        setWhatsapp("");
+        setTelefoneReserva("");
+        setCep("");
+        setBairro("");
+        setRua("");
+        setNcasa("");
+        setMoradia("");
+        setEstado("");
+        setCidade("");
+        setPix("");
+        setCondicaoMoradia("");
+        setValorFinanciamento("");
+        setValorAluguel("");
+        setVerificarVeiculo("");
+        setVeiculoSelecionado("");
+        setCondicaoVeiculo("");
+        setValorFinanciamentoVeiculo("");
+        setValorSolicitado("");
+        setConsultorSelecionado("");
+        setObservacao("");
+        setComprovanteRenda(null);
+        setComprovanteEndereco(null);
+        setDocumentoFrente(null);
+        setDocumentoVerso(null);
+        setArquivo(null);
+
+        rendaRef.current!.value = "";
+        enderecoRef.current!.value = "";
+        frenteRef.current!.value = "";
+        versoRef.current!.value = "";
+        outroRef.current!.value = "";
+        segurandoDocRef.current!.value = "";
+        toast.success('Cliente Cadastrado com Sucesso!')
+      }
+
+      const idCliente = verificarTelefone[0].id
+      const arquivos: { arquivo: File | null, campo: string }[] = [
+        { arquivo: comprovanteRenda, campo: "foto_comprovante_renda" },
+        { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
+        { arquivo: documentoFrente, campo: "foto_identidade_frente" },
+        { arquivo: documentoVerso, campo: "foto_identidade_verso" },
+        { arquivo: segurandoDocumento, campo: "segurando_documento" },
+        { arquivo: arquivo, campo: "outro_arquivo" },
+      ];
+      const urls: Record<string, string> = {}
+
+      for (const { arquivo, campo } of arquivos) {
+        
+        if (!arquivo) continue;
+
+        try {
+          
+          const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
+          const isPDF = arquivo.type === "application/pdf";
+
+          let arquivoFinal: Blob;
+          let extensao: string;
+
+          if (isPDF) {
+            arquivoFinal = arquivo;
+            extensao = "pdf";
+          } else {
+            const convertido = await converterImagemParaWebP(arquivo);
+            arquivoFinal = convertido;
+            extensao = "webp";
+          }
+
+          const nomeArquivo = campo === "outro_arquivo"
+            ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
+            : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
+
+          const { error: uploadError } = await supabase
+            .storage
+            .from("clientes")
+            .upload(nomeArquivo, arquivoFinal, {
+              contentType: arquivoFinal.type,
+            });
+
+          if (uploadError) {
+            return alert(`Erro ao enviar ${campo}`);
+          }
+
+          const { data: urlData } = supabase
+            .storage
+            .from("clientes")
+            .getPublicUrl(nomeArquivo);
+
+          urls[campo] = urlData.publicUrl;
+
+        } catch (erro) {
+          return alert(`Erro ao processar o arquivo: ${campo}`);
+        }
+      }
+
+      setLoading(false);
+
+    } else {
+      const { data: clienteData, error: insertError } = await supabase
+        .from("clientes")
+        .insert({ 
+          nome_completo: nome.trim(),
+          email: email.trim(),
+          cpf: cpf.trim(),
+          rg: rg.trim(),
+          data_emissao_rg: dataRg,
+          orgao_expedidor: orgaoExpedidor.trim(),
+          sexo,
+          estado_civil: estadoCivil,
+          nome_completo_companheiro: nomeCompanheiro.trim(),
+          cpf_companheiro: cpfCompanheiro.trim(),
+          whatsapp_companheiro: whatsappCompanheiro,
+          data_nascimento: dataNascimento,
+          whatsapp,
+          telefone_reserva: telefoneReserva,
+          cep,
+          bairro: bairro.trim(),
+          rua: rua.trim(),
+          numero_casa: Ncasa.trim(),
+          moradia,
+          condicoes_moradia: condicaoMoradia,
+          valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
+          valor_aluguel: valorAluguelCorreto,
+          categoria_veiculo: veiculoSelecionado,
+          condicao_veiculo: condicaoVeiculo,
+          valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
+          estado,
+          cidade,
+          pix: pix.trim(),
+          observacao: observacao,
+          valor_solicitado: valorMonetarioCorreto
+        })
+        .select()
+
+      if (insertError || !clienteData || clienteData.length === 0) {
+        return toast.error("Erro ao criar cliente")
+      } else { 
+        setNome("");
+        setEmail("");
+        setCpf("");
+        setRg("");
+        setDataRg("");
+        setOrgaoExpedidor("");
+        setSexo("");
+        setEstadoCivil("");
+        setNomeCompanheiro("");
+        setCpfCompanheiro("");
+        setWhatsappCompanheiro("");
+        setDataNascimento("");
+        setWhatsapp("");
+        setTelefoneReserva("");
+        setCep("");
+        setBairro("");
+        setRua("");
+        setNcasa("");
+        setMoradia("");
+        setEstado("");
+        setCidade("");
+        setPix("");
+        setCondicaoMoradia("");
+        setValorFinanciamento("");
+        setValorAluguel("");
+        setVerificarVeiculo("");
+        setVeiculoSelecionado("");
+        setCondicaoVeiculo("");
+        setValorFinanciamentoVeiculo("");
+        setValorSolicitado("");
+        setConsultorSelecionado("");
+        setObservacao("");
+        setComprovanteRenda(null);
+        setComprovanteEndereco(null);
+        setDocumentoFrente(null);
+        setDocumentoVerso(null);
+        setArquivo(null);
+
+        rendaRef.current!.value = "";
+        enderecoRef.current!.value = "";
+        frenteRef.current!.value = "";
+        versoRef.current!.value = "";
+        outroRef.current!.value = "";
+        segurandoDocRef.current!.value = "";
+        toast.success('Cliente Cadastrado com Sucesso!')
+      }
+
+      const idCliente = clienteData[0].id
+      const arquivos: { arquivo: File | null, campo: string }[] = [
+        { arquivo: comprovanteRenda, campo: "foto_comprovante_renda" },
+        { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
+        { arquivo: documentoFrente, campo: "foto_identidade_frente" },
+        { arquivo: documentoVerso, campo: "foto_identidade_verso" },
+        { arquivo: segurandoDocumento, campo: "segurando_documento" },
+        { arquivo: arquivo, campo: "outro_arquivo" },
+      ];
+      const urls: Record<string, string> = {}
+
+      for (const { arquivo, campo } of arquivos) {
+        
+        if (!arquivo) continue;
+
+        try {
+          
+          const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
+          const isPDF = arquivo.type === "application/pdf";
+
+          let arquivoFinal: Blob;
+          let extensao: string;
+
+          if (isPDF) {
+            arquivoFinal = arquivo;
+            extensao = "pdf";
+          } else {
+            const convertido = await converterImagemParaWebP(arquivo);
+            arquivoFinal = convertido;
+            extensao = "webp";
+          }
+
+          const nomeArquivo = campo === "outro_arquivo"
+            ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
+            : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
+
+          const { error: uploadError } = await supabase
+            .storage
+            .from("clientes")
+            .upload(nomeArquivo, arquivoFinal, {
+              contentType: arquivoFinal.type,
+            });
+
+          if (uploadError) {
+            return alert(`Erro ao enviar ${campo}`);
+          }
+
+          const { data: urlData } = supabase
+            .storage
+            .from("clientes")
+            .getPublicUrl(nomeArquivo);
+
+          urls[campo] = urlData.publicUrl;
+
+        } catch (erro) {
+          return alert(`Erro ao processar o arquivo: ${campo}`);
+        }
+      }
+
+      setLoading(false);
     }
 
-    setLoading(false);
+    // const { data: clienteData, error: insertError } = await supabase
+    //   .from("clientes")
+    //   .insert({ 
+    //     nome_completo: nome.trim(),
+    //     email: email.trim(),
+    //     cpf: cpf.trim(),
+    //     rg: rg.trim(),
+    //     data_emissao_rg: dataRg,
+    //     orgao_expedidor: orgaoExpedidor.trim(),
+    //     sexo,
+    //     estado_civil: estadoCivil,
+    //     nome_completo_companheiro: nomeCompanheiro.trim(),
+    //     cpf_companheiro: cpfCompanheiro.trim(),
+    //     whatsapp_companheiro: whatsappCompanheiro,
+    //     data_nascimento: dataNascimento,
+    //     whatsapp,
+    //     telefone_reserva: telefoneReserva,
+    //     cep,
+    //     bairro: bairro.trim(),
+    //     rua: rua.trim(),
+    //     numero_casa: Ncasa.trim(),
+    //     moradia,
+    //     condicoes_moradia: condicaoMoradia,
+    //     valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
+    //     valor_aluguel: valorAluguelCorreto,
+    //     categoria_veiculo: veiculoSelecionado,
+    //     condicao_veiculo: condicaoVeiculo,
+    //     valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
+    //     estado,
+    //     cidade,
+    //     pix: pix.trim(),
+    //     observacao: observacao,
+    //     valor_solicitado: valorMonetarioCorreto
+    //   })
+    //   .select()
+
+    // if (insertError || !clienteData || clienteData.length === 0) {
+    //   return toast.error("Erro ao criar cliente")
+    // } else { 
+    //   setNome("");
+    //   setEmail("");
+    //   setCpf("");
+    //   setRg("");
+    //   setDataRg("");
+    //   setOrgaoExpedidor("");
+    //   setSexo("");
+    //   setEstadoCivil("");
+    //   setNomeCompanheiro("");
+    //   setCpfCompanheiro("");
+    //   setWhatsappCompanheiro("");
+    //   setDataNascimento("");
+    //   setWhatsapp("");
+    //   setTelefoneReserva("");
+    //   setCep("");
+    //   setBairro("");
+    //   setRua("");
+    //   setNcasa("");
+    //   setMoradia("");
+    //   setEstado("");
+    //   setCidade("");
+    //   setPix("");
+    //   setCondicaoMoradia("");
+    //   setValorFinanciamento("");
+    //   setValorAluguel("");
+    //   setVerificarVeiculo("");
+    //   setVeiculoSelecionado("");
+    //   setCondicaoVeiculo("");
+    //   setValorFinanciamentoVeiculo("");
+    //   setValorSolicitado("");
+    //   setObservacao("");
+    //   setComprovanteRenda(null);
+    //   setComprovanteEndereco(null);
+    //   setDocumentoFrente(null);
+    //   setDocumentoVerso(null);
+    //   setArquivo(null);
+
+    //   rendaRef.current!.value = "";
+    //   enderecoRef.current!.value = "";
+    //   frenteRef.current!.value = "";
+    //   versoRef.current!.value = "";
+    //   outroRef.current!.value = "";
+    //   segurandoDocRef.current!.value = "";
+    //   toast.success('Cliente Cadastrado com Sucesso!')
+    // }
+
+    // const idCliente = clienteData[0].id
+    // const arquivos: { arquivo: File | null, campo: string }[] = [
+    //   { arquivo: comprovanteRenda, campo: "foto_comprovante_renda" },
+    //   { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
+    //   { arquivo: documentoFrente, campo: "foto_identidade_frente" },
+    //   { arquivo: documentoVerso, campo: "foto_identidade_verso" },
+    //   { arquivo: segurandoDocumento, campo: "segurando_documento" },
+    //   { arquivo: arquivo, campo: "outro_arquivo" },
+    // ];
+    // const urls: Record<string, string> = {}
+
+    // for (const { arquivo, campo } of arquivos) {
+      
+    //   if (!arquivo) continue;
+
+    //   try {
+        
+    //     const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
+    //     const isPDF = arquivo.type === "application/pdf";
+
+    //     let arquivoFinal: Blob;
+    //     let extensao: string;
+
+    //     if (isPDF) {
+    //       arquivoFinal = arquivo;
+    //       extensao = "pdf";
+    //     } else {
+    //       const convertido = await converterImagemParaWebP(arquivo);
+    //       arquivoFinal = convertido;
+    //       extensao = "webp";
+    //     }
+
+    //     const nomeArquivo = campo === "outro_arquivo"
+    //       ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
+    //       : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
+
+    //     const { error: uploadError } = await supabase
+    //       .storage
+    //       .from("clientes")
+    //       .upload(nomeArquivo, arquivoFinal, {
+    //         contentType: arquivoFinal.type,
+    //       });
+
+    //     if (uploadError) {
+    //       return alert(`Erro ao enviar ${campo}`);
+    //     }
+
+    //     const { data: urlData } = supabase
+    //       .storage
+    //       .from("clientes")
+    //       .getPublicUrl(nomeArquivo);
+
+    //     urls[campo] = urlData.publicUrl;
+
+    //   } catch (erro) {
+    //     return alert(`Erro ao processar o arquivo: ${campo}`);
+    //   }
+    // }
+
+    // setLoading(false);
 
   }
 
@@ -514,7 +855,7 @@ export function Formulario() {
         />
       </div>
 
-      <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+      <div className="">
             
         <Label> Condições de Moradia </Label>
         <Select 
@@ -527,7 +868,7 @@ export function Formulario() {
       </div>
 
       {condicaoMoradia === "Própria Financiada" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Valor do Financiamento </Label>
           <Input 
@@ -539,7 +880,7 @@ export function Formulario() {
       )}
 
       {condicaoMoradia === "Alugada" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Valor do Aluguel </Label>
           <Input 
@@ -550,7 +891,7 @@ export function Formulario() {
         </div>
       )}
 
-      <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+      <div className="">
         
         <Label> Possui Veículo </Label>
         <Select 
@@ -563,7 +904,7 @@ export function Formulario() {
       </div>
 
       {verificarVeiculo === "Sim" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Veículo que Possui </Label>
           <Select 
@@ -577,7 +918,7 @@ export function Formulario() {
       )}
 
       {verificarVeiculo === "Sim" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Condições do Veículo </Label>
           <Select 
@@ -591,7 +932,7 @@ export function Formulario() {
       )}
 
       {condicaoVeiculo === "Financiado" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Valor do Financiamento </Label>
           <Input 
@@ -603,7 +944,7 @@ export function Formulario() {
       )}
 
       {condicaoVeiculo === "Consórcio" && (
-        <div className="sm:mt-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="">
           
           <Label> Valor do Consórcio </Label>
           <Input 
@@ -663,6 +1004,25 @@ export function Formulario() {
         />
       </div>
 
+      <div className="">
+        
+        <Label> Consultor </Label>
+        <select 
+          className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+          value={consultorSelecionado}
+          onChange={(e) => setConsultorSelecionado(e.target.value)}
+        >
+          <option value="">Consultor</option>
+
+          {consultoresBusca.map((info) => (
+            <option key={info.id} value={info.id}>
+              {info.nome_completo}
+            </option>
+          ))}
+        </select>
+        
+      </div>
+
       <div>
         <Label> Observação </Label>
         <InputAlterar 
@@ -672,48 +1032,56 @@ export function Formulario() {
         />
       </div>
 
-      <div className="mb-2 sm:mb-[0px]">
-        <Label> Foto do Comprovante de Renda </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          ref={rendaRef}
-          onChange={e => setComprovanteRenda(e.target.files?.[0] || null)}
-        />
+      <div className="flex items-end">
+        <div className="mb-2 sm:mb-[0px] flex-1">
+          <Label> Foto do Comprovante de Renda </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            ref={rendaRef}
+            onChange={e => setComprovanteRenda(e.target.files?.[0] || null)}
+          />
+        </div>
       </div>
 
-      <div className="sm:mt-2 mb-2 sm:mb-[0px]">
-        <Label> Foto do Comprovante de Endereço </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          ref={enderecoRef}
-          onChange={e => setComprovanteEndereco(e.target.files?.[0] || null)}
-        />
+      <div className="flex items-end">
+        <div className="sm:mt-2 mb-2 sm:mb-[0px] flex-1">
+          <Label> Foto do Comprovante de Endereço </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            ref={enderecoRef}
+            onChange={e => setComprovanteEndereco(e.target.files?.[0] || null)}
+          />
+        </div>
       </div>
 
-      <div className="sm:mt-2 mb-2 sm:mb-[0px]">
-        <Label> Foto da identidade (FRENTE) </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          ref={frenteRef}
-          onChange={e => setDocumentoFrente(e.target.files?.[0] || null)}
-        />
+      <div className="flex items-end">
+        <div className="sm:mt-2 mb-2 sm:mb-[0px] flex-1">
+          <Label> Foto da identidade (FRENTE) </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            ref={frenteRef}
+            onChange={e => setDocumentoFrente(e.target.files?.[0] || null)}
+          />
+        </div>
       </div>
 
-      <div className="sm:mt-2 mb-2 sm:mb-[0px]">
-        <Label> Foto da identidade (verso) </Label>
-        <input 
-          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-          type="file" 
-          accept="image/*"
-          ref={versoRef}
-          onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
-        />
+      <div className="flex items-end">
+        <div className="sm:mt-2 mb-2 sm:mb-[0px] flex-1">
+          <Label> Foto da identidade (verso) </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*"
+            ref={versoRef}
+            onChange={e => setDocumentoVerso(e.target.files?.[0] || null)}
+          />
+        </div>
       </div>
 
       <div className="sm:mt-2 mb-2 sm:mb-[0px]">
@@ -728,7 +1096,7 @@ export function Formulario() {
       </div>
 
       <div className="flex items-end"> 
-        <div className="sm:mt-2 mb-2 sm:mb-[0px]">
+        <div className="sm:mt-2 mb-2 sm:mb-[0px] flex-1">
           <Label> Arquivo (Outros) </Label>
           <input 
             className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 

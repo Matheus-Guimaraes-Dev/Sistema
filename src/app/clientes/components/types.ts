@@ -30,6 +30,10 @@ export interface infoClientes {
   cpf_companheiro: string;
   whatsapp_companheiro: string;
   pix: string;
+  consultores: {
+    id: number,
+    nome_completo: string;
+  }
   valor_solicitado: string;
   observacao: string;
 }

@@ -32,7 +32,12 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
   
     const { data, error } = await supabase
       .from("clientes")
-      .select("*")
+      .select(`
+      *,
+      consultores (
+        id,
+        nome_completo
+      )`)
       .eq("id", id)
       .single();
 
@@ -47,6 +52,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
 
   const clienteId = (await params).id;
   const cliente = await buscarCliente(idConvertido);
+  
 
   if (!cliente) {
     redirect("/clientes");
@@ -82,15 +88,16 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
           </div>
 
           <div>
-            <p><strong>Data de Nascimento:</strong> {formatarData(cliente.data_nascimento)} </p>
-            <p><strong>Email:</strong> {cliente.email} </p>
-            <p><strong>WhatsApp:</strong> {cliente.whatsapp} </p>
-            <p><strong>Telefone Reserva:</strong> {cliente.telefone_reserva} </p>
-            <p><strong>Status:</strong> {cliente.status} </p>
-            <p><strong>Data de Cadastro:</strong> {formatarData(cliente.data_cadastro)} </p>
-            <p> <strong>Valor Solicitado:</strong>{formatarDinheiro(cliente.valor_solicitado)} </p>
+            <p><strong>Data de Nascimento:</strong> {formatarData(cliente.data_nascimento) || ""} </p>
+            <p><strong>Email:</strong> {cliente.email || ""} </p>
+            <p><strong>WhatsApp:</strong> {cliente.whatsapp || ""} </p>
+            <p><strong>Telefone Reserva:</strong> {cliente.telefone_reserva || ""} </p>
+            <p><strong>Status:</strong> {cliente.status || ""} </p>
+            <p><strong>Data de Cadastro:</strong> {formatarData(cliente.data_cadastro) || ""} </p>
+            <p> <strong>Valor Solicitado:</strong>{formatarDinheiro(cliente.valor_solicitado) || ""} </p>
             <p><strong>Chave Pix:</strong> {cliente.pix} </p>
-            <p><strong>Observação: </strong> {cliente.observacao} </p>
+            <p><strong>Consultor:</strong> {cliente?.consultores.nome_completo || ""} </p>
+            <p><strong>Observação: </strong> {cliente.observacao || ""} </p>
           </div>
 
         </section>
