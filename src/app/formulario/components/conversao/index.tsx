@@ -1,11 +1,35 @@
-export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Blob> {
+import heic2any from "heic2any";
 
+export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Blob> {
+  // Se não for imagem, apenas retorne
   if (!arquivoOriginal.type.startsWith("image/")) {
     return arquivoOriginal;
   }
 
-  return new Promise((resolve, reject) => {
+  // Se for .heic, converte para .jpeg
+  if (
+    arquivoOriginal.type === "image/heic" ||
+    arquivoOriginal.name.toLowerCase().endsWith(".heic")
+  ) {
+    try {
+      const blobConvertido = await heic2any({
+        blob: arquivoOriginal,
+        toType: "image/jpeg",
+        quality: 0.9,
+      }) as Blob;
 
+      arquivoOriginal = new File(
+        [blobConvertido],
+        arquivoOriginal.name.replace(/\.heic$/i, ".jpeg"),
+        { type: "image/jpeg" }
+      );
+    } catch (erro) {
+      throw new Error("Erro ao converter imagem .HEIC para JPEG: " + erro);
+    }
+  }
+
+  // Agora faz a conversão para .webp normalmente
+  return new Promise((resolve, reject) => {
     const leitor = new FileReader();
 
     leitor.onload = () => {
@@ -26,7 +50,7 @@ export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Bl
             else reject("Erro ao converter para WebP");
           },
           "image/webp",
-          0.7
+          0.8
         );
       };
       img.onerror = () => reject("Erro ao carregar imagem");
@@ -36,5 +60,4 @@ export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Bl
     leitor.onerror = () => reject("Erro ao ler imagem");
     leitor.readAsDataURL(arquivoOriginal);
   });
-  
 }
