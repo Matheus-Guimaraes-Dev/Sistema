@@ -1,39 +1,43 @@
-import heic2any from "heic2any";
-
 export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Blob> {
-  // Se não for imagem, apenas retorne
+  // Se não for imagem, apenas retorna o próprio arquivo
   if (!arquivoOriginal.type.startsWith("image/")) {
     return arquivoOriginal;
   }
 
-  // Se for .heic, converte para .jpeg
-  if (
-    arquivoOriginal.type === "image/heic" ||
-    arquivoOriginal.name.toLowerCase().endsWith(".heic")
-  ) {
+  // Verifica se é .heic
+  const isHeic = arquivoOriginal.type === "image/heic" ||
+    arquivoOriginal.name.toLowerCase().endsWith(".heic");
+
+  // Se for HEIC, tenta converter para JPEG primeiro
+  if (isHeic) {
     try {
+      const heic2any = (await import("heic2any")).default;
+
       const blobConvertido = await heic2any({
         blob: arquivoOriginal,
         toType: "image/jpeg",
-        quality: 0.9,
+        quality: 0.95,
       }) as Blob;
 
+      // Atualiza o arquivoOriginal com o novo JPEG
       arquivoOriginal = new File(
         [blobConvertido],
         arquivoOriginal.name.replace(/\.heic$/i, ".jpeg"),
         { type: "image/jpeg" }
       );
     } catch (erro) {
-      throw new Error("Erro ao converter imagem .HEIC para JPEG: " + erro);
+      console.error("Erro ao converter HEIC para JPEG:", erro);
+      throw new Error("Erro ao converter imagem .HEIC. Tente enviar a imagem em .JPEG");
     }
   }
 
-  // Agora faz a conversão para .webp normalmente
+  // Conversão normal para WebP
   return new Promise((resolve, reject) => {
     const leitor = new FileReader();
 
     leitor.onload = () => {
       const img = new Image();
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
@@ -53,11 +57,20 @@ export async function converterImagemParaWebP(arquivoOriginal: File): Promise<Bl
           0.8
         );
       };
-      img.onerror = () => reject("Erro ao carregar imagem");
+
+      img.onerror = (e) => {
+        console.error("Erro ao carregar imagem:", e);
+        reject("Erro ao carregar imagem");
+      };
+
       img.src = leitor.result as string;
     };
 
-    leitor.onerror = () => reject("Erro ao ler imagem");
+    leitor.onerror = (e) => {
+      console.error("Erro ao ler imagem:", e);
+      reject("Erro ao ler imagem");
+    };
+
     leitor.readAsDataURL(arquivoOriginal);
   });
 }
