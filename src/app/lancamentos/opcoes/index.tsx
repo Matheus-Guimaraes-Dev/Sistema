@@ -281,7 +281,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     const percentualMensal = Number(data.percentual);
     const jurosProporcional = (percentualMensal / 30) * diasAtraso;
 
-    const valorJuros = emprestimo.valor_emprestado * (jurosProporcional / 100);
+    const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
 
     return Number(valorJuros.toFixed(2));
     

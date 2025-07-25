@@ -12,6 +12,7 @@ import { limiteCpf, limiteCep, limiteWhatsapp, limiteTelefoneReserva, limiteRg }
 import { Select } from "@/app/clientes/componentes/select-cliente";
 import InputPorcentagem from "../cadastrar/formulario/InputPorcentagem";
 import { useUser } from "@/contexts/UserContext";
+import toast from "react-hot-toast";
 
 export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar ) {
 
@@ -85,16 +86,20 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
 
     e.preventDefault();
 
+    if(dataNascimento === "") return toast.error("Vincule uma data de nascimento.");
+    if(dataRg === "") return toast.error("Vincule uma data de RG.");
+    if(cpf === "") return toast.error("Vincule um cpf.");
+
     const dadosAtualizados = {
       nome_completo: nome,
       email: email,
-      cpf: cpf,
+      cpf: cpf || "",
       rg: rg,
-      data_emissao_rg: dataRg,
+      data_emissao_rg: dataRg || "",
       orgao_expedidor: orgaoExpedidor,
       sexo: sexo,
       estado_civil: estadoCivil,
-      data_nascimento: dataNascimento,
+      data_nascimento: dataNascimento || "",
       whatsapp: whatsapp,
       telefone_reserva: telefoneReserva,
       cep: cep,
@@ -118,6 +123,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
       .eq("id", informacoesConsultor.id)
 
     if(error) {
+      setLoading(false);
       console.error("Erro ao atualizar cliente:", error.message);
       return false;
     }
@@ -141,6 +147,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
 
     if (erroDeletarCliente) {
       console.error("Erro ao deletar cliente:", erroDeletarCliente.message);
+      setLoading(false);
       return false;
     }
 
