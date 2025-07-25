@@ -234,7 +234,8 @@ export function FomularioComponente() {
 
         } catch (erro) {
           console.error("Erro na conversão:", erro)
-          return alert(`Erro ao processar imagem de ${nomeCampo}`)
+          setLoading(false);
+          return alert(`Erro ao converter ou enviar a imagem de ${nomeCampo}:`)
         }
       }
 
