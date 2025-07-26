@@ -37,7 +37,7 @@ export function FiltrosClientes() {
 
   useEffect( () => {
     consultoresBuscando();
-  })
+  }, [])
 
   async function consultoresBuscando() {
 
@@ -81,6 +81,8 @@ export function FiltrosClientes() {
       let query = supabase
         .from("clientes")
         .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
+
+      console.log(query);
 
       if (nome.trim() !== "") {
         query = query.ilike("nome_completo", `%${nome.trim()}%`);
@@ -128,7 +130,12 @@ export function FiltrosClientes() {
       }
 
       query = query.range(inicio, fim);
+
+      console.log(query)
+
       const { data: resultado, error } = await query;
+
+      console.log(resultado);
 
       if (error) {
         setErro("Erro ao buscar clientes.");
@@ -165,7 +172,8 @@ export function FiltrosClientes() {
   const statusOptions = [
     { label: "Pendente", value: "Pendente" },
     { label: "Em Análise", value: "Análise" },
-    { label: "Autorizado", value: "Autorizado" }
+    { label: "Autorizado", value: "Autorizado" },
+    { label: "Cancelado", value: "Cancelado" }
   ];
 
   const dataOptions = [
