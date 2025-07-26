@@ -72,17 +72,14 @@ export function FiltrosClientes() {
   const [totalPaginas, setTotalPaginas] = useState(1);
 
   const buscarClientes = async () => {
-
+    
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
     try {
-
       let query = supabase
         .from("clientes")
         .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
-
-      console.log(query);
 
       if (nome.trim() !== "") {
         query = query.ilike("nome_completo", `%${nome.trim()}%`);
@@ -118,41 +115,27 @@ export function FiltrosClientes() {
         query = query.order("id", { ascending: true });
       }
 
-      const { count } = await query.range(0, 0);
-      const total = count ?? 0;
-
-      const inicio = (paginaAtual - 1) * itensPorPagina;
-      const fim = inicio + itensPorPagina - 1;
-
-      if (inicio >= total && total > 0) {
-        setPaginaAtual(1);
-        return;
-      }
-
-      query = query.range(inicio, fim);
-
-      console.log(query)
-
-      const { data: resultado, error } = await query;
-
-      console.log(resultado);
+      const { data: resultado, count, error } = await query.range(inicio, fim);
 
       if (error) {
         setErro("Erro ao buscar clientes.");
         console.error("Erro Supabase:", error);
-      } else {
-
-        setClientes(resultado || []);
-        setErro("");
-
-        const total = Math.ceil((count ?? 0) / itensPorPagina);
-        setTotalPaginas(total);
-
+        return;
       }
+
+      setClientes(resultado || []);
+      setErro("");
+      setTotalPaginas(Math.ceil((count ?? 0) / itensPorPagina));
+
+      if (inicio >= (count ?? 0) && (count ?? 0) > 0) {
+        setPaginaAtual(1);
+      }
+
     } catch (erro) {
       console.error("Erro geral:", erro);
       setErro("Erro inesperado ao buscar clientes.");
     }
+
   };
 
   function navegarCadastro() {
