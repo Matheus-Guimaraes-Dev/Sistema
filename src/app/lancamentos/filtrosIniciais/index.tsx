@@ -81,6 +81,8 @@ export function FiltrosLancamentos() {
   const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
   const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
+  const [carregandoContas, setCarregandoContas] = useState(false);
+
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
@@ -231,6 +233,7 @@ export function FiltrosLancamentos() {
   // ========== BUSCAR AS CONTAS PENDENTES ==========
 
   const buscarContas = async () => {
+
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
@@ -339,8 +342,8 @@ export function FiltrosLancamentos() {
         return;
       }
 
-      query = query.range(inicio, fim);
-      const { data: resultado, error } = await query;
+      // query = query.range(inicio, fim);
+      const { data: resultado, error } = await query.range(inicio, fim);
 
       if (error) {
         setErro("Erro ao buscar empréstimos.");
