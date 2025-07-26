@@ -42,7 +42,9 @@ export function formatarData(data: string) {
   return dataObj.toLocaleDateString('pt-BR');
 }
 
-export function formatarDinheiro(valor: string | number): string {
+export function formatarDinheiro(valor: string | number | null | undefined): string {
+  if (valor === null || valor === undefined) return "R$ 0,00";
+
   const numero = typeof valor === "string"
     ? parseFloat(valor.replace(",", "."))
     : valor;
