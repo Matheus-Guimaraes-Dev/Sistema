@@ -13,6 +13,8 @@ export interface infoClientes {
   data_nascimento: string;
   whatsapp: string;
   telefone_reserva: string;
+  nome_referencia: string;
+  telefone_referencia: string;
   cep: string;
   bairro: string;
   rua: string;

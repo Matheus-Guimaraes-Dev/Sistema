@@ -34,6 +34,8 @@ export function Formulario() {
   const [dataNascimento, setDataNascimento] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [telefoneReserva, setTelefoneReserva] = useState("");
+  const [nomeReferencia, setNomeReferencia] = useState("");
+  const [telefoneReferencia, setTelefoneReferencia] = useState("");
   const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [rua, setRua] = useState("");
@@ -59,6 +61,7 @@ export function Formulario() {
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
   const [segurandoDocumento, setSegurandoDocumento] = useState<File | null>(null); 
+  const [carteiraDigital, setCarteiraDigital] =  useState<File | null>(null); 
   const [arquivo, setArquivo] = useState<File | null>(null); 
   const [loading, setLoading] = useState(false);
 
@@ -70,6 +73,7 @@ export function Formulario() {
   const frenteRef = useRef<HTMLInputElement>(null);
   const versoRef = useRef<HTMLInputElement>(null);
   const segurandoDocRef = useRef<HTMLInputElement>(null);
+  const carteiraDocRef = useRef<HTMLInputElement>(null);
   const outroRef = useRef<HTMLInputElement>(null);
 
   const estados = Object.keys(cidadesPorEstado);
@@ -158,6 +162,8 @@ export function Formulario() {
         data_nascimento: dataNascimento,
         whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
+        nome_referencia: nomeReferencia,
+        telefone_referencia: telefoneReferencia,
         cep: cep,
         bairro: bairro,
         rua: rua,
@@ -172,7 +178,7 @@ export function Formulario() {
         cidade: cidade,
         estado: estado,
         pix: pix,
-        id_consultor: consultorSelecionado,
+        id_consultor: consultorSelecionado || null,
         valor_solicitado: valorMonetarioCorreto
       }
 
@@ -198,6 +204,8 @@ export function Formulario() {
         setDataNascimento("");
         setWhatsapp("");
         setTelefoneReserva("");
+        setNomeReferencia("");
+        setTelefoneReferencia("");
         setCep("");
         setBairro("");
         setRua("");
@@ -228,6 +236,7 @@ export function Formulario() {
         versoRef.current!.value = "";
         outroRef.current!.value = "";
         segurandoDocRef.current!.value = "";
+        carteiraDocRef.current!.value = "";
         toast.success('Cliente Cadastrado com Sucesso!')
       }
 
@@ -238,6 +247,7 @@ export function Formulario() {
         { arquivo: documentoFrente, campo: "foto_identidade_frente" },
         { arquivo: documentoVerso, campo: "foto_identidade_verso" },
         { arquivo: segurandoDocumento, campo: "segurando_documento" },
+        { arquivo: carteiraDigital, campo: "CarteiraDigital" },
         { arquivo: arquivo, campo: "outro_arquivo" },
       ];
       const urls: Record<string, string> = {}
@@ -310,6 +320,8 @@ export function Formulario() {
           data_nascimento: dataNascimento,
           whatsapp,
           telefone_reserva: telefoneReserva,
+          nome_referencia: nomeReferencia,
+          telefone_referencia: telefoneReferencia,
           cep,
           bairro: bairro.trim(),
           rua: rua.trim(),
@@ -325,6 +337,7 @@ export function Formulario() {
           cidade,
           pix: pix.trim(),
           observacao: observacao,
+          id_consultor: consultorSelecionado || null,
           valor_solicitado: valorMonetarioCorreto
         })
         .select()
@@ -346,6 +359,8 @@ export function Formulario() {
         setDataNascimento("");
         setWhatsapp("");
         setTelefoneReserva("");
+        setNomeReferencia("");
+        setTelefoneReferencia("");
         setCep("");
         setBairro("");
         setRua("");
@@ -376,6 +391,7 @@ export function Formulario() {
         versoRef.current!.value = "";
         outroRef.current!.value = "";
         segurandoDocRef.current!.value = "";
+        carteiraDocRef.current!.value = "";
         toast.success('Cliente Cadastrado com Sucesso!')
       }
 
@@ -386,6 +402,7 @@ export function Formulario() {
         { arquivo: documentoFrente, campo: "foto_identidade_frente" },
         { arquivo: documentoVerso, campo: "foto_identidade_verso" },
         { arquivo: segurandoDocumento, campo: "segurando_documento" },
+        { arquivo: carteiraDigital, campo: "CarteiraDigital" },
         { arquivo: arquivo, campo: "outro_arquivo" },
       ];
       const urls: Record<string, string> = {}
@@ -806,6 +823,26 @@ export function Formulario() {
       </div>
 
       <div>
+        <Label> Nome Referência </Label>
+        <InputAlterar 
+          type="text"
+          value={nomeReferencia}
+          onChange={ (e) => setNomeReferencia(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label> Contato de Referência </Label>
+        <InputAlterar 
+          type="number"
+          value={telefoneReferencia}
+          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
+          maxLength={13}
+        />
+      </div>
+
+      <div>
         <Label> CEP </Label>
         <InputAlterar 
           type="number"
@@ -1092,6 +1129,17 @@ export function Formulario() {
           accept="image/*"
           ref={segurandoDocRef}
           onChange={e => setSegurandoDocumento(e.target.files?.[0] || null)}
+        />
+      </div>
+
+      <div className="sm:mt-2 mb-2 sm:mb-[0px]">
+        <Label> Carteira de Trabalho Digital (CTPS Digital) em PDF </Label>
+        <input 
+          className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+          type="file" 
+          accept="image/*,.pdf"
+          ref={carteiraDocRef}
+          onChange={e => setCarteiraDigital(e.target.files?.[0] || null)}
         />
       </div>
 

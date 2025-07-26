@@ -85,9 +85,11 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Nome do Companheiro(a):</strong> {cliente.nome_completo_companheiro || "Não possui"} </p>
             <p><strong>CPF do Companheiro(a):</strong> {cliente.cpf_companheiro || "Não possui"} </p>
             <p><strong>Whatsapp do Companheiro(a):</strong> {cliente.whatsapp_companheiro || "Não possui"} </p>
+            <p><strong>Nome de Referência):</strong> {cliente.nome_referencia || "Não possui"} </p>
           </div>
 
           <div>
+            <p><strong>Contato de Referência:</strong> {cliente.telefone_referencia || "Não possui"} </p>
             <p><strong>Data de Nascimento:</strong> {formatarData(cliente.data_nascimento) || ""} </p>
             <p><strong>Email:</strong> {cliente.email || ""} </p>
             <p><strong>WhatsApp:</strong> {cliente.whatsapp || ""} </p>

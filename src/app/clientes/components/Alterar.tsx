@@ -38,6 +38,8 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [dataNascimento, setDataNascimento] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [telefoneReserva, setTelefoneReserva] = useState("");
+  const [nomeReferencia, setNomeReferencia] = useState("");
+  const [telefoneReferencia, setTelefoneReferencia] = useState("");
   const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [rua, setRua] = useState("");
@@ -112,6 +114,8 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setDataNascimento(informacoesCliente.data_nascimento || "01/01/2025");
       setWhatsapp(informacoesCliente.whatsapp || "");
       setTelefoneReserva(informacoesCliente.telefone_reserva || "");
+      setNomeReferencia(informacoesCliente.nome_referencia || "");
+      setTelefoneReferencia(informacoesCliente.telefone_referencia || "");
       setCep(informacoesCliente.cep || "");
       setBairro(informacoesCliente.bairro || "");
       setRua(informacoesCliente.rua || "");
@@ -155,6 +159,8 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       data_nascimento: dataNascimento,
       whatsapp: whatsapp,
       telefone_reserva: telefoneReserva,
+      nome_referencia: nomeReferencia,
+      telefone_referencia: telefoneReferencia,
       cep: cep,
       bairro: bairro,
       rua: rua,
@@ -169,7 +175,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       cidade: cidade,
       estado: estado,
       pix: pix,
-      id_consultor: consultorSelecionado,
+      id_consultor: consultorSelecionado || null,
       valor_solicitado: valorMonetarioCorreto,
       observacao: observacao,
     }
@@ -478,6 +484,25 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                 type="number"
                 value={telefoneReserva}
                 onChange={(e) => limiteTelefoneReserva(e, setTelefoneReserva)}
+                maxLength={13}
+              />
+            </div>
+
+            <div>
+              <Label> Nome Referência </Label>
+              <InputAlterar 
+                type="text"
+                value={nomeReferencia}
+                onChange={ (e) => setNomeReferencia(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label> Contato Referência </Label>
+              <InputAlterar 
+                type="number"
+                value={telefoneReferencia}
+                onChange={(e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
                 maxLength={13}
               />
             </div>

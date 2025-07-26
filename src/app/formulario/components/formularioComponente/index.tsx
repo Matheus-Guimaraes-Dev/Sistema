@@ -14,6 +14,7 @@ import { viaCep } from "@/components/types/types";
 import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Select } from "@/app/clientes/componentes/select-cliente";
+import AdicionarPdf from "../conversao/AdicionarPDF";
 
 interface ConsultorBusca {
   id: number;
@@ -35,6 +36,8 @@ export function FomularioComponente() {
   const [dataNascimento, setDataNascimento] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [telefoneReserva, setTelefoneReserva] = useState("");
+  const [nomeReferencia, setNomeReferencia] = useState("");
+  const [telefoneReferencia, setTelefoneReferencia] = useState("");
   const [cep, setCep] = useState("");
   const [bairro, setBairro] = useState("");
   const [rua, setRua] = useState("");
@@ -59,6 +62,7 @@ export function FomularioComponente() {
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
   const [documentoVerso, setDocumentoVerso] = useState<File | null>(null); 
   const [segurandoDocumento, setSegurandoDocumento] = useState<File | null>(null); 
+  const [carteiraDigital, setCarteiraDigital] = useState<File | null>(null); 
 
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
@@ -117,6 +121,8 @@ export function FomularioComponente() {
     }
     if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
     if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
+    if (!nomeReferencia.trim()) return toast.error("Digite o nome de referência!");
+    if (!telefoneReferencia.trim()) return toast.error("Digite contato de referência!");
     if (!cep.trim()) return toast.error("Digite o seu cep!");
     if (!bairro.trim()) return toast.error("Digite o seu bairro!");
     if (!rua.trim()) return toast.error("Digite a sua rua!");
@@ -134,7 +140,7 @@ export function FomularioComponente() {
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento) return toast.error("Envie todas as 5 imagens")
+    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento || !carteiraDigital) return toast.error("Envie todas os 6 documentos")
 
     setLoading(true);
 
@@ -170,6 +176,8 @@ export function FomularioComponente() {
         data_nascimento: dataNascimento,
         whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
+        nome_referencia: nomeReferencia,
+        telefone_referencia: telefoneReferencia,
         cep: cep,
         bairro: bairro,
         rua: rua,
@@ -199,8 +207,8 @@ export function FomularioComponente() {
       }
 
       const idCliente = verificarTelefone[0].id
-      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
-      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
+      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento, carteiraDigital]
+      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
       for (let i = 0; i < arquivos.length; i++) {
@@ -208,17 +216,23 @@ export function FomularioComponente() {
         const arquivo = arquivos[i]
         const nomeCampo = campos[i]
 
+        if (!arquivo) continue;
+
         try {
 
-          const imagemConvertida = await converterImagemParaWebP(arquivo!)
-          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
+          const convertido = await converterImagemParaWebP(arquivo);
+
+          const extensao = arquivo.type === "application/pdf" ? "pdf" : "webp";
+          const contentType = arquivo.type === "application/pdf" ? "application/pdf" : "image/webp";
+
+          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.${extensao}`;
 
           const { error: uploadError } = await supabase
             .storage
             .from("clientes")
-            .upload(nomeArquivo, imagemConvertida, {
-              contentType: "image/webp"
-            })
+            .upload(nomeArquivo, convertido, {
+              contentType,
+            });
 
           if (uploadError) {
             console.error(uploadError)
@@ -253,6 +267,8 @@ export function FomularioComponente() {
       setDataNascimento("");
       setWhatsapp("");
       setTelefoneReserva("");
+      setNomeReferencia("");
+      setTelefoneReferencia("");
       setCep("");
       setBairro("");
       setRua("");
@@ -275,6 +291,7 @@ export function FomularioComponente() {
       setDocumentoFrente(null);
       setDocumentoVerso(null);
       setSegurandoDocumento(null);
+      setCarteiraDigital(null);
 
       setLoading(false);
 
@@ -301,6 +318,8 @@ export function FomularioComponente() {
           data_nascimento: dataNascimento,
           whatsapp,
           telefone_reserva: telefoneReserva,
+          nome_referencia: nomeReferencia,
+          telefone_referencia: telefoneReferencia,
           cep,
           bairro: bairro.trim(),
           rua: rua.trim(),
@@ -318,7 +337,7 @@ export function FomularioComponente() {
           id_consultor: consultorSelecionado,
           valor_solicitado: valorMonetarioCorreto
         })
-        .select("id, nome_completo")
+        .select("id")
 
       if (insertError || !clienteData || clienteData.length === 0) {
         console.error("Erro ao criar cliente:", insertError)
@@ -326,8 +345,8 @@ export function FomularioComponente() {
       }
 
       const idCliente = clienteData[0].id
-      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento]
-      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento"]
+      const arquivos = [comprovanteRenda, comprovanteEndereco, documentoFrente, documentoVerso, segurandoDocumento, carteiraDigital]
+      const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
       for (let i = 0; i < arquivos.length; i++) {
@@ -335,17 +354,23 @@ export function FomularioComponente() {
         const arquivo = arquivos[i]
         const nomeCampo = campos[i]
 
+        if (!arquivo) continue;
+
         try {
 
-          const imagemConvertida = await converterImagemParaWebP(arquivo!)
-          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.webp`
+          const convertido = await converterImagemParaWebP(arquivo);
+
+          const extensao = arquivo.type === "application/pdf" ? "pdf" : "webp";
+          const contentType = arquivo.type === "application/pdf" ? "application/pdf" : "image/webp";
+
+          const nomeArquivo = `clientes/${idCliente}/${nomeCampo}-${Date.now()}.${extensao}`;
 
           const { error: uploadError } = await supabase
             .storage
             .from("clientes")
-            .upload(nomeArquivo, imagemConvertida, {
-              contentType: "image/webp"
-            })
+            .upload(nomeArquivo, convertido, {
+              contentType,
+            });
 
           if (uploadError) {
             console.error(uploadError)
@@ -379,6 +404,8 @@ export function FomularioComponente() {
       setDataNascimento("");
       setWhatsapp("");
       setTelefoneReserva("");
+      setNomeReferencia("");
+      setTelefoneReferencia("");
       setCep("");
       setBairro("");
       setRua("");
@@ -401,6 +428,7 @@ export function FomularioComponente() {
       setDocumentoFrente(null);
       setDocumentoVerso(null);
       setSegurandoDocumento(null);
+      setCarteiraDigital(null);
 
       setLoading(false);
 
@@ -485,6 +513,7 @@ export function FomularioComponente() {
       {/* ======== FORMULARIO ========== */}
 
       <div className="md:grid md:grid-cols-2 md:p-2 md:my-2 md:gap-2">
+
         <div className="mx-2 mt-4 md:mx-0 md:mt-0">
 
           <Label> Nome Completo </Label>
@@ -653,6 +682,30 @@ export function FomularioComponente() {
             type="number"
             value={telefoneReserva}
             onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
+            maxLength={13}
+          />
+          
+        </div>
+
+        <div className="mx-2 mt-[-12px] md:mx-0 md:mt-0">
+
+          <Label> Nome de referência </Label>
+          <Input 
+            type="text"
+            value={nomeReferencia}
+            onChange={ (e) => setNomeReferencia(e.target.value)}
+            required 
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Contato de referência </Label>
+          <Input 
+            type="number"
+            value={telefoneReferencia}
+            onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
             maxLength={13}
           />
           
@@ -954,6 +1007,22 @@ export function FomularioComponente() {
             onChange={e => setSegurandoDocumento(e.target.files?.[0] || null)}
           />
 
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Carteira de Trabalho Digital (CTPS Digital) em PDF </Label>
+          <input 
+            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+            type="file" 
+            accept="image/*,.pdf"
+            onChange={e => setCarteiraDigital(e.target.files?.[0] || null)}
+          />
+
+        </div>
+
+        <div>
+          
         </div>
 
         <div className="col-span-2 mt-[-12px] mx-2 md:mt-0 md:mx-0">
