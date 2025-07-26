@@ -73,7 +73,7 @@ export default function BuscarConsultor({
     <div className="relative w-full mt-1">
       <input
         type="text"
-        value={pesquisa}
+        value={pesquisa ?? ""}
         onChange={(e) => {
           setPesquisa(e.target.value);
           setMostrarResultados(true);

@@ -85,6 +85,10 @@ export function FiltrosLancamentos() {
     setTipo(valor === tipo ? null : valor);
   };
 
+  useEffect( () => {
+    consultoresBuscando();
+  }, [])
+
   useEffect(() => {
     const larguraTela = window.innerWidth;
 
@@ -155,21 +159,23 @@ export function FiltrosLancamentos() {
 
   const [abrirModalCadastrar, setAbrirModalCadastrar] = useState(false);
 
+  useEffect( () => {
+    buscarJuros();
+  }, [tipo])
+
   useEffect(() => {
 
     if(status === "Pendente") {
-       buscarContas();
+      buscarContas();
     } else {
       if (filtrosCarregados) {
         buscarContasPagas();
       }
     }
-    buscarJuros();
   }, [paginaAtual, status, filtrosCarregados])
 
   useEffect(() => {
     calcularValorReceber();
-    consultoresBuscando();
   }, [tipo, valorEmprestado, juros]);
 
   const router = useRouter();

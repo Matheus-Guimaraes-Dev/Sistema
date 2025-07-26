@@ -4,7 +4,7 @@ import { useState, useEffect, FormEvent, useRef } from "react";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { createClient } from "@/lib/client";
 import BuscarCliente from "../BuscarClientes";
-import { formatarCPF, mostrarValor, limparValorMonetario } from "@/funcoes/formatacao";
+import { formatarCPF, mostrarValor, limparValorMonetario, formatarDinheiro } from "@/funcoes/formatacao";
 import BuscarConsultor from "../BuscarConsultor";
 import { Label } from "@/app/formulario/components/componentes/label";
 import toast from "react-hot-toast";
@@ -13,7 +13,7 @@ import { limiteDataEmprestimo, limiteDataPagamento, limiteDataVencimento } from 
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
 
-export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
+export default function Opcoes({ informacoesEmprestimo, valorDoJuros }: PropsAlterar ) {
 
   const supabase = createClient();
 
@@ -30,7 +30,9 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
   const [valorRecebimento, setValorRecebimento] = useState("");
   const [juros, setJuros] = useState<{ tipo_lancamento: string; percentual: number }[]>([]);
   const [carregado, setCarregado] = useState(false);
-  const [jurosDoVencimento, setJurosDoVencimento] = useState<string>("");
+  const [jurosDoVencimento, setJurosDoVencimento] = useState<string>(
+    formatarDinheiro(valorDoJuros ?? 0)
+  );
   const [valorComJuros, setValorComJuros] = useState<string>("");
   const [dataPagamento, setDataPagamento] = useState("");
 
@@ -58,38 +60,42 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
     buscarJuros();
   }, []);
 
+useEffect(() => {
+  setJurosDoVencimento(formatarDinheiro(valorDoJuros ?? 0));
+}, [valorDoJuros]);
+
   useEffect(() => {
     if (carregado) {
       calcularValorReceber();
     }
   }, [tipo, valorEmprestado, juros]);
 
-  useEffect( () => {
-    async function calcular() {
-      if(informacoesEmprestimo) {
-        const valor = await calcularJurosSeVencido(informacoesEmprestimo);
-        setJurosDoVencimento(valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
-      }
-    }
+  // useEffect( () => {
+  //   async function calcular() {
+  //     if(informacoesEmprestimo) {
+  //       const valor = await calcularJurosSeVencido(informacoesEmprestimo);
+  //       setJurosDoVencimento(valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
+  //     }
+  //   }
 
-    calcular();
+  //   calcular();
 
-  },[informacoesEmprestimo] )
+  // },[informacoesEmprestimo] )
 
   useEffect( () => {
     if(informacoesEmprestimo) {
       setClienteSelecionado({
         id: informacoesEmprestimo.clientes.id,
         nome_completo: informacoesEmprestimo.clientes.nome_completo,
-        cpf: informacoesEmprestimo.clientes.cpf,
-        cidade: informacoesEmprestimo.cidade,
-        estado: informacoesEmprestimo.estado,
+        cpf: informacoesEmprestimo.clientes.cpf || "",
+        cidade: informacoesEmprestimo.cidade || "",
+        estado: informacoesEmprestimo.estado || "",
         status: "Pendente",
       });
       setConsultorSelecionado({
         id: informacoesEmprestimo.consultores.id,
         nome_completo: informacoesEmprestimo.consultores.nome_completo,
-        cpf: informacoesEmprestimo.consultores.cpf
+        cpf: informacoesEmprestimo.consultores.cpf || ""
       });
       setValorRecebimento(Number(informacoesEmprestimo.valor_receber).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
       setValorEmprestado(Number(informacoesEmprestimo.valor_emprestado).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }));
@@ -254,38 +260,42 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
 
   // ========== CALCULAR JUROS DO VENCIMENTO ==========
 
-  async function calcularJurosSeVencido(emprestimo: Emprestimo) {
+  // async function calcularJurosSeVencido(emprestimo: Emprestimo) {
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const vencimento = new Date(emprestimo.data_vencimento + "T12:00:00");
+  //   const hoje = new Date();
+  //   const hojeStr = `${hoje.getFullYear()}-${(hoje.getMonth() + 1)
+  //     .toString()
+  //     .padStart(2, "0")}-${hoje.getDate().toString().padStart(2, "0")}`;
 
-    if (vencimento >= hoje) {
-      return 0; 
-    }
+  //   const vencStr = emprestimo.data_vencimento; 
 
-    const diasAtraso = Math.ceil((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24));
+  //   if (hojeStr <= vencStr) {
+  //     return 0;
+  //   }
 
-    const { data, error } = await supabase
-      .from("configuracoes_juros")
-      .select("percentual")
-      .eq("tipo_juros", "Vencimento")
-      .eq("tipo_lancamento", emprestimo.tipo_lancamento)
-      .single(); 
+  //   const hojeDate = new Date(`${hojeStr}T00:00:00`);
+  //   const vencDate = new Date(`${vencStr}T00:00:00`);
 
-    if (error || !data) {
-      toast.error("Erro ao buscar percentual de juros");
-      return 0;
-    }
+  //   const diffMs = hojeDate.getTime() - vencDate.getTime();
+  //   const diasAtraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    const percentualMensal = Number(data.percentual);
-    const jurosProporcional = (percentualMensal / 30) * diasAtraso;
+  //   const { data, error } = await supabase
+  //     .from("configuracoes_juros")
+  //     .select("percentual")
+  //     .eq("tipo_juros", "Vencimento")
+  //     .eq("tipo_lancamento", emprestimo.tipo_lancamento)
+  //     .single();
 
-    const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
+  //   if (error || !data) {
+  //     return 0;
+  //   }
 
-    return Number(valorJuros.toFixed(2));
-    
-  }
+  //   const percentualMensal = Number(data.percentual); 
+  //   const jurosProporcional = (percentualMensal / 30) * diasAtraso;
+  //   const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
+
+  //   return Number(valorJuros.toFixed(2));
+  // }
 
   // ========== BAIXAR O EMPRÉSTIMO ==========
 
@@ -488,7 +498,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                     <strong>Cliente:</strong> {clienteSelecionado.nome_completo} (ID: {clienteSelecionado.id})
                   </p>
                   <p>
-                    <strong>CPF:</strong> {formatarCPF(clienteSelecionado.cpf)}
+                    <strong>CPF:</strong> {formatarCPF(clienteSelecionado.cpf || "")}
                   </p>
                 </div>
               )}
@@ -506,7 +516,7 @@ export default function Opcoes({ informacoesEmprestimo }: PropsAlterar ) {
                       <strong>Consultor:</strong> {consultorSelecionado.nome_completo} (ID: {consultorSelecionado.id})
                     </p>
                     <p>
-                      <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf)}
+                      <strong>CPF:</strong> {formatarCPF(consultorSelecionado.cpf || "")}
                     </p>
                   </div>
                 )}

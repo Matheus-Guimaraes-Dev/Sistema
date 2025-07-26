@@ -30,6 +30,7 @@ export function mostrarValor(
   const formatado = formatarParaReal(valor);
 
   setValor(formatado);
+
 }
 
 export function formatarCPF(cpf: string) {
@@ -41,10 +42,17 @@ export function formatarData(data: string) {
   return dataObj.toLocaleDateString('pt-BR');
 }
 
-export function formatarDinheiro(valor: number): string {
-  return valor?.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+export function formatarDinheiro(valor: string | number): string {
+  const numero = typeof valor === "string"
+    ? parseFloat(valor.replace(",", "."))
+    : valor;
+
+  if (isNaN(numero)) return "R$ 0,00";
+
+  return numero.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
   });
 }
 

@@ -19,37 +19,43 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
     redirect("/lancamentos");
   }
 
-  async function calcularJurosSeVencido(emprestimo: Emprestimo) {
+async function calcularJurosSeVencido(emprestimo: Emprestimo) {
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    const vencimento = new Date(emprestimo.data_vencimento + "T12:00:00");
+  const hoje = new Date();
+  const hojeStr = `${hoje.getFullYear()}-${(hoje.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${hoje.getDate().toString().padStart(2, "0")}`;
 
-    if (vencimento >= hoje) {
-      return 0; 
-    }
+  const vencStr = emprestimo.data_vencimento; 
 
-    const diasAtraso = Math.ceil((hoje.getTime() - vencimento.getTime()) / (1000 * 60 * 60 * 24));
-
-    const { data, error } = await supabase
-      .from("configuracoes_juros")
-      .select("percentual")
-      .eq("tipo_juros", "Vencimento")
-      .eq("tipo_lancamento", emprestimo.tipo_lancamento)
-      .single(); 
-
-    if (error || !data) {
-      return 0;
-    }
-
-    const percentualMensal = Number(data.percentual);
-    const jurosProporcional = (percentualMensal / 30) * diasAtraso;
-
-    const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
-
-    return Number(valorJuros.toFixed(2));
-    
+  if (hojeStr <= vencStr) {
+    return 0;
   }
+
+  const hojeDate = new Date(`${hojeStr}T00:00:00`);
+  const vencDate = new Date(`${vencStr}T00:00:00`);
+
+  const diffMs = hojeDate.getTime() - vencDate.getTime();
+  const diasAtraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const { data, error } = await supabase
+    .from("configuracoes_juros")
+    .select("percentual")
+    .eq("tipo_juros", "Vencimento")
+    .eq("tipo_lancamento", emprestimo.tipo_lancamento)
+    .single();
+
+  if (error || !data) {
+    return 0;
+  }
+
+  const percentualMensal = Number(data.percentual); 
+  const jurosProporcional = (percentualMensal / 30) * diasAtraso;
+  const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
+
+  return Number(valorJuros.toFixed(2));
+
+}
 
   async function buscarEmprestimoPendente(id: number): Promise<Emprestimo | null> {
   
@@ -149,7 +155,7 @@ export default async function Detalhes( { params }: { params: { idpendente: stri
 
         <section>
 
-          <Opcoes informacoesEmprestimo={emprestimo} />
+          <Opcoes informacoesEmprestimo={emprestimo} valorDoJuros={jurosCalculado.toString()} />
 
         </section>
 

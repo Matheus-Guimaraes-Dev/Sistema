@@ -34,6 +34,7 @@ export interface infoEmprestimo {
 }
 
 export interface PropsAlterar {
+  valorDoJuros?: string;
   informacoesEmprestimo: infoEmprestimo;
 }
 
