@@ -2,7 +2,7 @@
 
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
@@ -81,7 +81,7 @@ export function FiltrosLancamentos() {
   const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
   const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
-  const [carregandoContas, setCarregandoContas] = useState(false);
+  const carregado = useRef(false);
 
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -236,6 +236,7 @@ export function FiltrosLancamentos() {
 
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
+
 
     try {
       let query = supabase
@@ -1013,6 +1014,7 @@ export function FiltrosLancamentos() {
         </div>
 
       </div>
+
 
       {status === "Pendente" && (
         <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
