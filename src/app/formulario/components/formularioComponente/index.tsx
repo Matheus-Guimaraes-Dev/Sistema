@@ -24,6 +24,8 @@ interface ConsultorBusca {
 export function FomularioComponente() {
 
   const supabase = createClient();
+
+  const teste= "Teste";
  
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
