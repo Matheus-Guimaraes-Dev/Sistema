@@ -14,7 +14,7 @@ import { viaCep } from "@/components/types/types";
 import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Select } from "@/app/clientes/componentes/select-cliente";
-import AdicionarPdf from "../conversao/AdicionarPDF";
+
 
 interface ConsultorBusca {
   id: number;
@@ -140,7 +140,7 @@ export function FomularioComponente() {
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento || !carteiraDigital) return toast.error("Envie todas os 6 documentos")
+    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento) return toast.error("Envie todas os 5 documentos")
 
     setLoading(true);
 
@@ -211,15 +211,13 @@ export function FomularioComponente() {
       const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
-      for (let i = 0; i < arquivos.length; i++) {
+      const uploadPromises = arquivos.map(async (arquivo, i) => {
+        
+        if (!arquivo) return;
 
-        const arquivo = arquivos[i]
-        const nomeCampo = campos[i]
-
-        if (!arquivo) continue;
+        const nomeCampo = campos[i];
 
         try {
-
           const convertido = await converterImagemParaWebP(arquivo);
 
           const extensao = arquivo.type === "application/pdf" ? "pdf" : "webp";
@@ -235,23 +233,24 @@ export function FomularioComponente() {
             });
 
           if (uploadError) {
-            console.error(uploadError)
-            return alert(`Erro ao enviar ${nomeCampo}`)
+            console.error(uploadError);
+            throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
 
           const { data: urlData } = supabase
             .storage
             .from("clientes")
-            .getPublicUrl(nomeArquivo)
+            .getPublicUrl(nomeArquivo);
 
-          urls[nomeCampo] = urlData.publicUrl
+          urls[nomeCampo] = urlData.publicUrl;
 
         } catch (erro) {
-          console.error("Erro na conversão:", erro)
-          setLoading(false);
-          return alert(`Erro ao converter ou enviar a imagem de ${nomeCampo}:`)
+          console.error("Erro na conversão:", erro);
+          alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
-      }
+      });
+
+      await Promise.all(uploadPromises);
 
       setNome("");
       setEmail("");
@@ -349,15 +348,13 @@ export function FomularioComponente() {
       const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
-      for (let i = 0; i < arquivos.length; i++) {
+      const uploadPromises = arquivos.map(async (arquivo, i) => {
 
-        const arquivo = arquivos[i]
-        const nomeCampo = campos[i]
+        if (!arquivo) return;
 
-        if (!arquivo) continue;
+        const nomeCampo = campos[i];
 
         try {
-
           const convertido = await converterImagemParaWebP(arquivo);
 
           const extensao = arquivo.type === "application/pdf" ? "pdf" : "webp";
@@ -373,22 +370,24 @@ export function FomularioComponente() {
             });
 
           if (uploadError) {
-            console.error(uploadError)
-            return alert(`Erro ao enviar ${nomeCampo}`)
+            console.error(uploadError);
+            throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
 
           const { data: urlData } = supabase
             .storage
             .from("clientes")
-            .getPublicUrl(nomeArquivo)
+            .getPublicUrl(nomeArquivo);
 
-          urls[nomeCampo] = urlData.publicUrl
+          urls[nomeCampo] = urlData.publicUrl;
 
         } catch (erro) {
-          console.error("Erro na conversão:", erro)
-          return alert(`Erro ao processar imagem de ${nomeCampo}`)
+          console.error("Erro na conversão:", erro);
+          alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
-      }
+      });
+
+      await Promise.all(uploadPromises);
 
       setNome("");
       setEmail("");
@@ -1009,15 +1008,20 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+        <div className="flex flex-wrap w-full">
+          <div className="w-full mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
 
-          <Label> Carteira de Trabalho Digital (CTPS Digital) em PDF </Label>
-          <input 
-            className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
-            type="file" 
-            accept="image/*,.pdf"
-            onChange={e => setCarteiraDigital(e.target.files?.[0] || null)}
-          />
+            <Label> Carteira de Trabalho Digital (CTPS Digital) em PDF </Label>
+            <input 
+              className="block w-full text-sm text-gray-900 border border-blue-900 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 p-3" 
+              type="file" 
+              accept="image/*,.pdf"
+              onChange={e => setCarteiraDigital(e.target.files?.[0] || null)}
+            />
+           <div className="col-span-2 px-2">
+            <p className="text-sm text-red-700 break-words max-w-[400px]"> ⚠️ Se seu documento estiver no Google Drive, baixe ele antes de enviar. </p>
+            </div>
+          </div>
 
         </div>
 
