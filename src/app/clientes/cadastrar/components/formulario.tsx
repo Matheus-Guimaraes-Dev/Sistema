@@ -64,6 +64,7 @@ export function Formulario() {
   const [carteiraDigital, setCarteiraDigital] =  useState<File | null>(null); 
   const [arquivo, setArquivo] = useState<File | null>(null); 
   const [loading, setLoading] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState(""); 
 
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
@@ -89,6 +90,8 @@ export function Formulario() {
       .eq("status", "Ativo")
 
     if(error) {
+      setLoading(false);
+      setMensagemErro("Erro ao buscar consultores");
       toast.error("Erro ao buscar consultores");
       return
     }
@@ -142,6 +145,8 @@ export function Formulario() {
 
     if(verificarTelefoneErro) {
       console.log("Erro:", verificarTelefoneErro);
+      setLoading(false);
+      setMensagemErro("Erro ao verificar telefone.");
       return;
     }
 
@@ -188,6 +193,8 @@ export function Formulario() {
         .eq("id", verificarTelefone[0].id)
 
       if (error) {
+        setLoading(false);
+        setMensagemErro("Ocorreu um erro ao cliente. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
         return toast.error("Erro ao atualizar cliente")
       } else { 
         setNome("");
@@ -285,6 +292,8 @@ export function Formulario() {
             });
 
           if (uploadError) {
+            setLoading(false);
+            setMensagemErro("Ocorreu um erro ao enviar documentos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             return alert(`Erro ao enviar ${campo}`);
           }
 
@@ -296,6 +305,8 @@ export function Formulario() {
           urls[campo] = urlData.publicUrl;
 
         } catch (erro) {
+          setLoading(false);
+          setMensagemErro("Ocorreu um erro ao processar documentos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
           return alert(`Erro ao processar o arquivo: ${campo}`);
         }
       }
@@ -343,6 +354,8 @@ export function Formulario() {
         .select()
 
       if (insertError || !clienteData || clienteData.length === 0) {
+        setLoading(false);
+        setMensagemErro("Ocorreu um erro ao cadastrar cliente. Por gentileza, entre em contato com o suporte.");
         return toast.error("Erro ao criar cliente")
       } else { 
         setNome("");
@@ -440,6 +453,8 @@ export function Formulario() {
             });
 
           if (uploadError) {
+            setLoading(false);
+            setMensagemErro("Ocorreu um erro ao enviar documentos. Por gentileza, entre em contato com o suporte.");
             return alert(`Erro ao enviar ${campo}`);
           }
 
@@ -451,6 +466,8 @@ export function Formulario() {
           urls[campo] = urlData.publicUrl;
 
         } catch (erro) {
+          setLoading(false);
+          setMensagemErro("Ocorreu um erro ao processar cliente. Por gentileza, entre em contato com o suporte.");
           return alert(`Erro ao processar o arquivo: ${campo}`);
         }
       }
@@ -620,6 +637,7 @@ export function Formulario() {
       setCidade(data.localidade ?? '');
 
     } catch(error) {
+      setLoading(false);
       console.log("Erro!");
     }
 
@@ -1155,6 +1173,12 @@ export function Formulario() {
           />
         </div>
       </div>
+
+      {mensagemErro && (
+        <div className="flex flex-wrap">
+          <p className="text-[12px] text-red-600"> {mensagemErro} </p>
+        </div>
+      )}
 
       <div className="flex items-end">
         <div className="cursor-pointer flex-1">

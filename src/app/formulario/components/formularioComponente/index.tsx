@@ -70,6 +70,7 @@ export function FomularioComponente() {
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState(""); 
 
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
@@ -86,6 +87,8 @@ export function FomularioComponente() {
       .eq("status", "Ativo")
 
     if(error) {
+      setLoading(false);
+      setMensagemErro("Erro ao buscar os consultores. Entre em contato com o consultor responsável.")
       toast.error("Erro ao buscar consultores");
       return
     }
@@ -158,6 +161,8 @@ export function FomularioComponente() {
 
     if(verificarTelefoneErro) {
       console.log("Erro:", verificarTelefoneErro);
+      setMensagemErro("Ocorreu um erro ao verificar telefone. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
+      setLoading(false);
       return;
     }
 
@@ -205,6 +210,8 @@ export function FomularioComponente() {
 
       if(error) {
         console.error("Erro ao atualizar cliente:", error.message);
+        setMensagemErro("Ocorreu um erro ao cadastrar cliente. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
+        setLoading(false);
         return false;
       }
 
@@ -236,6 +243,8 @@ export function FomularioComponente() {
 
           if (uploadError) {
             console.error(uploadError);
+            setLoading(false);
+            setMensagemErro("Ocorreu um erro ao enviar arquivos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
 
@@ -248,6 +257,7 @@ export function FomularioComponente() {
 
         } catch (erro) {
           console.error("Erro na conversão:", erro);
+          setLoading(false);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
       });
@@ -341,6 +351,8 @@ export function FomularioComponente() {
         .select("id")
 
       if (insertError || !clienteData || clienteData.length === 0) {
+        setLoading(false);
+        setMensagemErro("Ocorreu um erro ao cadastrar cliente. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
         console.error("Erro ao criar cliente:", insertError)
         return toast.error("Erro ao criar cliente")
       }
@@ -373,6 +385,8 @@ export function FomularioComponente() {
 
           if (uploadError) {
             console.error(uploadError);
+            setLoading(false);
+            setMensagemErro("Ocorreu um erro ao enviar documentos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
 
@@ -385,6 +399,7 @@ export function FomularioComponente() {
 
         } catch (erro) {
           console.error("Erro na conversão:", erro);
+          setLoading(false);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
       });
@@ -453,6 +468,7 @@ export function FomularioComponente() {
       setCidade(data.localidade ?? '');
 
     } catch(error) {
+      setLoading(false);
       console.log("Deu errado!");
     }
 
@@ -1027,9 +1043,11 @@ export function FomularioComponente() {
 
         </div>
 
-        <div>
-          
+      {mensagemErro && (
+        <div className="flex flex-wrap max-w-[340px] px-2 pb-6 mt-[-12px] sm:mt-0 sm:pb-0">
+          <p className="text-[12px] text-red-600"> {mensagemErro} </p>
         </div>
+      )}
 
         <div className="col-span-2 mt-[-12px] mx-2 md:mt-0 md:mx-0">
 
