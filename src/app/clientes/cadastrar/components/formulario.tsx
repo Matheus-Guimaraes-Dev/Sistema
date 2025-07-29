@@ -133,6 +133,8 @@ export function Formulario() {
     // if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
     // if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
 
+    const teste2 = "Teste2"
+
     setLoading(true);
 
     const valorMonetarioCorreto = limparValorMonetario(valorSolicitado);
