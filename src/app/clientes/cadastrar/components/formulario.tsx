@@ -110,26 +110,26 @@ export function Formulario() {
 
     e.preventDefault()
 
-    if (!nome.trim()) return toast.error("Digite o seu nome!");
-    if (!email.trim()) return toast.error("Digite o seu email!");
-    if (!cpf.trim()) return toast.error("Digite o seu cpf!");
-    if (!rg.trim()) return toast.error("Digite o seu rg!");
-    if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
-    if (!orgaoExpedidor.trim()) return toast.error("Digite o seu Orgão Expedidor!");
-    if (!sexo.trim()) return toast.error("Selecione o seu sexo!");
-    if (!estadoCivil.trim()) return toast.error("Selecione seu estado civil!");
-    if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
-    if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
-    if (!cep.trim()) return toast.error("Digite o seu cep!");
-    if (!bairro.trim()) return toast.error("Digite o seu bairro!");
-    if (!rua.trim()) return toast.error("Digite a sua rua!");
-    if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
-    if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
-    if (!estado.trim()) return toast.error("Selecione o seu estado!");
-    if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
-    if (!pix.trim()) return toast.error("Digite a sua chave pix!");
-    if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
+    if (!nome.trim()) return toast.error("Digite o nome do cliente!");
+    // if (!email.trim()) return toast.error("Digite o email do cliente!");
+    // if (!cpf.trim()) return toast.error("Digite o cpf!");
+    // if (!rg.trim()) return toast.error("Digite o rg!");
+    // if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
+    // if (!orgaoExpedidor.trim()) return toast.error("Digite o Orgão Expedidor!");
+    // if (!sexo.trim()) return toast.error("Selecione o sexo!");
+    // if (!estadoCivil.trim()) return toast.error("Selecione estado civil!");
+    // if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
+    if (!whatsapp.trim()) return toast.error("Digite o whatsapp!");
+    // if (!cep.trim()) return toast.error("Digite o cep!");
+    // if (!bairro.trim()) return toast.error("Digite o bairro!");
+    // if (!rua.trim()) return toast.error("Digite a sua rua!");
+    // if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
+    // if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
+    // if (!estado.trim()) return toast.error("Selecione o estado!");
+    // if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
+    // if (!pix.trim()) return toast.error("Digite a sua chave pix!");
+    // if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
+    // if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
 
     setLoading(true);
 
@@ -155,16 +155,16 @@ export function Formulario() {
       const dadosAtualizados = {
         nome_completo: nome,
         email: email,
-        cpf: cpf,
+        cpf: cpf || "00000000000",
         rg: rg,
-        data_emissao_rg: dataRg,
+        data_emissao_rg: dataRg || "01/01/1000",
         orgao_expedidor: orgaoExpedidor,
         sexo: sexo,
         estado_civil: estadoCivil,
         nome_completo_companheiro: nomeCompanheiro.trim(),
         cpf_companheiro: cpfCompanheiro.trim(),
         whatsapp_companheiro: whatsappCompanheiro,
-        data_nascimento: dataNascimento,
+        data_nascimento: dataNascimento || "01/01/1000",
         whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
         nome_referencia: nomeReferencia,
@@ -319,16 +319,16 @@ export function Formulario() {
         .insert({ 
           nome_completo: nome.trim(),
           email: email.trim(),
-          cpf: cpf.trim(),
+          cpf: cpf.trim() || "00000000000",
           rg: rg.trim(),
-          data_emissao_rg: dataRg,
+          data_emissao_rg: dataRg || "01/01/1000",
           orgao_expedidor: orgaoExpedidor.trim(),
           sexo,
           estado_civil: estadoCivil,
           nome_completo_companheiro: nomeCompanheiro.trim(),
           cpf_companheiro: cpfCompanheiro.trim(),
           whatsapp_companheiro: whatsappCompanheiro,
-          data_nascimento: dataNascimento,
+          data_nascimento: dataNascimento || "01/01/1000",
           whatsapp,
           telefone_reserva: telefoneReserva,
           nome_referencia: nomeReferencia,
@@ -356,6 +356,7 @@ export function Formulario() {
       if (insertError || !clienteData || clienteData.length === 0) {
         setLoading(false);
         setMensagemErro("Ocorreu um erro ao cadastrar cliente. Por gentileza, entre em contato com o suporte.");
+        console.log("Erro ao criar cliente: ", insertError)
         return toast.error("Erro ao criar cliente")
       } else { 
         setNome("");
@@ -696,7 +697,7 @@ export function Formulario() {
     <form className="grid md:grid-cols-3 bg-white shadow rounded-xl p-6 my-5 gap-2" onSubmit={enviarFormulario}>
 
       <div>
-        <Label> Nome Completo </Label>
+        <label className="text-red-600"> Nome Completo </label>
         <InputAlterar 
           type="text"
           value={nome}
@@ -821,7 +822,7 @@ export function Formulario() {
       </div>
 
       <div>
-        <Label> Whatsapp </Label>
+        <label className="text-red-600"> Whatsapp </label>
         <InputAlterar 
           type="number"
           value={whatsapp}
