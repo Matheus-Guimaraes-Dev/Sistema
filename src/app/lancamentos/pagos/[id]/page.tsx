@@ -108,6 +108,7 @@ export default async function DetalhesPagos( { params }: { params: { id: string 
             <p><strong>Status do Pagamento Total:</strong> {emprestimo.contas_receber?.status} </p>
             <p><strong>Data de Emprestimo:</strong> {formatarData(emprestimo.contas_receber?.data_emprestimo) || ""} </p>
             <p><strong>Data de Vencimento:</strong> {formatarData(emprestimo.contas_receber?.data_vencimento) || ""} </p>
+            <p><strong>Data de Pagamento:</strong> {formatarData(emprestimo.data_pagamento) || ""} </p>
             <p><strong>Status da Comissão:</strong> {emprestimo.contas_receber?.status_comissao || ""} </p>
             <p><strong>Descrição:</strong> {emprestimo?.observacao || ""} </p>
             <p><strong>Forma de Pagamento:</strong> {emprestimo.formas_pagamento?.descricao || ""} </p>

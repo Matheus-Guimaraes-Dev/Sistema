@@ -5,6 +5,11 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
