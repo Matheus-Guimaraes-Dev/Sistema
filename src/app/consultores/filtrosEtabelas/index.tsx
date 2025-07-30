@@ -9,6 +9,7 @@ import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import toast from "react-hot-toast";
 import { ConsultorBusca } from "@/app/lancamentos/types";
+import { V } from "framer-motion/dist/types.d-B_QPEvFK";
 
 interface Comissoes {
   id: number;
@@ -201,11 +202,11 @@ export default function FiltrosETabelas() {
       if(id.trim() !== "") {
         query = query.eq("id_conta_receber", Number(id));
       }
-
+      
       if(status.trim() !== "") {
         query = query.eq("status", status);
       }
-
+      
       if (dataInicio.trim() !== "") {
         query = query.gte("data_cadastro", dataInicio);
       }
@@ -222,6 +223,10 @@ export default function FiltrosETabelas() {
 
       if (status.trim() !== "") {
         somaQuery.eq("status", status);
+      }
+      
+      if(id.trim() !== "") {
+        somaQuery = somaQuery.eq("id_conta_receber", Number(id));
       }
 
       if (consultorFiltro.trim() !== "") {
