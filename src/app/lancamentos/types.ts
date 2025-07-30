@@ -63,6 +63,9 @@ export interface Cliente {
   estado: string;
   status: string;
   data_cadastro: string;
+  consultores: {
+    nome_completo: string;
+  }[] | null | any
 };
 
 export interface Consultor {

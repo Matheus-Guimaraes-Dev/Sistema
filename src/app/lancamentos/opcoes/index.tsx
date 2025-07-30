@@ -462,6 +462,44 @@ useEffect(() => {
 
   }
 
+  async function atualizarStatusLancamento() {
+
+    if(informacoesEmprestimo.status === "Pendente") { 
+
+      const { error } = await supabase
+        .from("contas_receber")
+        .update({ status: "Cancelado" })
+        .eq("id", informacoesEmprestimo.id)
+
+      if(error) {
+        console.error("Erro ao alterar status", error.message);
+        return false
+      }
+
+      window.location.reload();
+
+       return true;
+
+    } else {
+
+      const { error } = await supabase
+        .from("contas_receber")
+        .update({ status: "Pendente" })
+        .eq("id", informacoesEmprestimo.id)
+
+      if(error) {
+        console.error("Erro ao alterar status", error.message);
+        return false
+      }
+
+      window.location.reload();
+
+       return true;
+
+    }
+
+  }
+
 
   return(
     <div>
@@ -476,6 +514,8 @@ useEffect(() => {
           <button onClick={() => setMostrarModal(true)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Deletar </button>
 
           <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+
+          <button onClick={atualizarStatusLancamento} className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> {informacoesEmprestimo.status === "Pendente" ? "Cancelado" : "Pendente"} </button>
 
         </div>
       )}

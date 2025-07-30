@@ -12,12 +12,15 @@ interface Cliente {
   estado: string;
   status: string;
   data_cadastro: string;
+  consultores?: {
+    nome_completo: string;
+  }[] | null | any;
 }
 
 export default function BuscarCliente({
   onSelecionar,
 }: {
-  onSelecionar: (cliente: Cliente | null) => void;
+  onSelecionar: (cliente: Cliente | null | any) => void;
 }) {
   const supabase = createClient();
 
@@ -40,7 +43,18 @@ export default function BuscarCliente({
 
       const { data, error } = await supabase
         .from('clientes')
-        .select('id, nome_completo, cpf, estado, cidade')
+        .select(`
+          id,
+          nome_completo,
+          cpf,
+          estado,
+          status,
+          data_cadastro,
+          cidade,
+          consultores (
+            nome_completo
+          )
+        `)
         .or(
           [
             `nome_completo.ilike.%${pesquisa}%`,
@@ -56,7 +70,7 @@ export default function BuscarCliente({
       if (error) {
         console.error("Erro ao buscar clientes:", error);
       } else {
-        setClientes(data as Cliente[]);
+       setClientes(data as Cliente[]);
       }
 
       setCarregando(false);
@@ -107,6 +121,11 @@ export default function BuscarCliente({
               <p className="text-sm">
                 CPF: {formatarCPF(cliente.cpf)} | ID: {cliente.id}
               </p>
+              {cliente.consultores && (
+                <p className="text-xs text-gray-600 italic">
+                  Consultor: {cliente.consultores.nome_completo}
+                </p>
+              )}
             </div>
           ))}
         </div>
