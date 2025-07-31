@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";
 import { FaTrashAlt } from "react-icons/fa";
 import { useUser } from "@/contexts/UserContext";
+import { FaEye } from "react-icons/fa";
 
 interface Props {
   clienteId: string;
@@ -22,6 +23,9 @@ export default function ListaDownloads({ clienteId }: Props) {
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [imagemPreviewUrl, setImagemPreviewUrl] = useState<string | null>(null);
+  const [mostrarPreview, setMostrarPreview] = useState(false);
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [arquivoSelecionado, setArquivoSelecionado] = useState<string | null>(null);
 
@@ -30,7 +34,23 @@ export default function ListaDownloads({ clienteId }: Props) {
     setMostrarModal(true);
   };
 
+  const verImagem = async (nomeArquivo: string) => {
+    const caminho = `clientes/${clienteId}/${nomeArquivo}`;
+    const { data } = supabase.storage.from("clientes").getPublicUrl(caminho);
+
+    if (!data?.publicUrl) {
+      console.error("Erro ao obter URL da imagem:");
+      alert("Não foi possível visualizar a imagem.");
+      return;
+    }
+
+    setImagemPreviewUrl(data.publicUrl);
+    setMostrarPreview(true);
+  };
+
+
   const confirmarExclusao = async () => {
+
     if (!arquivoSelecionado) return;
 
     const caminho = `clientes/${clienteId}/${arquivoSelecionado}`;
@@ -44,9 +64,11 @@ export default function ListaDownloads({ clienteId }: Props) {
       setMostrarModal(false);
       setArquivoSelecionado(null);
     }
+
   };
 
   useEffect(() => {
+
     const buscarArquivos = async () => {
       const { data, error } = await supabase.storage
         .from("clientes")
@@ -58,6 +80,7 @@ export default function ListaDownloads({ clienteId }: Props) {
       } else {
         setArquivos(data || []);
       }
+
     };
 
     buscarArquivos();
@@ -89,10 +112,11 @@ export default function ListaDownloads({ clienteId }: Props) {
     return;
   }
 
-  // Atualiza a lista de arquivos removendo o excluído
+
   setArquivos((prevArquivos) =>
     prevArquivos.filter((arquivo) => arquivo.name !== nomeArquivo)
   );
+
 };
 
 const baixar = async (nomeArquivo: string) => {
@@ -101,11 +125,10 @@ const baixar = async (nomeArquivo: string) => {
   const url = data?.publicUrl;
   if (!url) return;
 
-  // Verifica a extensão do arquivo
   const extensao = nomeArquivo.split(".").pop()?.toLowerCase();
 
   if (extensao === "webp") {
-    // Se for imagem .webp, converte para JPEG antes de baixar
+
     const resposta = await fetch(url);
     const blob = await resposta.blob();
 
@@ -130,16 +153,14 @@ const baixar = async (nomeArquivo: string) => {
       }, "image/jpeg");
     };
   } else {
-    // Qualquer outro tipo de arquivo (ex: PDF), faz download direto
     window.open(url, "_blank");
-    // const link = document.createElement("a");
-    // link.href = url;
-    // link.download = nomeArquivo;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
   }
 };
+
+  function ehImagem(nome: string): boolean {
+    const extensao = nome.split(".").pop()?.toLowerCase();
+    return ["jpg", "jpeg", "png", "webp", "gif"].includes(extensao || "");
+  }
 
   if (erro) return <p>{erro}</p>;
 
@@ -150,10 +171,14 @@ const baixar = async (nomeArquivo: string) => {
           <div key={arquivo.name} className="flex items-center gap-2">
             <button
               onClick={() => baixar(arquivo.name)}
-              className="flex items-center font-medium text-white text-[14px] px-4 py-3 bg-gradient-to-t from-[#4D36D0] to-[#8474FE] rounded-full hover:shadow-[0_0.5em_1.5em_-0.5em_rgba(77,54,208,0.75)] active:shadow-[0_0.3em_1em_-0.5em_rgba(77,54,208,0.75)] transition cursor-pointer"
+              className="flex items-center font-medium text-white text-[14px] px-4 py-3 bg-gradient-to-t from-[#4D36D0] to-[#8474FE] rounded-full hover:shadow-[0_0.5em_1.5em_-0.5em_rgba(77,54,208,0.75)] active:shadow-[0_0.3em_1em_-0.5em_rgba(77,54,208,0.75)] transition cursor-pointer max-w-45 sm:max-w-full whitespace-nowrap overflow-hidden text-ellipsis"
             >
-              Baixar {formatarNomeAmigavel(arquivo.name.replace(".webp", ""))}
+              {formatarNomeAmigavel(arquivo.name.replace(".webp", ""))}
             </button>
+
+            {ehImagem(arquivo.name) && (
+              <FaEye size={20} color={"blue"} onClick={() => verImagem(arquivo.name)} className="text-blue-600 underline hover:text-blue-800 cursor-pointer" />
+            )}
 
             {(grupo === "Administrador" || grupo === "Proprietario") && (
               <FaTrashAlt onClick={() => abrirModalExcluir(arquivo.name)} size={20} color="red" className="cursor-pointer" />
@@ -194,6 +219,30 @@ const baixar = async (nomeArquivo: string) => {
                 Não
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarPreview && imagemPreviewUrl && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div
+            className="absolute inset-0 backdrop-blur-sm bg-black/30"
+            onClick={() => setMostrarPreview(false)}
+          ></div>
+
+          <div className="relative bg-white p-4 rounded-xl shadow-lg z-10 max-w-3xl w-[90%] text-center">
+            <button
+              onClick={() => setMostrarPreview(false)}
+              className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded-full z-20 cursor-pointer"
+            >
+              Fechar
+            </button>
+            <img
+              src={imagemPreviewUrl}
+              alt="Visualização do arquivo"
+              className="w-full h-auto rounded"
+            />
           </div>
         </div>
       )}

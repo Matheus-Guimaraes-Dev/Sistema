@@ -87,6 +87,10 @@ export function FiltrosLancamentos() {
   const [totalReceber, setTotalReceber] = useState(0);
   const [totalPago, setTotalPago] = useState(0);
 
+  const [repetir, setRepetir] = useState(false);
+  const [numeroVezes, setNumerosVezes] = useState(0);
+  const [intervaloDias, setIntervaloDias] = useState(0);
+
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
@@ -1123,43 +1127,56 @@ export function FiltrosLancamentos() {
     const comissaoCalculada = calcularComissao();
 
     const valorEmprestimoCorreto = limparValorMonetario(valorEmprestado);
-    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento)
+    const valorRecebimentoCorreto = limparValorMonetario(valorRecebimento);
 
-    const { data: contaInserida, error: erroEmprestimo } = await supabase  
-      .from("contas_receber")
-      .insert({
-        id_cliente: clienteSelecionado.id,
-        id_consultor: consultorSelecionado.id,
-        tipo_lancamento: tipo,
-        estado: clienteSelecionado.estado,
-        cidade: clienteSelecionado.cidade,
-        valor_emprestado: valorEmprestimoCorreto,
-        valor_receber: valorRecebimentoCorreto,
-        data_emprestimo: dataEmprestimo,
-        data_vencimento: dataVencimento,
-        descricao: observacoes,
-        comissao: Number(comissaoCalculada),
-      })
-      .select("id")
-      .single();
+    const vencimentoInicial = new Date(dataVencimento);
 
-     if (erroEmprestimo || !contaInserida) {
-      setLoading(false);
-      toast.error("Erro ao salvar empréstimo");
-      return
-    }
+    const quantidadeRepeticoes = repetir ? numeroVezes : 1;
 
-    const { error: erroComissao } = await supabase
-      .from("comissoes_consultores")
-      .insert({
-        id_consultor: consultorSelecionado.id,
-        id_conta_receber: contaInserida.id,
-        valor_comissao: Number(comissaoCalculada),
-      })
+    for (let i = 0; i < quantidadeRepeticoes; i++) {
 
-    if (erroComissao) {
-      setLoading(false);
-      return toast.error("Erro ao salvar comissão do consultor");
+      const vencimentoAtual = new Date(vencimentoInicial);
+      vencimentoAtual.setDate(vencimentoAtual.getDate() + i * intervaloDias);
+
+      const vencimentoFormatado = vencimentoAtual.toISOString().split("T")[0]; 
+
+      const { data: contaInserida, error: erroEmprestimo } = await supabase
+        .from("contas_receber")
+        .insert({
+          id_cliente: clienteSelecionado.id,
+          id_consultor: consultorSelecionado.id,
+          tipo_lancamento: tipo,
+          estado: clienteSelecionado.estado,
+          cidade: clienteSelecionado.cidade,
+          valor_emprestado: valorEmprestimoCorreto,
+          valor_receber: valorRecebimentoCorreto,
+          data_emprestimo: dataEmprestimo,
+          data_vencimento: vencimentoFormatado,
+          descricao: observacoes,
+          comissao: Number(comissaoCalculada),
+        })
+        .select("id")
+        .single();
+
+      if (erroEmprestimo || !contaInserida) {
+        setLoading(false);
+        toast.error(`Erro ao salvar empréstimo ${i + 1}`);
+        return;
+      }
+
+      const { error: erroComissao } = await supabase
+        .from("comissoes_consultores")
+        .insert({
+          id_consultor: consultorSelecionado.id,
+          id_conta_receber: contaInserida.id,
+          valor_comissao: Number(comissaoCalculada),
+        });
+
+      if (erroComissao) {
+        setLoading(false);
+        toast.error(`Erro ao salvar comissão do lançamento ${i + 1}`);
+        return;
+      }
     }
 
     toast.success("Empréstimo salvo com sucesso");
@@ -1175,6 +1192,9 @@ export function FiltrosLancamentos() {
     setTipo(null);
     setValorEmprestado("");
     setObservacoes("");
+    setRepetir(false);
+    setNumerosVezes(0);
+    setIntervaloDias(0);
     setLoading(false);
 
   } 
@@ -1694,6 +1714,45 @@ export function FiltrosLancamentos() {
                   />
                   
                 </div>
+
+                <div className="flex items-center gap-2 mt-2">
+
+                  <p> Repetir: </p> 
+                   <input
+                      type="checkbox"
+                      checked={repetir}
+                      onChange={(e) => setRepetir(e.target.checked)}
+                      className="w-4 h-4 border-2"
+                    />
+
+                </div>
+
+                {repetir && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2">
+                      <p> Nº de Vezes: </p>
+                      <input 
+                        className="h-7 w-15 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                        min="0"
+                        type="number"
+                        value={numeroVezes}
+                        onChange={ (e) => setNumerosVezes(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2">
+                      <p> Intervalo de dias: </p>
+                      <input 
+                        className="h-7 w-15 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                        min="0"
+                        type="number"
+                        value={intervaloDias}
+                        onChange={ (e) => setIntervaloDias(Number(e.target.value))}
+                      />
+                    </div>
+
+                  </div>
+                )}
 
 
                 <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
