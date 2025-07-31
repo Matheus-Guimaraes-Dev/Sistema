@@ -39,8 +39,6 @@ export default function FiltrosETabelas() {
 
   const [comissoes, setComissoes] = useState<Comissoes[]>([]);
 
-  const teste = 'teste';
-
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
