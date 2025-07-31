@@ -20,6 +20,8 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
 
   const { grupo } = useUser();
 
+  const teste = "teste2";
+
   const [loading, setLoading] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
