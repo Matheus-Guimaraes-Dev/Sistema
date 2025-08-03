@@ -30,8 +30,6 @@ export function FiltrosClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [erro, setErro] = useState("");
 
-  const teste = "Teste";
-
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
