@@ -127,6 +127,7 @@ export default function OpcoesComissoes({ informacoesComissoes }: PropsAlterar )
       .eq("id", informacoesComissoes.id)
 
     if(error || ErroReceber) {
+      setLoading(false);
       toast.error("Erro ao estornar comissão");
       return false;
     }

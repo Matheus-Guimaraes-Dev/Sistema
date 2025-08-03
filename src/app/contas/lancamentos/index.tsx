@@ -54,7 +54,7 @@ export default function LancamentosContas() {
   const [conta, setConta] = useState("");
   const [lancamentosSaida, setLancamentosSaida] = useState<LancamentosSaida[]>([]);
   const [selecionarTipoLancamento, setSelecionarTipoLancamento] = useState<string | null>(null);
-  const [selecionarTipoLancamentoFiltro, setSelecionarTipoLancamentoFiltro] = useState<string>('Entrada');
+  const [selecionarTipoLancamentoFiltro, setSelecionarTipoLancamentoFiltro] = useState<string>('');
   const [abrirModal, setAbrirModal] = useState(false);
   const [dataLancamento, setDataLancamento] = useState("");
   const [valorLancamento, setValorLancamento] = useState("");
@@ -140,13 +140,34 @@ export default function LancamentosContas() {
     if (statusAtual) {
       setTipoLancamentoFiltro(statusAtual);
     }
+
+    const selecionarTipoFiltroAtual = localStorage.getItem("selecionar_tipo_lancamento_contas");
+    if (selecionarTipoFiltroAtual) {
+      setSelecionarTipoLancamentoFiltro(selecionarTipoFiltroAtual);
+    }
+
+    const idAtual = localStorage.getItem("id_conta_contas");
+    if (idAtual) {
+      setId(idAtual);
+    }
+
+    const planoContaSelecionadaFiltroAtual = localStorage.getItem("plano_conta_contas");
+    if (planoContaSelecionadaFiltroAtual) {
+      setPlanoContaSelecionadaFiltro(planoContaSelecionadaFiltroAtual);
+    }
+
   }, []);
 
   useEffect(() => {
     if (tipoLancamentoFiltro) {
       localStorage.setItem("status_tipoConta", tipoLancamentoFiltro);
     }
-  }, [tipoLancamentoFiltro]);
+
+    localStorage.setItem("selecionar_tipo_lancamento_contas", selecionarTipoLancamentoFiltro);
+    localStorage.setItem("id_conta_contas", id);
+    localStorage.setItem("plano_conta_contas", planoContaSelecionadaFiltro);
+    
+  }, [tipoLancamentoFiltro, selecionarTipoLancamentoFiltro, id, planoContaSelecionadaFiltro]);
 
   // ========== BUSCAR AS CONTAS ==========
 
