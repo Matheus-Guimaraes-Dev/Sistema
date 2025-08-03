@@ -2,10 +2,10 @@
 
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
-import { limiteCpf, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
+import { limiteCpf, limiteDataPagamento, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { FaArrowDown } from "react-icons/fa";
 import { FaArrowUp } from "react-icons/fa";
@@ -21,6 +21,7 @@ import { Contas, Cliente, Consultor, ConsultorBusca } from "../types";
 import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { useUser } from "@/contexts/UserContext";
+import { Recebimentos } from "../types";
 
 interface ContasPagas {
   id: number,
@@ -91,12 +92,23 @@ export function FiltrosLancamentos() {
   const [numeroVezes, setNumerosVezes] = useState(0);
   const [intervaloDias, setIntervaloDias] = useState(0);
 
+  const [selecionadosPendentes, setSelecionadosPendentes] = useState<number[]>([]);
+  const [selecionadosPagos, setSelecionadosPagos] = useState<{ contasReceber: number, lancamentoPago: number, valorPago: number }[]>([]);
+  const [dataRecebimento, setDataRecebimento] = useState("");
+
+  const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
+  const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
+
+  const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
+
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
 
   useEffect( () => {
     consultoresBuscando();
+    formasDeRecebimento();
   }, [])
 
   useEffect(() => {
@@ -130,13 +142,64 @@ export function FiltrosLancamentos() {
     if (statusAtual) {
       setStatus(statusAtual);
     }
+
+    const nomeAtual = localStorage.getItem("nome_cliente_lancamento");
+    if (nomeAtual) { 
+      setNome(nomeAtual);
+    }
+
+    const cpfAtual = localStorage.getItem("cpf_cliente_lancamento");
+    if (cpfAtual) { 
+      setCpf(cpfAtual);
+    }
+
+    const idAtual = localStorage.getItem("id_cliente_lancamento");
+    if (idAtual) { 
+      setIdCliente(idAtual);
+    }
+
+    const idDocumentoAtual = localStorage.getItem("id_documento_lancamento");
+    if (idDocumentoAtual) { 
+      setIdDocumento(idDocumentoAtual);
+    }
+
+    const modalidadeAtual = localStorage.getItem("modalidade_lancamento");
+    if (modalidadeAtual) { 
+      setModalidade(modalidadeAtual);
+    }
+
+    const consultorAtual = localStorage.getItem("consultor_lancamento");
+    if (consultorAtual) { 
+      setConsultorFiltro(consultorAtual);
+    }
+
+    const estadoAtual = localStorage.getItem("estado_lancamento");
+    if (estadoAtual) { 
+      setEstado(estadoAtual);
+    }
+
+    const cidadeAtual = localStorage.getItem("cidade_lancamento");
+    if (cidadeAtual) { 
+      setCidade(cidadeAtual);
+    }
+
   }, []);
 
   useEffect(() => {
     if (status) {
       localStorage.setItem("status", status);
     }
-  }, [status]);
+
+    localStorage.setItem("nome_cliente_lancamento", nome);
+    localStorage.setItem("id_cliente_lancamento", idCliente);
+    localStorage.setItem("cpf_cliente_lancamento", cpf);
+    localStorage.setItem("id_documento_lancamento", idDocumento);
+    localStorage.setItem("modalidade_lancamento", modalidade)
+    localStorage.setItem("consultor_lancamento", consultorFiltro);
+    localStorage.setItem("estado_lancamento", estado);
+    localStorage.setItem("cidade_lancamento", cidade);
+    
+  }, [status, nome, idCliente, cpf, idDocumento, estado, cidade, modalidade, consultorFiltro]);
 
   useEffect(() => {
     const dataInicioSalva = localStorage.getItem("filtro_data_inicio");
@@ -182,6 +245,9 @@ export function FiltrosLancamentos() {
         buscarContasPagas();
       }
     }
+
+    setSelecionadosPendentes([]);
+
   }, [paginaAtual, status, filtrosCarregados])
 
   useEffect(() => {
@@ -255,6 +321,7 @@ export function FiltrosLancamentos() {
           tipo_lancamento,
           valor_emprestado,
           valor_receber,
+          valor_pago,
           data_vencimento,
           data_cadastro,
           clientes:clientes!id_cliente ( id, nome_completo, cpf ),
@@ -352,7 +419,7 @@ export function FiltrosLancamentos() {
 
       let somaQuery = supabase
         .from("contas_receber")
-        .select("valor_emprestado, valor_receber");
+        .select("valor_emprestado, valor_receber, valor_pago");
 
       if(status === "Pendente") {
         somaQuery = somaQuery.eq("status", "Pendente");
@@ -448,7 +515,7 @@ export function FiltrosLancamentos() {
       } else {
         const totalQueFoiEmprestado = somaData.reduce((acc, item) => acc + (item.valor_emprestado ?? 0), 0);
         setTotalEmprestado(totalQueFoiEmprestado);
-        const totalAReceber = somaData.reduce((acc, item) => acc + (item.valor_receber ?? 0), 0);
+        const totalAReceber = somaData.reduce((acc, item) => acc + ((item.valor_receber ?? 0) - (item.valor_pago ?? 0)), 0);
         setTotalReceber(totalAReceber);
       }
 
@@ -464,7 +531,6 @@ export function FiltrosLancamentos() {
         return;
       }
 
-      // query = query.range(inicio, fim);
       const { data: resultado, error } = await query.range(inicio, fim);
 
       if (error) {
@@ -1252,6 +1318,199 @@ export function FiltrosLancamentos() {
 
   }
 
+  // =======================================================
+
+  async function baixarMultiplosEmprestimos(e: React.FormEvent) {
+
+    e.preventDefault();
+
+    if (selecionadosPendentes.length === 0) return toast.error("Nenhum lançamento selecionado");
+    if (!dataRecebimento.trim()) return toast.error("Selecione uma data de recebimento");
+    if(!recebimentoSelecionado) return toast.error("Selecione uma forma de recebimento.");
+
+    setLoading(true);
+
+    const erros: string[] = [];
+
+    for ( const item of selecionadosPendentes) {
+
+      const { data: documento, error: erroDocumento } = await supabase
+        .from("contas_receber")
+        .select("id, valor_receber, valor_pago")
+        .eq("id", item)
+        .single();
+
+      if (erroDocumento || !documento) {
+        setLoading(false);
+        erros.push(`Erro ao buscar lançamento ${documento}`);
+        continue;
+      }
+
+      const valorPago = ((documento.valor_receber ?? 0) - (documento.valor_pago ?? 0));
+      const valorTotalPago = ((documento.valor_pago ?? 0) + valorPago);
+      const status = valorPago === 0 ? "Pendente" : "Pago";
+
+      const { error: errorUpdateLancamento } = await supabase
+        .from("contas_receber")
+        .update({
+          valor_pago: valorTotalPago,
+          data_pagamento_total: dataRecebimento,
+          status: status
+        }) 
+        .eq("id", documento.id)
+
+      const { data: inserirPago, error: inserirError } = await supabase
+        .from("pagamentos_conta_receber")
+        .insert({
+          id_conta_receber: documento.id,
+          data_pagamento: dataRecebimento,
+          id_forma_pagamento: recebimentoSelecionado,
+          valor_pago: valorPago,
+        })
+
+      if(errorUpdateLancamento || inserirError) {
+        erros.push(`Erro ao baixar lançamentos ${documento}`);
+      }
+
+    }
+
+    setLoading(false);
+
+    if (erros.length > 0) {
+      setLoading(false);
+      toast.error("Alguns lançamentos não foram baixados:\n" + erros.join("\n"));
+    } else {
+      toast.success("Todos os lançamentos baixados com sucesso!");
+      buscarContas();
+      setSelecionadosPendentes([]);
+      setDataRecebimento("");
+      setRecebimentoSelecionado("");
+      setAbrirModalBaixa(false);
+    }
+
+  }
+
+  // =================================
+
+  async function estornarMultiplosLancamentos(e: React.FormEvent) {
+
+    e.preventDefault();
+
+    if (selecionadosPagos.length === 0) return toast.error("Nenhuma comissão selecionada.");
+
+    setLoading(true);
+
+    for (const item of selecionadosPagos) {
+
+      const valorPagoItem = item.valorPago ?? 0;
+
+      const { data: valorPagoContasReceber, error: buscarValorPago } = await supabase
+        .from("contas_receber")
+        .select("valor_pago")
+        .eq("id", item.contasReceber)
+        .single()
+
+      console.log(valorPagoContasReceber?.valor_pago - item.valorPago);
+      const correcaoValorPago = valorPagoContasReceber?.valor_pago - valorPagoItem;
+
+      const { error } = await supabase
+        .from("contas_receber")
+        .update({
+          valor_pago: correcaoValorPago,
+          status: "Pendente",
+          data_pagamento_total: null
+        })
+        .eq("id", item.contasReceber)
+
+      const { error: excluirPago } = await supabase
+        .from("pagamentos_conta_receber")
+        .delete()
+        .eq("id", item.lancamentoPago)
+
+      if (error || excluirPago) {
+        setLoading(false);
+        toast.error("Erro ao estornar documentos");
+      } 
+
+    }
+
+    toast.success("Estorno realizado com sucesso!");
+    buscarContasPagas();
+    setSelecionadosPagos([]);
+    setMostrarModal(false);
+    setLoading(false);
+
+  }
+
+  function boxSelecionadosPendentes(id: number) {
+
+    setSelecionadosPendentes( (prev) => 
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+    console.log(selecionadosPendentes);
+  }
+
+  const valorTotalSelecionadosPendente = useMemo(() => {
+    return contas  
+      .filter((item) => selecionadosPendentes.includes(item.id))
+      .reduce((soma, item) => soma + ((item.valor_receber ?? 0) - (item.valor_pago ?? 0)), 0);
+  }, [contas, selecionadosPendentes]);
+
+  function boxSelecionadosPagos(contasReceber: number, lancamentoPago: number, valorPago: number) {
+
+    setSelecionadosPagos((prev) => {
+      const existe = prev.find(
+        (item) =>
+          item.contasReceber === contasReceber &&
+          item.lancamentoPago === lancamentoPago && 
+          item.valorPago === valorPago
+      );
+
+      if (existe) {
+        return prev.filter(
+          (item) =>
+            !(
+              item.contasReceber === contasReceber &&
+              item.lancamentoPago === lancamentoPago &&
+              item.valorPago === valorPago
+            )
+        );
+      } else {
+        return [...prev, { contasReceber, lancamentoPago, valorPago }];
+      }
+    });
+
+  }
+
+  const valorTotalSelecionadoPago = useMemo(() => {
+    return contasPagas
+      .filter((item) =>
+        selecionadosPagos.some((sel) => sel.lancamentoPago === item.id)
+      )
+      .reduce((soma, item) => soma + (item.valor_pago ?? 0), 0);
+  }, [contasPagas, selecionadosPagos]);
+
+  // =======================================================
+
+  // ========== BUSCAR AS FORMAS DE RECEBIMENTO ==========
+
+  async function formasDeRecebimento() {
+
+    const { data, error } = await supabase
+      .from("formas_pagamento")
+      .select("id, descricao");
+    
+    if(error) {
+      toast.error("Erro ao buscar formas de recebimento");
+    }
+
+    if(data) {
+
+      setFormasRecebimento(data);
+
+    }
+
+  }
 
   return(
     <div className="flex-1">
@@ -1397,17 +1656,6 @@ export function FiltrosLancamentos() {
         </AnimatePresence>
 
         <div className="px-4 sm:hidden mb-4">
-          {/*
-          <div onClick={() => setFiltros(!filtros)} className='flex items-center justify-between px-4 gap-2 text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center cursor-pointer py-2 w-full'>
-            
-            <button type="button" className="text-lg cursor-pointer"> Filtros </button>
-
-            {filtros ? (
-              <FaArrowUp size={24} color="FFF" />
-            ) : <FaArrowDown size={24} color="FFF" /> }
-
-          </div>
-          */}
 
           <button
             type="button"
@@ -1432,13 +1680,13 @@ export function FiltrosLancamentos() {
 
         </div>
 
-
         {(status === "Pendente" || status === "Cancelado") && (
           <div className="bg-white shadow-md overflow-x-auto px-4 mb-4 flex-1">
             <div className="max-h-[400px] overflow-y-auto">
               <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-blue-700 text-white">
                   <tr>
+                    <th className="w-1"> </th>
                     <th className="px-2 py-3 w-5">ID</th>
                     <th className="px-2 py-3 w-50">Cliente</th>
                     <th className="px-2 py-3 w-50">Consultor</th>
@@ -1453,6 +1701,14 @@ export function FiltrosLancamentos() {
                   {contas && (
                     contas.map( (info) => (
                       <tr key={info.id} className={`${corPorData(info.data_vencimento)} border-b-3 border-gray-600`}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selecionadosPendentes.some((id) => id === info.id)}
+                            onChange={() => boxSelecionadosPendentes(info.id)}
+                            className="ml-2 w-4 h-4"
+                          />
+                        </td>
                         <td className="px-2 w-5"> {info.id} </td>
                         <td className="px-2 py-1.5 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
                         <td className="px-2 py-1.5 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
@@ -1461,7 +1717,7 @@ export function FiltrosLancamentos() {
                       style: 'currency',
                       currency: 'BRL',
                     })} </td>
-                        <td className="px-2 py-1.5"> {Number(info.valor_receber).toLocaleString('pt-BR', {
+                        <td className="px-2 py-1.5"> {Number(info.valor_receber - info.valor_pago).toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
                     })} </td>
@@ -1486,6 +1742,7 @@ export function FiltrosLancamentos() {
               <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-blue-700 text-white">
                   <tr>
+                    <th className="w-1"> </th>
                     <th className="px-2 py-3 w-5">ID</th>
                     <th className="px-2 py-3 w-50">Cliente</th>
                     <th className="px-2 py-3 w-50">Consultor</th>
@@ -1499,6 +1756,21 @@ export function FiltrosLancamentos() {
                   {contasPagas && (
                     contasPagas.map( (info) => (
                       <tr key={info.id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selecionadosPagos.some(
+                              (item) =>
+                                item.contasReceber === info.contas_receber.id &&
+                                item.lancamentoPago === info.id && 
+                                item.valorPago === info.valor_pago
+                            )}
+                            onChange={() =>
+                              boxSelecionadosPagos(info.contas_receber.id, info.id, info.valor_pago)
+                            }
+                            className="w-4 h-4"
+                          />
+                        </td>
                         <td className="px-2 py-2 w-5"> {info.contas_receber?.id}.{info.id} </td>
                         <td className="px-2 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.contas_receber?.clientes?.nome_completo || "Sem cliente"} </td>
                         <td className="px-2 py-2 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info?.contas_receber?.consultores?.nome_completo || "Sem consultor"} </td>
@@ -1540,6 +1812,37 @@ export function FiltrosLancamentos() {
           >
             Próxima
           </button>
+        </div>
+
+        <div className="px-4 mb-4 flex gap-2 justify-between">
+
+          {( (status === "Pendente" || status === "Cancelado") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
+            <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+          )}
+
+          {( (status === "Pago") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
+            <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
+          )}
+
+          {valorTotalSelecionadosPendente > 0 && (
+            <div className="mt-4 text-right font-semibold text-lg">
+              Total selecionado:{" "}
+              {valorTotalSelecionadosPendente.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
+          )}
+
+          {valorTotalSelecionadoPago > 0 && (
+            <div className="mt-4 text-right font-semibold text-lg">
+              Total selecionado:{" "}
+              {valorTotalSelecionadoPago.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
+          )}
         </div>
 
         {(status === "Pendente" || status === "Cancelado") && (
@@ -1778,6 +2081,103 @@ export function FiltrosLancamentos() {
             </div>
           </div>
         )}
+
+        {/* ========== MODAL DE BAIXA ========== */}
+        
+        {abrirModalBaixa && (
+              
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+  
+            <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+  
+            <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md max-h-[90vh] overflow-y-auto">
+  
+              <h2 className="text-xl font-bold mb-4 text-center"> Baixa </h2>
+  
+              <form onSubmit={baixarMultiplosEmprestimos}>
+  
+                <div className="mb-3">
+  
+                  <Label> Data do Pagamento </Label>
+  
+                  <input 
+                    className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                    type="date"
+                    value={dataRecebimento}
+                    onChange={ (e) => limiteDataPagamento(e, setDataRecebimento)}
+                  />
+                  
+                </div>
+  
+                <div className="mt-2 mb-3">
+                  <Label> Valor do Pagamento </Label>
+                  <InputAlterar 
+                    type="text" 
+                    value={valorTotalSelecionadosPendente.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                    placeholder="R$ 0,00"
+                    readOnly 
+                  />
+                </div>
+  
+                <div className="mb-3">
+                  <Label> Forma de Recebimento </Label>
+  
+                  <select 
+                    className="w-full h-8 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                    value={recebimentoSelecionado}
+                    onChange={(e) => setRecebimentoSelecionado(e.target.value)}
+                  >
+                    <option value="">Selecione a forma de recebimento</option>
+  
+                    {formasRecebimento.map((forma) => (
+                      <option key={forma.id} value={forma.id}>
+                        {forma.descricao}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
+  
+                <div className="flex justify-center gap-4">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setAbrirModalBaixa(false);
+                      setDataRecebimento("");
+                      setRecebimentoSelecionado("");
+                    }} 
+                    className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+                </div>
+  
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========== MODAL DE ESTORNAR ========== */}
+
+        {mostrarModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+
+            <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+            <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+              <h2 className="text-xl font-bold mb-4"> Deseja realmente estornar esse lançamento? </h2>
+
+              <div className="flex justify-center gap-4">
+                <button onClick={estornarMultiplosLancamentos}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer"> Sim </button>
+
+                <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
+              </div>
+            </div>
+          </div>
+        )}
+  
 
         {loading && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
