@@ -43,6 +43,7 @@ export interface Contas {
   tipo_lancamento: string;
   valor_emprestado: number;
   valor_receber: number;
+  valor_pago: number;
   data_vencimento: string;
   data_cadastro: string;
   clientes: {

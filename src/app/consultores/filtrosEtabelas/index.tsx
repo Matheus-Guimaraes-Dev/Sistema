@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
-import { limiteCpf, limiteId } from "@/funcoes/limitacao";
+import { limiteCpf, limiteDataPagamento, limiteId } from "@/funcoes/limitacao";
 import { formatarCPF, formatarData } from "@/funcoes/formatacao";
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import toast from "react-hot-toast";
 import { ConsultorBusca } from "@/app/lancamentos/types";
 import { V } from "framer-motion/dist/types.d-B_QPEvFK";
+import { Recebimentos } from "@/app/lancamentos/types";
+import { Label } from "@/app/formulario/components/componentes/label";
+import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 
 interface Comissoes {
   id: number;
@@ -24,6 +27,11 @@ interface Comissoes {
     id: number;
     nome_completo: string;
   }
+}
+
+interface Selecionado {
+  comissaoId: number;
+  contaId: number;
 }
 
 export default function FiltrosETabelas() {
@@ -48,6 +56,16 @@ export default function FiltrosETabelas() {
 
   const [loading, setLoading] = useState(false);
 
+  const [selecionados, setSelecionados] = useState<{ comissaoId: number, contaId: number }[]>([]);
+
+  const [dataPagamento, setDataPagamento] = useState("");
+
+  const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
+  const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
+
+  const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
+
   const router = useRouter(); 
 
   const [paginaAtual, setPaginaAtual] = useState(1);
@@ -67,12 +85,18 @@ export default function FiltrosETabelas() {
   };
 
   useEffect( () => {
+    formasDeRecebimento();
+  }, [])
+
+  useEffect( () => {
 
     if(filtrosCarregados) {
       buscarComissoes();
     }
 
-  }, [paginaAtual, filtrosCarregados])
+    setSelecionados([]);
+
+  }, [paginaAtual, filtrosCarregados, status])
 
   useEffect( () => {
     consultoresBuscando();
@@ -97,13 +121,44 @@ export default function FiltrosETabelas() {
     if (statusAtual) {
       setStatus(statusAtual);
     }
+
+    const modalidadeAtual = localStorage.getItem("modalidade_comissoes");
+    if (modalidadeAtual) {
+      setModalidade(modalidadeAtual);
+    }
+
+    const consultorAtual = localStorage.getItem("consultorSelecionado");
+    if (consultorAtual) {
+      setConsultorFiltro(consultorAtual);
+    }
+
+    const statusEmprestimoAtual = localStorage.getItem("status_emprestimo_comissoes");
+    if (statusEmprestimoAtual) {
+      setStatusEmprestimo(statusEmprestimoAtual);
+    }
+
+    const idAtual = localStorage.getItem("id_conta_comissoes");
+    if (idAtual) {
+      setId(idAtual);
+    }
+
   }, []);
 
   useEffect(() => {
+    
     if (status) {
       localStorage.setItem("status_comissoes", status);
     }
-  }, [status]);
+
+    localStorage.setItem("modalidade_comissoes", modalidade)
+
+    localStorage.setItem("consultorSelecionado", consultorFiltro);
+
+    localStorage.setItem("status_emprestimo_comissoes", statusEmprestimo);
+
+    localStorage.setItem("id_conta_comissoes", id)
+
+  }, [status, modalidade, consultorFiltro, statusEmprestimo, id]);
 
   async function buscarComissoes() {
 
@@ -140,6 +195,7 @@ export default function FiltrosETabelas() {
           .eq("id_consultor", Number(consultorFiltro));
 
         if (erroContas) {
+          setLoading(false);
           toast.error("Erro ao buscar contas do cliente");
           return;
         }
@@ -151,6 +207,7 @@ export default function FiltrosETabelas() {
         } else {
           setComissoes([]);
           setTotalPaginas(0);
+          setLoading(false);
           return;
         }
       }
@@ -236,6 +293,7 @@ export default function FiltrosETabelas() {
           .eq("id_consultor", Number(consultorFiltro));
 
         if (erroContas) {
+          setLoading(false);
           toast.error("Erro ao buscar contas do cliente");
           return;
         }
@@ -245,6 +303,7 @@ export default function FiltrosETabelas() {
         if (ids.length > 0) {
           somaQuery = somaQuery.in("id_conta_receber", ids);
         } else {
+          setLoading(false);
           setComissoes([]);
           setTotalPaginas(0);
           return;
@@ -258,6 +317,7 @@ export default function FiltrosETabelas() {
           .eq("tipo_lancamento", modalidade);
 
         if (erroContas) {
+          setLoading(false);
           toast.error("Erro ao buscar contas do cliente");
           return;
         }
@@ -267,6 +327,7 @@ export default function FiltrosETabelas() {
         if (ids.length > 0) {
           somaQuery = somaQuery.in("id_conta_receber", ids);
         } else {
+          setLoading(false);
           setComissoes([]);
           setTotalPaginas(0);
           return;
@@ -280,6 +341,7 @@ export default function FiltrosETabelas() {
           .eq("status", statusEmprestimo);
 
         if (erroContas) {
+          setLoading(false);
           toast.error("Erro ao buscar contas do cliente");
           return;
         }
@@ -289,6 +351,7 @@ export default function FiltrosETabelas() {
         if (ids.length > 0) {
           somaQuery = somaQuery.in("id_conta_receber", ids);
         } else {
+          setLoading(false);
           setComissoes([]);
           setTotalPaginas(0);
           return;
@@ -306,8 +369,10 @@ export default function FiltrosETabelas() {
       const { data: somaData, error: erroSoma } = await somaQuery;
 
       if (erroSoma) {
+        setLoading(false);
         toast.error("Erro ao calcular soma das comissões");
       } else {
+        setLoading(false);
         const totalComissoes = somaData.reduce((acc, item) => acc + (item.valor_comissao ?? 0), 0);
         setSomaComissoes(totalComissoes);
       }
@@ -323,6 +388,7 @@ export default function FiltrosETabelas() {
       const fim = inicio + itensPorPagina - 1;
 
       if(inicio >= total && total > 0) {
+        setLoading(false);
         setPaginaAtual(1);
         return;
       }
@@ -331,6 +397,7 @@ export default function FiltrosETabelas() {
       const { data, error } = await query;
 
       if(error) {
+        setLoading(false);
         toast.error("Erro ao buscar comissões");
         return;
       } else {
@@ -346,10 +413,12 @@ export default function FiltrosETabelas() {
 
         const total = Math.ceil((count ?? 0) / itensPorPagina);
         setTotalPaginas(total);
+        setLoading(false);
 
       }
 
     } catch(error) {
+      setLoading(false);
       toast.error("erro inesperado ao buscar comissões");
       return;
     }
@@ -385,6 +454,7 @@ export default function FiltrosETabelas() {
       .eq("status", "Ativo")
 
     if(error) {
+      setLoading(false);
       toast.error("Erro ao buscar consultores");
       return
     }
@@ -401,6 +471,164 @@ export default function FiltrosETabelas() {
 
   function detalhesComissoes(id: number) {
     router.push(`consultores/comissoesDetalhes/${id}`);
+  }
+
+// ==========================================================
+
+  async function baixarMultiplasComissoes(e: React.FormEvent) {
+    
+    e.preventDefault();
+
+    if (selecionados.length === 0) return toast.error("Nenhuma comissão selecionada");
+    if (!dataPagamento.trim()) return toast.error("Selecione uma data de pagamento");
+    if (!recebimentoSelecionado) return toast.error("Selecione uma forma de recebimento");
+
+    setLoading(true);
+
+    const erros: string[] = [];
+
+    for (const { comissaoId, contaId } of selecionados) {
+      const { data: comissao, error: erroComissao } = await supabase
+        .from("comissoes_consultores")
+        .select("id, valor_comissao")
+        .eq("id", comissaoId)
+        .single();
+
+      if (erroComissao || !comissao) {
+        setLoading(false);
+        erros.push(`Erro ao buscar comissão ${comissaoId}`);
+        continue;
+      }
+
+      const valorPago = comissao.valor_comissao ?? 0;
+      const status = valorPago === 0 ? "Pendente" : "Pago";
+
+      const { error: erroUpdateComissao } = await supabase
+        .from("comissoes_consultores")
+        .update({
+          valor_pago: valorPago,
+          data_pagamento: dataPagamento,
+          status: status,
+          id_forma_pagamento: recebimentoSelecionado,
+        })
+        .eq("id", comissaoId);
+
+      const { error: erroUpdateConta } = await supabase
+        .from("contas_receber")
+        .update({
+          status_comissao: status,
+        })
+        .eq("id", contaId);
+
+      if (erroUpdateComissao || erroUpdateConta) {
+        erros.push(`Erro ao atualizar comissão ${comissaoId}`);
+      }
+    }
+
+    setLoading(false);
+
+    if (erros.length > 0) {
+      setLoading(false);
+      toast.error("Algumas comissões não foram atualizadas:\n" + erros.join("\n"));
+    } else {
+      toast.success("Todas as comissões foram pagas com sucesso!");
+      buscarComissoes();
+      setSelecionados([]);
+      setRecebimentoSelecionado("");
+      setDataPagamento("");
+      setAbrirModalBaixa(false);
+    }
+  }
+
+  // ====================================
+
+  async function estornarMultiplasComissoes(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (selecionados.length === 0) return toast.error("Nenhuma comissão selecionada");
+
+    setLoading(true);
+
+    const erros: string[] = [];
+
+    const dadosAtualizadosComissoes = {
+      valor_pago: 0,
+      id_forma_pagamento: null,
+      status: "Pendente",
+    };
+
+    for (const item of selecionados) {
+      const { comissaoId, contaId } = item;
+
+      const { error: erroEstornoConta } = await supabase
+        .from("contas_receber")
+        .update({ status_comissao: "Pendente" })
+        .eq("id", contaId);
+
+      const { error: erroEstornoComissao } = await supabase
+        .from("comissoes_consultores")
+        .update(dadosAtualizadosComissoes)
+        .eq("id", comissaoId);
+
+      if (erroEstornoConta || erroEstornoComissao) {
+        erros.push(`Erro ao estornar comissão ${comissaoId}`);
+      }
+    }
+
+    setLoading(false);
+
+    if (erros.length > 0) {
+      setLoading(false);
+      toast.error("Algumas comissões não foram estornadas:\n" + erros.join("\n"));
+    } else {
+      toast.success("Todas as comissões foram estornadas com sucesso!");
+    }
+
+    buscarComissoes();
+    setSelecionados([]);
+    setMostrarModal(false);
+  }
+
+  // ====================================
+
+  function boxSelecionado(comissaoId: number, contaId: number) {
+    setSelecionados((prev) => {
+      const existe = prev.find((item) => item.comissaoId === comissaoId);
+      if (existe) {
+        return prev.filter((item) => item.comissaoId !== comissaoId);
+      } else {
+        return [...prev, { comissaoId, contaId }];
+      }
+    });
+  }
+
+  
+  const valorTotalSelecionado = useMemo(() => {
+    return comissoes
+      .filter((item) =>
+        selecionados.some((sel) => sel.comissaoId === item.id)
+      )
+      .reduce((soma, item) => soma + (item.valor_comissao ?? 0), 0);
+  }, [comissoes, selecionados]);
+
+    // ========== BUSCAR AS FORMAS DE RECEBIMENTO ==========
+
+  async function formasDeRecebimento() {
+
+    const { data, error } = await supabase
+      .from("formas_pagamento")
+      .select("id, descricao");
+    
+    if(error) {
+      toast.error("Erro ao buscar formas de recebimento");
+    }
+
+    if(data) {
+
+      setFormasRecebimento(data);
+
+    }
+
   }
 
   return(
@@ -502,6 +730,7 @@ export default function FiltrosETabelas() {
             <table className="min-w-full text-sm text-left border-collapse">
               <thead className="bg-blue-700 text-white sticky top-0 z-10">
                 <tr>
+                  <th className="w-1"> </th>
                   <th className="px-4 py-3 w-20">ID</th>
                   <th className="px-4 py-3 w-40">Consultor</th>
                   <th className="px-4 py-3 w-40">Valor Comissão</th>
@@ -513,6 +742,14 @@ export default function FiltrosETabelas() {
               <tbody className="divide-y">
                 {comissoes?.map((info) => (
                   <tr key={info.id} className="border-b border-gray-300">
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selecionados.some((item) => item.comissaoId === info.id)}
+                        onChange={() => boxSelecionado(info.id, info.contas_receber.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
                     <td className="px-4 py-2">{info.contas_receber?.id}.{info.id}</td>
                     <td className="px-4 py-2">{info.consultores?.nome_completo}</td>
                     <td className="px-4 py-2">
@@ -549,6 +786,7 @@ export default function FiltrosETabelas() {
         </div>
 
         <div className="flex gap-4 justify-center items-center mt-4 mb-6">
+
           <button
             onClick={() => setPaginaAtual((prev) => Math.max(prev - 1, 1))}
             disabled={paginaAtual === 1}
@@ -570,6 +808,27 @@ export default function FiltrosETabelas() {
           </button>
         </div>
 
+        <div className="px-4 mb-4 flex gap-2 justify-between">
+
+          {status === "Pendente" && (
+            <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+          )}
+
+          {(status === "Pago" || status === "Parcial") && (
+            <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
+          )}
+
+          {valorTotalSelecionado > 0 && (
+            <div className="mt-4 text-right font-semibold text-lg">
+              Total selecionado:{" "}
+              {valorTotalSelecionado.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 px-4 py-3 bg-white border-t border-gray-200 shadow-sm rounded-b-md">
           <div className="text-sm sm:text-base font-medium text-gray-700">
             <span className="text-gray-600">Soma das comissões:</span> 
@@ -577,10 +836,105 @@ export default function FiltrosETabelas() {
               {somaComissoes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </span>
           </div>
-
         </div>
 
       </div>
+
+      {/* ========== MODAL DE BAIXA ========== */}
+
+      {abrirModalBaixa && (
+            
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md max-h-[90vh] overflow-y-auto">
+
+            <h2 className="text-xl font-bold mb-4 text-center"> Baixa </h2>
+
+            <form onSubmit={baixarMultiplasComissoes}>
+
+              <div className="mb-3">
+
+                <Label> Data do Pagamento </Label>
+
+                <input 
+                  className="w-full h-8 border-2 px-1 border-[#002956] rounded mt-1  focus:outline-[#4b8ed6]"
+                  type="date"
+                  value={dataPagamento}
+                  onChange={ (e) => limiteDataPagamento(e, setDataPagamento)}
+                />
+                
+              </div>
+
+              <div className="mt-2 mb-3">
+                <Label> Valor do Pagamento </Label>
+                <InputAlterar 
+                  type="text" 
+                  value={valorTotalSelecionado.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                  placeholder="R$ 0,00"
+                  readOnly 
+                />
+              </div>
+
+              <div className="mb-3">
+                <Label> Forma de Recebimento </Label>
+
+                <select 
+                  className="w-full h-8 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                  value={recebimentoSelecionado}
+                  onChange={(e) => setRecebimentoSelecionado(e.target.value)}
+                >
+                  <option value="">Selecione a forma de recebimento</option>
+
+                  {formasRecebimento.map((forma) => (
+                    <option key={forma.id} value={forma.id}>
+                      {forma.descricao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-10 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
+
+              <div className="flex justify-center gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setDataPagamento("");
+                    setRecebimentoSelecionado("");
+                    setAbrirModalBaixa(false);
+                  }} 
+                  className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========== MODAL DE ESTORNAR ========== */}
+
+      {mostrarModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+            <h2 className="text-xl font-bold mb-4"> Deseja realmente estornar esse lançamento? </h2>
+
+            <div className="flex justify-center gap-4">
+              <button onClick={estornarMultiplasComissoes}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer"> Sim </button>
+
+              <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">

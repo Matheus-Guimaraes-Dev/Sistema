@@ -35,9 +35,72 @@ export function FiltrosClientes() {
 
   const [paginaAtual, setPaginaAtual] = useState(1);
 
+  const [filtrosCarregados, setFiltrosCarregados] = useState(false);
+
   useEffect( () => {
     consultoresBuscando();
   }, [])
+
+  useEffect( () => {
+
+    const nomeAtual = localStorage.getItem("nome_cliente_cliente");
+    if (nomeAtual) { 
+      setNome(nomeAtual);
+    }
+
+    const cpfAtual = localStorage.getItem("cpf_cliente");
+    if (cpfAtual) { 
+      setCpf(cpfAtual);
+    }
+
+    const idAtual = localStorage.getItem("id_cliente");
+    if (idAtual) { 
+      setId(idAtual);
+    }
+
+    const statusAtual = localStorage.getItem("status_cliente");
+    if (statusAtual) { 
+      setStatus(statusAtual);
+    }
+
+    const dataAtual = localStorage.getItem("data_cliente");
+    if (dataAtual) { 
+      setData(dataAtual);
+    }
+
+    const consultorAtual = localStorage.getItem("consultor_cliente");
+    if (consultorAtual) { 
+      setConsultorFiltro(consultorAtual);
+    }
+
+    const estadoAtual = localStorage.getItem("estado_cliente");
+    if (estadoAtual) { 
+      setEstado(estadoAtual);
+    }
+
+    const cidadeAtual = localStorage.getItem("cidade_cliente");
+    if (cidadeAtual) { 
+      setCidade(cidadeAtual);
+    }
+
+    setTimeout( () => {
+      setFiltrosCarregados(true);
+    }, 0)
+
+  }, [])
+
+  useEffect( () => {
+
+    localStorage.setItem("nome_cliente_cliente", nome);
+    localStorage.setItem("cpf_cliente", cpf);
+    localStorage.setItem("id_cliente", id);
+    localStorage.setItem("status_cliente", status);
+    localStorage.setItem("data_cliente", data);
+    localStorage.setItem("consultor_cliente", consultorFiltro);
+    localStorage.setItem("estado_cliente", estado);
+    localStorage.setItem("cidade_cliente", cidade);
+
+  }, [nome, cpf, status, cidade, estado, id, data, consultorFiltro])
 
   async function consultoresBuscando() {
 
@@ -58,8 +121,12 @@ export function FiltrosClientes() {
   }
 
   useEffect(() => {
-    buscarClientes()
-  }, [paginaAtual])
+    
+    if(filtrosCarregados) {
+      buscarClientes();
+    }
+
+  }, [paginaAtual, filtrosCarregados])
 
   const router = useRouter();
 
