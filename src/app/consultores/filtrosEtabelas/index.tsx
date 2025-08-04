@@ -9,7 +9,6 @@ import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
 import toast from "react-hot-toast";
 import { ConsultorBusca } from "@/app/lancamentos/types";
-import { V } from "framer-motion/dist/types.d-B_QPEvFK";
 import { Recebimentos } from "@/app/lancamentos/types";
 import { Label } from "@/app/formulario/components/componentes/label";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
@@ -22,6 +21,9 @@ interface Comissoes {
   contas_receber: {
     id: number;
     tipo_lancamento: string;
+    clientes: {
+      nome_completo: string;
+    }
   },
   consultores: {
     id: number;
@@ -184,7 +186,10 @@ export default function FiltrosETabelas() {
           contas_receber (
             id,
             tipo_lancamento,
-            status
+            status,
+            clientes (
+              nome_completo
+            )
           )
         `, { count: "exact" }); 
 
@@ -695,6 +700,15 @@ export default function FiltrosETabelas() {
               <option value="Pago">Pago</option>
             </select>
 
+            <select 
+              className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#9eb0c4] text-sm sm:text-base"
+              value={statusEmprestimo}
+              onChange={ (e) => setStatusEmprestimo(e.target.value)}
+            >
+              <option value=""> Data Empréstimo </option>
+              <option value="Pendente"> Data Pagamento </option>
+            </select>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <input
@@ -732,6 +746,7 @@ export default function FiltrosETabelas() {
                 <tr>
                   <th className="w-1"> </th>
                   <th className="px-4 py-3 w-20">ID</th>
+                  <th className="px-4 py-3 w-40">Cliente</th>
                   <th className="px-4 py-3 w-40">Consultor</th>
                   <th className="px-4 py-3 w-40">Valor Comissão</th>
                   <th className="px-4 py-3 w-32">Modalidade</th>
@@ -751,6 +766,7 @@ export default function FiltrosETabelas() {
                       />
                     </td>
                     <td className="px-4 py-2">{info.contas_receber?.id}.{info.id}</td>
+                    <td className="px-4 py-2 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis">{info.contas_receber?.clientes?.nome_completo}</td>
                     <td className="px-4 py-2">{info.consultores?.nome_completo}</td>
                     <td className="px-4 py-2">
                       {Number(info.valor_comissao).toLocaleString('pt-BR', {
