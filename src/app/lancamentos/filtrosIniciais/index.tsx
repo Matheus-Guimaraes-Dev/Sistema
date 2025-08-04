@@ -1410,7 +1410,6 @@ export function FiltrosLancamentos() {
         .eq("id", item.contasReceber)
         .single()
 
-      console.log(valorPagoContasReceber?.valor_pago - item.valorPago);
       const correcaoValorPago = valorPagoContasReceber?.valor_pago - valorPagoItem;
 
       const { error } = await supabase
@@ -1447,7 +1446,7 @@ export function FiltrosLancamentos() {
     setSelecionadosPendentes( (prev) => 
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
-    console.log(selecionadosPendentes);
+
   }
 
   const valorTotalSelecionadosPendente = useMemo(() => {
