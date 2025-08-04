@@ -1,8 +1,6 @@
 'use client';
 
 import Head from 'next/head';
-import Image from 'next/image';
-import logo from '@/fotos/logo.png';
 
 export default function Contatos() {
   return (
@@ -27,6 +25,7 @@ export default function Contatos() {
               target="_blank"
               className="bg-[#0077b6] hover:bg-[#005b96] text-white py-3 rounded-lg font-semibold transition duration-300"
             >
+              <p className='text-white font-semibold'> Ji-Paraná </p>
               💬 Falar com Consultor Arthur
             </a>
             <a
@@ -34,6 +33,7 @@ export default function Contatos() {
               target="_blank"
               className="bg-[#0077b6] hover:bg-[#005b96] text-white py-3 rounded-lg font-semibold transition duration-300"
             >
+              <p className='text-white font-semibold'> Ji-Paraná </p>
               💬 Falar com Consultor João
             </a>
             <a
@@ -41,6 +41,7 @@ export default function Contatos() {
               target="_blank"
               className="bg-[#0077b6] hover:bg-[#005b96] text-white py-3 rounded-lg font-semibold transition duration-300"
             >
+              <p className='text-white font-semibold'> Espigão D'Oeste </p>
               💬 Falar com Consultora Dominique
             </a>
           </div>
