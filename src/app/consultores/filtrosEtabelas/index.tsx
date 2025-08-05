@@ -48,6 +48,8 @@ export default function FiltrosETabelas() {
   const [dataFim, setDataFim] = useState("");
   const [nome, setNome] = useState("");
 
+  const teste = "teste"; 
+
   const [comissoes, setComissoes] = useState<Comissoes[]>([]);
 
   const [consultorFiltro, setConsultorFiltro] = useState("");
