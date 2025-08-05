@@ -102,6 +102,8 @@ export function FiltrosLancamentos() {
   const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  const [tipoData, setTipoData] = useState("");
+  
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
   };
@@ -183,6 +185,11 @@ export function FiltrosLancamentos() {
       setCidade(cidadeAtual);
     }
 
+    const tipoDataAtual = localStorage.getItem("tipo_data_lancamentos");
+    if (tipoDataAtual) {
+      setTipoData(tipoDataAtual);
+    }
+
   }, []);
 
   useEffect(() => {
@@ -198,8 +205,10 @@ export function FiltrosLancamentos() {
     localStorage.setItem("consultor_lancamento", consultorFiltro);
     localStorage.setItem("estado_lancamento", estado);
     localStorage.setItem("cidade_lancamento", cidade);
+    localStorage.setItem("tipo_data_lancamentos", tipoData);
+
     
-  }, [status, nome, idCliente, cpf, idDocumento, estado, cidade, modalidade, consultorFiltro]);
+  }, [status, nome, idCliente, cpf, idDocumento, estado, cidade, modalidade, consultorFiltro, tipoData]);
 
   useEffect(() => {
     const dataInicioSalva = localStorage.getItem("filtro_data_inicio");
@@ -247,6 +256,7 @@ export function FiltrosLancamentos() {
     }
 
     setSelecionadosPendentes([]);
+    setSelecionadosPagos([]);
 
   }, [paginaAtual, status, filtrosCarregados])
 
@@ -407,12 +417,18 @@ export function FiltrosLancamentos() {
         query = query.eq("cidade", cidade);
       }
 
-      if (dataInicio.trim() !== "") {
-        query = query.gte("data_emprestimo", dataInicio);
-      }
+      if (dataInicio.trim() || dataFim.trim()) {
+        let colunaData = "data_emprestimo"; // padrão
 
-      if (dataFim.trim() !== "") {
-        query = query.lte("data_emprestimo", dataFim);
+        if (tipoData === "pagamento") {
+          colunaData = "data_pagamento_total";
+          query = query.eq("status", "Pago"); // Apenas contas pagas
+        } else if (tipoData === "vencimento") {
+          colunaData = "data_vencimento";
+        }
+
+        if (dataInicio.trim()) query = query.gte(colunaData, dataInicio);
+        if (dataFim.trim()) query = query.lte(colunaData, dataFim);
       }
 
       // =================================
@@ -500,12 +516,18 @@ export function FiltrosLancamentos() {
         somaQuery = somaQuery.eq("cidade", cidade);
       }
 
-      if (dataInicio.trim() !== "") {
-        somaQuery = somaQuery.gte("data_emprestimo", dataInicio);
-      }
+      if (dataInicio.trim() || dataFim.trim()) {
+        let colunaData = "data_emprestimo"; // padrão
 
-      if (dataFim.trim() !== "") {
-        somaQuery = somaQuery.lte("data_emprestimo", dataFim);
+        if (tipoData === "pagamento") {
+          colunaData = "data_pagamento_total";
+          somaQuery = somaQuery.eq("status", "Pago"); // Apenas contas pagas
+        } else if (tipoData === "vencimento") {
+          colunaData = "data_vencimento";
+        }
+
+        if (dataInicio.trim()) somaQuery = somaQuery.gte(colunaData, dataInicio);
+        if (dataFim.trim()) somaQuery = somaQuery.lte(colunaData, dataFim);
       }
 
       const { data: somaData, error: erroSoma } = await somaQuery;
@@ -562,565 +584,163 @@ export function FiltrosLancamentos() {
 
   // ========== BUSCAR AS CONTAS PAGAS ==========
 
-  async function buscarContasPagas() {
+async function buscarContasPagas() {
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const fim = inicio + itensPorPagina - 1;
 
-    const inicio = (paginaAtual - 1) * itensPorPagina;
-    const fim = inicio + itensPorPagina - 1;
+  setLoading(true);
 
-    setLoading(true);
+  try {
+    // ================================
+    // 1️⃣ Buscar IDs de contas_receber filtradas
+    let queryContas = supabase.from("contas_receber").select("id");
 
-    try {
+    // Filtro por ID do cliente
+    if (idCliente.trim()) {
+      queryContas = queryContas.eq("id_cliente", Number(idCliente));
+    }
 
-      let query = supabase
-        .from("pagamentos_conta_receber")
-        .select(`
+    // Filtro por consultor
+    if (grupo === "Consultor") {
+      queryContas = queryContas.eq("id_consultor", Number(id));
+    } else if (consultorFiltro.trim()) {
+      queryContas = queryContas.eq("id_consultor", Number(consultorFiltro));
+    }
+
+    // Filtro por CPF
+    if (cpf.trim()) {
+      const { data: clientesCpf, error } = await supabase
+        .from("clientes")
+        .select("id")
+        .ilike("cpf", `%${cpf.trim()}%`);
+
+      if (error || !clientesCpf?.length) {
+        setContasPagas([]);
+        setTotalPaginas(0);
+        setTotalPago(0);
+        return;
+      }
+
+      const idsClientes = clientesCpf.map(c => c.id);
+      queryContas = queryContas.in("id_cliente", idsClientes);
+    }
+
+    // Filtro por nome
+    if (nome.trim()) {
+      const { data: clientesNome, error } = await supabase
+        .from("clientes")
+        .select("id")
+        .ilike("nome_completo", `%${nome.trim()}%`);
+
+      if (error || !clientesNome?.length) {
+        setContasPagas([]);
+        setTotalPaginas(0);
+        setTotalPago(0);
+        return;
+      }
+
+      const idsClientes = clientesNome.map(c => c.id);
+      queryContas = queryContas.in("id_cliente", idsClientes);
+    }
+
+    // Filtro por modalidade
+    if (modalidade.trim()) {
+      queryContas = queryContas.eq("tipo_lancamento", modalidade);
+    }
+
+    // Filtro por ID do documento
+    if (idDocumento.trim()) {
+      queryContas = queryContas.eq("id", Number(idDocumento));
+    }
+
+    // Filtro por estado e cidade
+    if (estado.trim()) queryContas = queryContas.eq("estado", estado);
+    if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade);
+
+    // 🔹 Filtro de data dinâmica baseado em tipoData
+    if (dataInicio.trim() || dataFim.trim()) {
+      let colunaData = "data_emprestimo"; // padrão
+      if (tipoData === "pagamento") colunaData = "data_pagamento_total";
+      if (tipoData === "vencimento") colunaData = "data_vencimento";
+
+      if (dataInicio.trim()) queryContas = queryContas.gte(colunaData, dataInicio);
+      if (dataFim.trim()) queryContas = queryContas.lte(colunaData, dataFim);
+    }
+
+    // Executa a busca de contas filtradas
+    const { data: contasRelacionadas, error: erroContas } = await queryContas;
+    if (erroContas) throw new Error("Erro ao buscar contas filtradas");
+
+    const idsContas = contasRelacionadas?.map(c => c.id) ?? [];
+
+    if (idsContas.length === 0) {
+      setContasPagas([]);
+      setTotalPaginas(0);
+      setTotalPago(0);
+      return;
+    }
+
+    // ================================
+    // 2️⃣ Query principal em pagamentos_conta_receber
+    let query = supabase
+      .from("pagamentos_conta_receber")
+      .select(`
         id,
         valor_pago,
         data_pagamento,
-        formas_pagamento (
-          descricao
-        ),
+        formas_pagamento ( descricao ),
         contas_receber (
           id,
           tipo_lancamento,
-          clientes (
-            nome_completo
-          ),
-          consultores (
-            nome_completo
-          )
+          clientes ( nome_completo ),
+          consultores ( nome_completo )
         )
-      `, { count: "exact" });
-
-      if (idCliente.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_cliente", Number(idCliente));
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if(grupo === "Consultor") {
-
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .eq("id_consultor", Number(id));
-
-          if (erroContas) {
-            toast.error("Erro ao buscar contas do cliente");
-            setLoading(false);
-            return;
-          }
-
-          const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-          if (ids.length > 0) {
-            query = query.in("id_conta_receber", ids);
-          } else {
-            setContasPagas([]);
-            setTotalPaginas(0);
-            setLoading(false);
-            return;
-          }
-      } else {
-        if (consultorFiltro.trim() !== "") {
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .eq("id_consultor", Number(consultorFiltro));
-
-          if (erroContas) {
-            setLoading(false);
-            toast.error("Erro ao buscar contas do cliente");
-            return;
-          }
-
-          const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-          if (ids.length > 0) {
-            query = query.in("id_conta_receber", ids);
-          } else {
-            setContasPagas([]);
-            setTotalPaginas(0);
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
-      if (cpf.trim() !== "") {
-        const { data: clienteData, error: erroCliente } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("cpf", `%${cpf.trim()}%`)
-
-        if (erroCliente || !clienteData?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const idClienteEncontrado = clienteData[0].id;
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_cliente", idClienteEncontrado);
-
-        if (erroContas) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setLoading(false);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (nome.trim() !== "") {
-
-        const { data: clientesEncontrados, error: erroClientes } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("nome_completo", `%${nome.trim()}%`);
-
-        if (erroClientes || !clientesEncontrados?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const idsClientes = clientesEncontrados.map((item) => item.id);
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .in("id_cliente", idsClientes);
-
-        if (erroContas || !contasRelacionadas?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const idsContas = contasRelacionadas.map((item) => item.id);
-
-        query = query.in("id_conta_receber", idsContas);
-      }
-
-      if (modalidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("tipo_lancamento", modalidade);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (idDocumento.trim() !== "") {
-        query = query.eq("id_conta_receber", Number(idDocumento));
-      }
-
-      if (ordenarValor === "asc" || ordenarValor === "desc") {
-        query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
-      }
-
-      if (estado.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("estado", estado);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (cidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("cidade", cidade);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (dataInicio.trim() !== "") {
-        query = query.gte("data_pagamento", dataInicio);
-      }
-
-      if (dataFim.trim() !== "") {
-        query = query.lte("data_pagamento", dataFim);
-      }
-
-      // =====================================
-
-      let somaQuery = supabase
-        .from("pagamentos_conta_receber")
-        .select("valor_pago")
-
-       if (idCliente.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_cliente", Number(idCliente));
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if(grupo === "Consultor") {
-
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .eq("id_consultor", Number(id));
-
-          if (erroContas) {
-            toast.error("Erro ao buscar contas do cliente");
-            return;
-          }
-
-          const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-          if (ids.length > 0) {
-            somaQuery = somaQuery.in("id_conta_receber", ids);
-          } else {
-            setContasPagas([]);
-            setTotalPaginas(0);
-            setLoading(false);
-            return;
-          }
-      } else {
-        if (consultorFiltro.trim() !== "") {
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .eq("id_consultor", Number(consultorFiltro));
-
-          if (erroContas) {
-            toast.error("Erro ao buscar contas do cliente");
-            setLoading(false);
-            return;
-          }
-
-          const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-          if (ids.length > 0) {
-            somaQuery = somaQuery.in("id_conta_receber", ids);
-          } else {
-            setContasPagas([]);
-            setTotalPaginas(0);
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
-      if (cpf.trim() !== "") {
-        const { data: clienteData, error: erroCliente } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("cpf", `%${cpf.trim()}%`)
-
-        if (erroCliente || !clienteData?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const idClienteEncontrado = clienteData[0].id;
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_cliente", idClienteEncontrado);
-
-        if (erroContas) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (nome.trim() !== "") {
-
-        const { data: clientesEncontrados, error: erroClientes } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("nome_completo", `%${nome.trim()}%`);
-
-        if (erroClientes || !clientesEncontrados?.length) {
-          setContasPagas([]);
-          setLoading(false);
-          setTotalPaginas(0);
-          return;
-        }
-
-        const idsClientes = clientesEncontrados.map((item) => item.id);
-
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .in("id_cliente", idsClientes);
-
-        if (erroContas || !contasRelacionadas?.length) {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-
-        const idsContas = contasRelacionadas.map((item) => item.id);
-
-        somaQuery = somaQuery.in("id_conta_receber", idsContas);
-      }
-
-      if (modalidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("tipo_lancamento", modalidade);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (idDocumento.trim() !== "") {
-        somaQuery = somaQuery.eq("id_conta_receber", Number(idDocumento));
-      }
-
-      if (ordenarValor === "asc" || ordenarValor === "desc") {
-        somaQuery = somaQuery.order("valor_pago", { ascending: ordenarValor === "asc" });
-      }
-
-      if (estado.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("estado", estado);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (cidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("cidade", cidade);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          setLoading(false);
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setContasPagas([]);
-          setLoading(false);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (dataInicio.trim() !== "") {
-        somaQuery = somaQuery.gte("data_pagamento", dataInicio);
-      }
-
-      if (dataFim.trim() !== "") {
-        somaQuery = somaQuery.lte("data_pagamento", dataFim);
-      }
-      
-      const { data: somaData, error: erroSoma } = await somaQuery;
-
-      if (erroSoma) {
-        toast.error("Erro ao calcular soma das comissões");
-        setLoading(false);
-      } else {
-        const totalQuefoiPago = somaData.reduce((acc, item) => acc + (item.valor_pago ?? 0), 0);
-        setTotalPago(totalQuefoiPago);
-      }
-
-
-      // =====================================
-
-      query = query.order("id_conta_receber", { ascending: true });
-
-      const { count } = await query.range(0, 0);
-      const total = count ?? 0;
-
-      const inicio = (paginaAtual - 1) * itensPorPagina;
-      const fim = inicio + itensPorPagina - 1;
-
-      if (inicio >= total && total > 0) {
-        setPaginaAtual(1);
-        return;
-      }
-
-      query = query.range(inicio, fim);
-      const { data, error } = await query;
-
-      if (error) {
-        setLoading(false);
-        toast.error("Erro ao buscar empréstimos pagos");
-        return;
-      } else {
-        const dadosTratados: ContasPagas[] = data.map((item: any) => ({
-          ...item,
-          contas_receber: {
-            ...item.contas_receber,
-            clientes: item.contas_receber?.clientes,
-            consultores: item.contas_receber?.consultores,
-          },
-          formas_pagamento: item.formas_pagamento,
-        }));
-
-        setContasPagas(dadosTratados);
-
-        const total = Math.ceil((count ?? 0) / itensPorPagina);
-        setTotalPaginas(total);
-
-      }
-
-    } catch (erro) {
-      setLoading(false);
-      console.error("Erro geral:", erro);
+      `, { count: "exact" })
+      .in("id_conta_receber", idsContas)
+      .order("id_conta_receber", { ascending: true })
+      .range(inicio, fim);
+
+    if (ordenarValor === "asc" || ordenarValor === "desc") {
+      query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
     }
 
-    setLoading(false);
+    const { data, count, error } = await query;
+    if (error) throw new Error("Erro ao buscar pagamentos");
 
+    // ================================
+    // 3️⃣ Soma dos valores pagos
+    const { data: somaData, error: erroSoma } = await supabase
+      .from("pagamentos_conta_receber")
+      .select("valor_pago")
+      .in("id_conta_receber", idsContas);
+
+    if (erroSoma) throw new Error("Erro ao calcular soma de pagamentos");
+
+    const totalPagoCalc = somaData?.reduce((acc, item) => acc + (item.valor_pago ?? 0), 0) ?? 0;
+    setTotalPago(totalPagoCalc);
+
+    // ================================
+    // 4️⃣ Atualiza estado
+    const dadosTratados: ContasPagas[] = (data || []).map((item: any) => ({
+      ...item,
+      contas_receber: {
+        ...item.contas_receber,
+        clientes: item.contas_receber?.clientes,
+        consultores: item.contas_receber?.consultores,
+      },
+      formas_pagamento: item.formas_pagamento,
+    }));
+
+    setContasPagas(dadosTratados);
+    setTotalPaginas(Math.ceil((count ?? 0) / itensPorPagina));
+
+  } catch (erro: any) {
+    toast.error(erro.message || "Erro inesperado ao buscar contas pagas");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   // =========================================
 
@@ -1528,7 +1148,7 @@ export function FiltrosLancamentos() {
               className="overflow-hidden"
               onSubmit={aplicarFiltro}
             >
-              <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 grid-cols- sm:grid-cols-2 lg:grid-cols-3 mb-6">
+              <div className="bg-white p-4 rounded-xl shadow-md grid gap-2 grid-cols- sm:grid-cols-2 lg:grid-cols-4 mb-6">
                 <InputCliente
                   type="text"
                   placeholder="Buscar por nome do cliente"
@@ -1621,6 +1241,17 @@ export function FiltrosLancamentos() {
                     <option key={cidade} value={cidade}>{cidade}</option>
                   ))}
                 </select>
+                
+                <select 
+                  className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#9eb0c4] text-sm sm:text-base"
+                  value={tipoData}
+                  onChange={ (e) => setTipoData(e.target.value)}
+                >
+                  <option value="emprestimo"> Data Empréstimo </option>
+                  <option value="pagamento"> Data Pagamento </option>
+                  <option value="vencimento"> Data Vencimento </option>
+                </select>
+
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>

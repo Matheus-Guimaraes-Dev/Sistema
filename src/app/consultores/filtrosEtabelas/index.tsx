@@ -46,6 +46,7 @@ export default function FiltrosETabelas() {
   const [statusEmprestimo, setStatusEmprestimo] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [nome, setNome] = useState("");
 
   const [comissoes, setComissoes] = useState<Comissoes[]>([]);
 
@@ -61,6 +62,8 @@ export default function FiltrosETabelas() {
   const [selecionados, setSelecionados] = useState<{ comissaoId: number, contaId: number }[]>([]);
 
   const [dataPagamento, setDataPagamento] = useState("");
+
+  const [tipoData, setTipoData] = useState("");
 
   const [formasRecebimento, setFormasRecebimento] = useState<Recebimentos[]>([])
   const [recebimentoSelecionado, setRecebimentoSelecionado] = useState("");
@@ -144,6 +147,16 @@ export default function FiltrosETabelas() {
       setId(idAtual);
     }
 
+    const nomeAtual = localStorage.getItem("nome_cliente_comissoes_consultores");
+    if (nomeAtual) {
+      setNome(nomeAtual);
+    }
+
+    const tipoDataAtual = localStorage.getItem("tipo_data_comissoes");
+    if (tipoDataAtual) {
+      setTipoData(tipoDataAtual);
+    }
+
   }, []);
 
   useEffect(() => {
@@ -158,279 +171,141 @@ export default function FiltrosETabelas() {
 
     localStorage.setItem("status_emprestimo_comissoes", statusEmprestimo);
 
-    localStorage.setItem("id_conta_comissoes", id)
+    localStorage.setItem("id_conta_comissoes", id);
 
-  }, [status, modalidade, consultorFiltro, statusEmprestimo, id]);
+    localStorage.setItem("nome_cliente_comissoes_consultores", nome);
 
-  async function buscarComissoes() {
+    localStorage.setItem("tipo_data_comissoes", tipoData);
 
-    const inicio = (paginaAtual - 1) * itensPorPagina 
+  }, [status, modalidade, consultorFiltro, statusEmprestimo, id, nome, tipoData]);
+
+async function buscarComissoes() {
+  setLoading(true);
+
+  try {
+    const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
 
-    setLoading(true);
+    // =========================================
+    // 1️⃣ Buscar IDs de contas_receber filtradas primeiro
+    let queryContas = supabase.from("contas_receber").select("id");
 
-    try {
+    // 🔹 Filtro por nome do cliente
+    if (nome.trim()) {
+      const { data: clientesFiltrados, error: erroClientes } = await supabase
+        .from("clientes")
+        .select("id")
+        .ilike("nome_completo", `%${nome.trim()}%`);
 
-      let query = supabase
-        .from("comissoes_consultores")
-        .select(`
-          id,
-          valor_comissao,
-          valor_pago,
-          data_pagamento,
-          status,
-          consultores (
-            id,
-            nome_completo
-          ),
-          contas_receber (
-            id,
-            tipo_lancamento,
-            status,
-            clientes (
-              nome_completo
-            )
-          )
-        `, { count: "exact" }); 
+      if (erroClientes) throw new Error("Erro ao buscar clientes pelo nome");
 
-      if (consultorFiltro.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_consultor", Number(consultorFiltro));
+      const idsClientes = clientesFiltrados?.map(c => c.id) ?? [];
 
-        if (erroContas) {
-          setLoading(false);
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setComissoes([]);
-          setTotalPaginas(0);
-          setLoading(false);
-          return;
-        }
-      }
-
-      if (modalidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("tipo_lancamento", modalidade);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setComissoes([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (statusEmprestimo.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("status", statusEmprestimo);
-
-        if (erroContas) {
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          query = query.in("id_conta_receber", ids);
-        } else {
-          setComissoes([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if(id.trim() !== "") {
-        query = query.eq("id_conta_receber", Number(id));
-      }
-      
-      if(status.trim() !== "") {
-        query = query.eq("status", status);
-      }
-      
-      if (dataInicio.trim() !== "") {
-        query = query.gte("data_cadastro", dataInicio);
-      }
-
-      if (dataFim.trim() !== "") {
-        query = query.lte("data_cadastro", dataFim);
-      }
-
-      // =================================
-
-      let somaQuery = supabase
-        .from("comissoes_consultores")
-        .select("valor_comissao");
-
-      if (status.trim() !== "") {
-        somaQuery.eq("status", status);
-      }
-      
-      if(id.trim() !== "") {
-        somaQuery = somaQuery.eq("id_conta_receber", Number(id));
-      }
-
-      if (consultorFiltro.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("id_consultor", Number(consultorFiltro));
-
-        if (erroContas) {
-          setLoading(false);
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setLoading(false);
-          setComissoes([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (modalidade.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("tipo_lancamento", modalidade);
-
-        if (erroContas) {
-          setLoading(false);
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setLoading(false);
-          setComissoes([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (statusEmprestimo.trim() !== "") {
-        const { data: contasRelacionadas, error: erroContas } = await supabase
-          .from("contas_receber")
-          .select("id")
-          .eq("status", statusEmprestimo);
-
-        if (erroContas) {
-          setLoading(false);
-          toast.error("Erro ao buscar contas do cliente");
-          return;
-        }
-
-        const ids = contasRelacionadas?.map((item) => item.id) || [];
-
-        if (ids.length > 0) {
-          somaQuery = somaQuery.in("id_conta_receber", ids);
-        } else {
-          setLoading(false);
-          setComissoes([]);
-          setTotalPaginas(0);
-          return;
-        }
-      }
-
-      if (dataInicio.trim() !== "") {
-        somaQuery.gte("data_cadastro", dataInicio);
-      }
-
-      if (dataFim.trim() !== "") {
-        somaQuery.lte("data_cadastro", dataFim);
-      }
-
-      const { data: somaData, error: erroSoma } = await somaQuery;
-
-      if (erroSoma) {
-        setLoading(false);
-        toast.error("Erro ao calcular soma das comissões");
-      } else {
-        setLoading(false);
-        const totalComissoes = somaData.reduce((acc, item) => acc + (item.valor_comissao ?? 0), 0);
-        setSomaComissoes(totalComissoes);
-      }
-
-      // =================================
-
-      query = query.order("id_conta_receber", { ascending: true });
-        
-      const { count } = await query.range(0,0);
-      const total = count ?? 0;
-
-      const inicio = (paginaAtual - 1) * itensPorPagina;
-      const fim = inicio + itensPorPagina - 1;
-
-      if(inicio >= total && total > 0) {
-        setLoading(false);
-        setPaginaAtual(1);
+      if (idsClientes.length === 0) {
+        setComissoes([]);
+        setTotalPaginas(0);
+        setSomaComissoes(0);
         return;
       }
 
-      query = query.range(inicio, fim);
-      const { data, error } = await query;
+      queryContas = queryContas.in("id_cliente", idsClientes);
+    }
 
-      if(error) {
-        setLoading(false);
-        toast.error("Erro ao buscar comissões");
-        return;
-      } else {
-          const comissoesFormatadas: Comissoes[] = data.map((item: any) => ({
-            id: item.id,
-            status: item.status,
-            valor_comissao: item.valor_comissao,
-            valor_pago: item.valor_pago,
-            contas_receber: item.contas_receber,
-            consultores: item.consultores,      
-          }));
-        setComissoes(comissoesFormatadas);
+    if (consultorFiltro.trim()) {
+      queryContas = queryContas.eq("id_consultor", Number(consultorFiltro));
+    }
 
-        const total = Math.ceil((count ?? 0) / itensPorPagina);
-        setTotalPaginas(total);
-        setLoading(false);
+    if (modalidade.trim()) {
+      queryContas = queryContas.eq("tipo_lancamento", modalidade);
+    }
 
+    if (statusEmprestimo.trim()) {
+      queryContas = queryContas.eq("status", statusEmprestimo);
+    }
+
+    // 🔹 Filtro de datas dinâmico
+    if (dataInicio.trim() || dataFim.trim()) {
+      let colunaData = "data_emprestimo"; // padrão
+      if (tipoData === "pagamento") {
+        colunaData = "data_pagamento_total";
+        queryContas = queryContas.eq("status", "Pago");
       }
 
-    } catch(error) {
-      setLoading(false);
-      toast.error("erro inesperado ao buscar comissões");
+      if (dataInicio.trim()) queryContas = queryContas.gte(colunaData, dataInicio);
+      if (dataFim.trim()) queryContas = queryContas.lte(colunaData, dataFim);
+    }
+
+    const { data: contasRelacionadas, error: erroContas } = await queryContas;
+    if (erroContas) throw new Error("Erro ao buscar contas relacionadas");
+
+    const idsContas = contasRelacionadas?.map((c) => c.id) ?? [];
+
+    // 🔹 Se não houver contas filtradas, limpa e retorna
+    if (idsContas.length === 0 && (consultorFiltro || modalidade || statusEmprestimo || dataInicio || dataFim)) {
+      setComissoes([]);
+      setTotalPaginas(0);
+      setSomaComissoes(0);
       return;
     }
 
-    setLoading(false);
+    // =========================================
+    // 2️⃣ Query principal de comissões
+    let query = supabase
+      .from("comissoes_consultores")
+      .select(`
+        id,
+        valor_comissao,
+        valor_pago,
+        data_pagamento,
+        status,
+        consultores (id, nome_completo),
+        contas_receber (id, tipo_lancamento, status, clientes (nome_completo))
+      `, { count: "exact" })
+      .order("id_conta_receber", { ascending: true })
+      .range(inicio, fim);
 
+    if (idsContas.length > 0) query = query.in("id_conta_receber", idsContas);
+    if (id.trim()) query = query.eq("id_conta_receber", Number(id));
+    if (status.trim()) query = query.eq("status", status);
+
+    const { data, count, error } = await query;
+    if (error) throw new Error("Erro ao buscar comissões");
+
+    const comissoesFormatadas: Comissoes[] = (data || []).map((item: any) => ({
+      id: item.id,
+      status: item.status,
+      valor_comissao: item.valor_comissao,
+      valor_pago: item.valor_pago,
+      contas_receber: item.contas_receber,
+      consultores: item.consultores,
+    }));
+
+    setComissoes(comissoesFormatadas);
+    setTotalPaginas(Math.ceil((count ?? 0) / itensPorPagina));
+
+    // =========================================
+    // 3️⃣ Calcular soma das comissões usando os mesmos filtros
+    let somaQuery = supabase.from("comissoes_consultores").select("valor_comissao");
+
+    if (idsContas.length > 0) somaQuery = somaQuery.in("id_conta_receber", idsContas);
+    if (id.trim()) somaQuery = somaQuery.eq("id_conta_receber", Number(id));
+    if (status.trim()) somaQuery = somaQuery.eq("status", status);
+
+    const { data: somaData, error: erroSoma } = await somaQuery;
+    if (erroSoma) {
+      toast.error("Erro ao calcular soma das comissões");
+    } else {
+      const totalComissoes = somaData?.reduce((acc, item) => acc + (item.valor_comissao ?? 0), 0) ?? 0;
+      setSomaComissoes(totalComissoes);
+    }
+
+  } catch (err: any) {
+    toast.error(err.message || "Erro inesperado ao buscar comissões");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   const aplicarFiltro = (e:React.FormEvent) => {
     e.preventDefault();
@@ -660,6 +535,14 @@ export default function FiltrosETabelas() {
                 </option>
               ))}
             </select>
+
+            <InputCliente
+              type="text"
+              placeholder="Buscar por nome do cliente"
+              value={nome}
+              onChange={ (e) => setNome(e.target.value)}
+            />
+
             <InputCliente
               type="text"
               placeholder="Buscar por ID da conta"
@@ -702,11 +585,11 @@ export default function FiltrosETabelas() {
 
             <select 
               className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#9eb0c4] text-sm sm:text-base"
-              value={statusEmprestimo}
-              onChange={ (e) => setStatusEmprestimo(e.target.value)}
+              value={tipoData}
+              onChange={ (e) => setTipoData(e.target.value)}
             >
-              <option value=""> Data Empréstimo </option>
-              <option value="Pendente"> Data Pagamento </option>
+              <option value="emprestimo"> Data Empréstimo </option>
+              <option value="pagamento"> Data Pagamento </option>
             </select>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
