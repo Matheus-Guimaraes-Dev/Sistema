@@ -110,9 +110,6 @@ export function FomularioComponente() {
     if (!nome.trim()) return toast.error("Digite o seu nome!");
     if (!email.trim()) return toast.error("Digite o seu email!");
     if (!cpf.trim()) return toast.error("Digite o seu cpf!");
-    if (!rg.trim()) return toast.error("Digite o seu rg!");
-    if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
-    if (!orgaoExpedidor.trim()) return toast.error("Digite o seu Orgão Expedidor!");
     if (!sexo.trim()) return toast.error("Selecione o seu sexo!");
     if (!estadoCivil.trim()) return toast.error("Selecione seu estado civil!");
     if ((estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && !nomeCompanheiro) {
@@ -173,7 +170,7 @@ export function FomularioComponente() {
         email: email,
         cpf: cpf,
         rg: rg,
-        data_emissao_rg: dataRg,
+        data_emissao_rg: dataRg || null,
         orgao_expedidor: orgaoExpedidor,
         sexo: sexo,
         estado_civil: estadoCivil,
@@ -319,7 +316,7 @@ export function FomularioComponente() {
           email: email.trim(),
           cpf: cpf.trim(),
           rg: rg.trim(),
-          data_emissao_rg: dataRg,
+          data_emissao_rg: dataRg || null,
           orgao_expedidor: orgaoExpedidor.trim(),
           sexo,
           estado_civil: estadoCivil,

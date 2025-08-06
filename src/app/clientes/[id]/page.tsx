@@ -77,9 +77,9 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p> <strong> ID:</strong> {cliente.id} </p>
             <p><strong>Nome completo:</strong> {cliente.nome_completo} </p>
             <p><strong>CPF:</strong> {formatarCPF(cliente.cpf)} </p>
-            <p><strong>RG:</strong> {cliente.rg}</p>
-            <p><strong>Data de Emissão RG:</strong> {formatarData(cliente.data_emissao_rg)} </p>
-            <p><strong>Órgão Expedidor:</strong> {cliente.orgao_expedidor} </p>
+            <p><strong>RG:</strong> {cliente.rg || "Não possui"}</p>
+            <p><strong>Data de Emissão RG:</strong> {formatarData(cliente.data_emissao_rg) || "Não possui"} </p>
+            <p><strong>Órgão Expedidor:</strong> {cliente.orgao_expedidor || "Não possui"} </p>
             <p><strong>Sexo:</strong> {cliente.sexo} </p>
             <p><strong>Estado Civil:</strong> {cliente.estado_civil} </p>
             <p><strong>Nome do Companheiro(a):</strong> {cliente.nome_completo_companheiro || "Não possui"} </p>
