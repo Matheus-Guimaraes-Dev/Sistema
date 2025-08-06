@@ -120,8 +120,8 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
   }
 
   function capitalizarData(dataISO: string) {
-    const data = new Date(dataISO + "T00:00:00");
 
+    const data = new Date(dataISO + "T00:00:00");
 
     return data.toLocaleDateString("pt-BR", {
       weekday: "long",
@@ -129,6 +129,7 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
       month: "long",
       year: "numeric"
     });
+    
   }
 
   function numeroPorExtensoSimples(valor: number): string {
