@@ -12,6 +12,7 @@ import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar, Recebimentos} fro
 import { limiteDataEmprestimo, limiteDataPagamento, limiteDataVencimento } from "@/funcoes/limitacao";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
+import NotaPromissoria from "@/app/testePDF";
 
 export default function Opcoes({ informacoesEmprestimo, valorDoJuros }: PropsAlterar ) {
 
@@ -69,18 +70,6 @@ useEffect(() => {
       calcularValorReceber();
     }
   }, [tipo, valorEmprestado, juros]);
-
-  // useEffect( () => {
-  //   async function calcular() {
-  //     if(informacoesEmprestimo) {
-  //       const valor = await calcularJurosSeVencido(informacoesEmprestimo);
-  //       setJurosDoVencimento(valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
-  //     }
-  //   }
-
-  //   calcular();
-
-  // },[informacoesEmprestimo] )
 
   useEffect( () => {
     if(informacoesEmprestimo) {
@@ -257,45 +246,6 @@ useEffect(() => {
     }
 
   }
-
-  // ========== CALCULAR JUROS DO VENCIMENTO ==========
-
-  // async function calcularJurosSeVencido(emprestimo: Emprestimo) {
-
-  //   const hoje = new Date();
-  //   const hojeStr = `${hoje.getFullYear()}-${(hoje.getMonth() + 1)
-  //     .toString()
-  //     .padStart(2, "0")}-${hoje.getDate().toString().padStart(2, "0")}`;
-
-  //   const vencStr = emprestimo.data_vencimento; 
-
-  //   if (hojeStr <= vencStr) {
-  //     return 0;
-  //   }
-
-  //   const hojeDate = new Date(`${hojeStr}T00:00:00`);
-  //   const vencDate = new Date(`${vencStr}T00:00:00`);
-
-  //   const diffMs = hojeDate.getTime() - vencDate.getTime();
-  //   const diasAtraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  //   const { data, error } = await supabase
-  //     .from("configuracoes_juros")
-  //     .select("percentual")
-  //     .eq("tipo_juros", "Vencimento")
-  //     .eq("tipo_lancamento", emprestimo.tipo_lancamento)
-  //     .single();
-
-  //   if (error || !data) {
-  //     return 0;
-  //   }
-
-  //   const percentualMensal = Number(data.percentual); 
-  //   const jurosProporcional = (percentualMensal / 30) * diasAtraso;
-  //   const valorJuros = emprestimo.valor_receber * (jurosProporcional / 100);
-
-  //   return Number(valorJuros.toFixed(2));
-  // }
 
   // ========== BAIXAR O EMPRÉSTIMO ==========
 
@@ -516,6 +466,8 @@ useEffect(() => {
           <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
 
           <button onClick={atualizarStatusLancamento} className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> {informacoesEmprestimo.status === "Pendente" ? "Cancelado" : "Pendente"} </button>
+
+          <NotaPromissoria informacoes={informacoesEmprestimo}/>
 
         </div>
       )}
