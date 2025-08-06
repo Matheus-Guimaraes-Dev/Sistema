@@ -62,6 +62,9 @@ export interface Cliente {
   cpf: string;
   cidade: string;
   estado: string;
+  bairro: string;
+  rua: string;
+  numero_casa: string;
   status: string;
   data_cadastro: string;
   consultores: {
