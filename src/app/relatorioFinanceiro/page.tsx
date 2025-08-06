@@ -1,7 +1,7 @@
 import { Menu } from "@/components/componentes/menu"
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'
-import OpcoesRelatorios from "./opcoes";
+import { BuscarContas } from "./buscarContas"
 
 export default async function RelatoriosFinanceiro() {
 
@@ -28,7 +28,7 @@ export default async function RelatoriosFinanceiro() {
 
       <Menu />
 
-      <OpcoesRelatorios />
+      <BuscarContas />
 
     </div>
   )
