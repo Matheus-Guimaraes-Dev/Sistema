@@ -66,7 +66,12 @@ async function calcularJurosSeVencido(emprestimo: Emprestimo) {
         clientes (
           id,
           nome_completo,
-          cpf
+          cpf,
+          cidade,
+          estado,
+          bairro,
+          rua,
+          numero_casa
         ),
         consultores (
           id,

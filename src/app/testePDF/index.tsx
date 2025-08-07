@@ -237,6 +237,8 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     doc.setLineWidth(0.5);
     doc.rect(5,5, 200, 90, "FD");
 
+    console.log(informacoes)
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("Nº", 45, 15);
