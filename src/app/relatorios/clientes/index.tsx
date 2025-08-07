@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
 import { createClient } from "@/lib/client";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface ConsultorBusca {
   id: number;
@@ -20,6 +21,7 @@ interface Clientes {
   data_cadastro: string;
   cpf: string;
   id: number;
+  whatsapp: string;
 }
 
 export default function RelatorioClientes() {
@@ -45,10 +47,6 @@ export default function RelatorioClientes() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
 
-  useEffect( () => {
-    consultoresBuscando();
-  }, [])
-
   async function consultoresBuscando() {
 
     const { data, error } = await supabase  
@@ -71,10 +69,68 @@ export default function RelatorioClientes() {
 
     setLoading(true);
 
+    {/* ========== PDF ========== */}
+
+    const generatePdf = async (clientes: any[]) => {
+
+      const doc = new jsPDF("portrait", "mm", "a4"); 
+
+      doc.setFontSize(14);
+      doc.text("Relatório de Clientes", 105, 15, {align: "center"});
+
+      const cabecalhos = [
+        ["ID", "Nome", "CPF", "Cidade", "Estado", "Status", "Whatsapp"]
+      ];
+
+      const linhas = clientes.map((cliente, index) => [
+        cliente.id,
+        cliente.nome_completo,
+        formatarCpfCnpj(cliente.cpf),
+        cliente.cidade,
+        cliente.estado,
+        cliente.status,
+        cliente.whatsapp,
+      ]);
+
+      autoTable(doc, {
+        startY: 25,
+        head: cabecalhos,
+        body: linhas,
+        styles: {
+          fontSize: 9,
+        },
+        headStyles: {
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          halign: "left"
+        },
+        bodyStyles: {
+          halign: "left",
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        columnStyles: {
+          0: { halign: "left", cellWidth: 10 },
+          1: { cellWidth: 52 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 35 },
+          4: { cellWidth: 15 },
+          5: { cellWidth: 20 },
+          6: { cellWidth: 30, halign: "left" },
+        },
+        margin: { left: 8, right: 8},
+      });
+
+      doc.save(`clientes.pdf`);
+
+    }
+
     try {
       let query = supabase
         .from("clientes")
-        .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro", { count: "exact" });
+        .select("id, nome_completo, cpf, estado, cidade, status, data_cadastro, whatsapp ", { count: "exact" })
+        .order("id", { ascending: true });
 
       if (status !== "") {
         query = query.eq("status", status);
@@ -102,9 +158,8 @@ export default function RelatorioClientes() {
         return;
       }
 
-      console.log(resultado);
       setClientes(resultado);
-      generatePdf()
+      generatePdf(resultado);
 
       setLoading(false);
 
@@ -121,16 +176,22 @@ export default function RelatorioClientes() {
     { label: "Cancelado", value: "Cancelado" }
   ];
 
-  {/* ========== PDF ========== */}
+  function formatarDataISO(dataISO: string) {
+    const [ano, mes, dia] = dataISO.split("-");
+    return `${dia}/${mes}/${ano}`;
+  }
 
-  const generatePdf = async () => {
+  function formatarCpfCnpj(valor: string) {
 
-    const doc = new jsPDF("portrait", "mm", "a4"); 
+    const numeros = valor.replace(/\D/g, "");
 
-    doc.text("teste", 10, 10);
-
-    doc.save(`clientes.pdf`);
-
+    if (numeros.length === 11) {
+      return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    } else if (numeros.length === 14) {
+      return numeros.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+    } else {
+      return valor;
+    }
   }
 
   return (
@@ -138,7 +199,11 @@ export default function RelatorioClientes() {
 
         <button
           className="flex items-center gap-4 p-6 bg-white rounded-xl shadow hover:shadow-lg hover:scale-105 transition-transform cursor-pointer"
-          onClick={() => setModalClientes(true)}
+          onClick={() => {
+            setModalClientes(true)
+            consultoresBuscando();
+          }
+          }
         > 
           <Users className="w-6 h-6 text-blue-600" /> 
           <span className="text-lg font-medium text-gray-700"> Relatório de Clientes </span> 
@@ -225,7 +290,15 @@ export default function RelatorioClientes() {
 
               <button onClick={buscarClientes} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Gerar </button>
 
-              <button onClick={() => setModalClientes(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+              <button onClick={() => {
+                setModalClientes(false);
+                setCidade("");
+                setConsultorFiltro("");
+                setEstado("");
+                setDataInicio("");
+                setDataFim("");
+                setStatus("");
+              }} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
             </div>
 
           </div>
