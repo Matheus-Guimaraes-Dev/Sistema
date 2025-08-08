@@ -31,6 +31,32 @@ interface ContasPagas {
   }
 }
 
+interface ValoresTotais {
+  comissao: number,
+  emprestado: number,
+  receber: number
+}
+
+interface ContasPendentes {
+  clientes: {
+    id: number,
+    cpf: string;
+    nome_completo: string;
+  },
+  consultores: {
+    id: number,
+    nome_completo: string,
+  },
+  data_cadastro: string,
+  data_vencimento: string,
+  id: number,
+  tipo_lancamento: string,
+  valor_emprestado: number,
+  valor_pago: number,
+  valor_receber: number,
+  comissao: number,
+}
+
 export default function RelatorioEmprestimosPendentes() {
 
   const supabase = createClient();
@@ -126,25 +152,25 @@ export default function RelatorioEmprestimosPendentes() {
 
     {/* ========== PDF ========== */}
 
-    const generatePdf = async (comissoes: any[], totalDeComissoes: number) => {
+    const generatePdf = async (data: ContasPendentes[], valores: ValoresTotais) => {
 
       const doc = new jsPDF("portrait", "mm", "a4"); 
 
       doc.setFontSize(14);
-      doc.text("Relatório de Comissões", 105, 15, {align: "center"});
+      doc.text("Relatório de Empréstimos Pendentes", 105, 15, {align: "center"});
 
       const cabecalhos = [
-        ["ID", "Cliente", "Consultor", "Valor Comissão", "Modalidade", "Status", "Valor a Receber"]
+        ["ID", "Cliente", "Consultor", "Valor Emprestado", "Valor a Receber", "Comissão", "Data de Recebimento"]
       ];
 
-      const linhas = comissoes.map((comissao) => [
-        `${comissao.contas_receber.id}.${comissao.id}`,
-        comissao.contas_receber?.clientes?.nome_completo,
-        comissao.consultores?.nome_completo,
-        formatarEmReais(comissao.valor_comissao),
-        comissao.contas_receber?.tipo_lancamento,
-        comissao.status,
-        formatarEmReais(comissao.contas_receber?.valor_receber)
+      const linhas = data.map((lancamento) => [
+        lancamento.id,
+        lancamento.clientes?.nome_completo,
+        lancamento.consultores?.nome_completo,
+        formatarEmReais(lancamento.valor_emprestado),
+        formatarEmReais(lancamento.valor_receber - lancamento.valor_pago),
+        formatarEmReais(lancamento.comissao),
+        lancamento.data_vencimento,
       ]);
 
       autoTable(doc, {
@@ -179,9 +205,15 @@ export default function RelatorioEmprestimosPendentes() {
       const posicaoFinal = (doc as any).lastAutoTable.finalY;
 
       doc.setFontSize(12);
-      doc.text(`Total de Comissões: ${formatarEmReais(totalDeComissoes)}`, 8, posicaoFinal + 10);
+      doc.text(`Total de Comissões: ${formatarEmReais(valores.comissao)}`, 8, posicaoFinal + 10);
 
-      doc.save(`comissoes.pdf`);
+      doc.setFontSize(12);
+      doc.text(`Total de Valor Emprestado: ${formatarEmReais(valores.emprestado)}`, 8, posicaoFinal + 20);
+
+      doc.setFontSize(12);
+      doc.text(`Total de Valor A Receber: ${formatarEmReais(valores.receber)}`, 8, posicaoFinal + 30);
+
+      doc.save(`emprestimosPendentes.pdf`);
 
     }
 
@@ -199,6 +231,7 @@ export default function RelatorioEmprestimosPendentes() {
           valor_pago,
           data_vencimento,
           data_cadastro,
+          comissao,
           clientes:clientes!id_cliente ( id, nome_completo, cpf ),
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
@@ -371,6 +404,12 @@ export default function RelatorioEmprestimosPendentes() {
 
       const { data: somaData, error: erroSoma } = await querySoma;
 
+      let valores = {
+        comissao: 0,
+        emprestado: 0,
+        receber: 0
+      }
+
       if (erroSoma) {
         toast.error("Erro ao calcular soma das comissões");
       } else {
@@ -383,12 +422,33 @@ export default function RelatorioEmprestimosPendentes() {
         console.log(totalQueFoiEmprestado)
         console.log("teste")
         console.log(totalAReceber)
-
+        valores = {
+          comissao: verificarTotalComissao,
+          emprestado: totalQueFoiEmprestado,
+          receber: totalAReceber
+        }
       }
 
       const { data, error } = await query;
 
+      const emprestimoFormatado: ContasPendentes[] = (data || []).map( (item:any) => ({
+        id: item.id,
+        data_cadastro: item.data_cadastro,
+        data_vencimento: item.data_vencimento,
+        tipo_lancamento: item.tipo_lancamento,
+        valor_emprestado: item.valor_emprestado,
+        valor_receber: item.valor_receber,
+        valor_pago: item.valor_pago,
+        consultores: item.consultores,
+        clientes: item.clientes,
+        comissao: item.comissao
+      }));
+
       console.log(data);
+
+      console.log("Deu certo:", valores)
+
+      generatePdf(emprestimoFormatado, valores)
 
       setLoading(false);
 
