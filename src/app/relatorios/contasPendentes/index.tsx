@@ -10,6 +10,7 @@ import autoTable from "jspdf-autotable";
 import toast from "react-hot-toast";
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { Cliente, Consultor, ConsultorBusca, Contas, Recebimentos } from "@/app/lancamentos/types";
+import { limiteCpf, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
 
 interface ContasPagas {
   id: number,
@@ -74,6 +75,7 @@ export default function RelatorioEmprestimosPendentes() {
   const [totalEmprestado, setTotalEmprestado] = useState(0);
   const [totalReceber, setTotalReceber] = useState(0);
   const [totalPago, setTotalPago] = useState(0);
+  const [totalComissao, setTotalComissao] = useState(0);
 
   const [repetir, setRepetir] = useState(false);
   const [numeroVezes, setNumerosVezes] = useState(0);
@@ -214,8 +216,177 @@ export default function RelatorioEmprestimosPendentes() {
         if (consultorFiltro.trim() !== "") {
           query = query.eq("id_consultor", consultorFiltro);
         }
-        
-        const { data, error } = await query;
+
+        if (cpf.trim() !== "") {
+          const { data: clientesEncontrados, error: erroClientes } = await supabase
+            .from("clientes")
+            .select("id")
+            .ilike("cpf", `%${cpf.trim()}%`);
+
+          if (!erroClientes && clientesEncontrados?.length) {
+            const idsClientes = clientesEncontrados.map((item) => item.id);
+            query = query.in("id_cliente", idsClientes);
+          } else {
+            query = query.in("id", [-1]);
+          }
+        }
+
+      if (nome.trim() !== "") {
+        const { data: clientesEncontrados, error: erroClientes } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("nome_completo", `%${nome.trim()}%`);
+
+        if (!erroClientes && clientesEncontrados?.length) {
+          const idsClientes = clientesEncontrados.map((item) => item.id);
+
+          const { data: contasRelacionadas, error: erroContas } = await supabase
+            .from("contas_receber")
+            .select("id")
+            .in("id_cliente", idsClientes);
+
+          if (!erroContas && contasRelacionadas?.length) {
+            const idsContas = contasRelacionadas.map((item) => item.id);
+            query = query.in("id", idsContas);
+          } else {
+            query = query.in("id", [-1]);
+          }
+        } else {
+          query = query.in("id", [-1]);
+        }
+      }
+      
+      if (modalidade.trim() !== "") {
+        query = query.eq("tipo_lancamento", modalidade);
+      }
+
+      if (idDocumento.trim() !== "") {
+        query = query.eq("id", Number(idDocumento));
+      }
+
+      if (estado.trim() !== "") {
+        query = query.eq("estado", estado);
+      }
+
+      if (cidade.trim() !== "") {
+        query = query.eq("cidade", cidade);
+      }
+
+      if (dataInicio.trim() || dataFim.trim()) {
+        let colunaData = "data_emprestimo";
+
+        if (tipoData === "vencimento") {
+          colunaData = "data_vencimento";
+        }
+
+        if (dataInicio.trim()) query = query.gte(colunaData, dataInicio);
+        if (dataFim.trim()) query = query.lte(colunaData, dataFim);
+      }
+
+      // =============================================================
+
+      let querySoma = supabase
+        .from("contas_receber")
+        .select("valor_emprestado, valor_receber, valor_pago, comissao");
+
+        if (status === "Pendente") {
+          querySoma = querySoma.eq("status", "Pendente");
+        } else { 
+          querySoma = querySoma.eq("status", "Cancelado");
+        }
+
+        if (idCliente.trim() !== "") {
+          querySoma = querySoma.eq("id_cliente", Number(idCliente));
+        }
+
+        if (consultorFiltro.trim() !== "") {
+          querySoma = querySoma.eq("id_consultor", consultorFiltro);
+        }
+
+        if (cpf.trim() !== "") {
+          const { data: clientesEncontrados, error: erroClientes } = await supabase
+            .from("clientes")
+            .select("id")
+            .ilike("cpf", `%${cpf.trim()}%`);
+
+          if (!erroClientes && clientesEncontrados?.length) {
+            const idsClientes = clientesEncontrados.map((item) => item.id);
+            querySoma = querySoma.in("id_cliente", idsClientes);
+          } else {
+            querySoma = querySoma.in("id", [-1]);
+          }
+        }
+
+      if (nome.trim() !== "") {
+        const { data: clientesEncontrados, error: erroClientes } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("nome_completo", `%${nome.trim()}%`);
+
+        if (!erroClientes && clientesEncontrados?.length) {
+          const idsClientes = clientesEncontrados.map((item) => item.id);
+
+          const { data: contasRelacionadas, error: erroContas } = await supabase
+            .from("contas_receber")
+            .select("id")
+            .in("id_cliente", idsClientes);
+
+          if (!erroContas && contasRelacionadas?.length) {
+            const idsContas = contasRelacionadas.map((item) => item.id);
+            querySoma = querySoma.in("id", idsContas);
+          } else {
+            querySoma = querySoma.in("id", [-1]);
+          }
+        } else {
+          querySoma = querySoma.in("id", [-1]);
+        }
+      }
+      
+      if (modalidade.trim() !== "") {
+        querySoma = querySoma.eq("tipo_lancamento", modalidade);
+      }
+
+      if (idDocumento.trim() !== "") {
+        querySoma = querySoma.eq("id", Number(idDocumento));
+      }
+
+      if (estado.trim() !== "") {
+        querySoma = querySoma.eq("estado", estado);
+      }
+
+      if (cidade.trim() !== "") {
+        querySoma = querySoma.eq("cidade", cidade);
+      }
+
+      if (dataInicio.trim() || dataFim.trim()) {
+        let colunaData = "data_emprestimo";
+
+        if (tipoData === "vencimento") {
+          colunaData = "data_vencimento";
+        }
+
+        if (dataInicio.trim()) querySoma = querySoma.gte(colunaData, dataInicio);
+        if (dataFim.trim()) querySoma = querySoma.lte(colunaData, dataFim);
+      }
+
+      const { data: somaData, error: erroSoma } = await querySoma;
+
+      if (erroSoma) {
+        toast.error("Erro ao calcular soma das comissões");
+      } else {
+        const totalQueFoiEmprestado = somaData.reduce((acc, item) => acc + (item.valor_emprestado ?? 0), 0);
+        setTotalEmprestado(totalQueFoiEmprestado);
+        const totalAReceber = somaData.reduce((acc, item) => acc + ((item.valor_receber ?? 0) - (item.valor_pago ?? 0)), 0);
+        setTotalReceber(totalAReceber);
+        const verificarTotalComissao = somaData.reduce( (acc, item) => acc + (item.comissao ?? 0), 0);
+        console.log(verificarTotalComissao)
+        console.log(totalQueFoiEmprestado)
+        console.log("teste")
+        console.log(totalAReceber)
+
+      }
+
+      const { data, error } = await query;
 
       console.log(data);
 
@@ -258,6 +429,51 @@ export default function RelatorioEmprestimosPendentes() {
 
             <div className="flex flex-col gap-2">
 
+              <InputCliente
+                type="text"
+                placeholder="Buscar por nome do cliente"
+                value={nome}
+                onChange={ (e) => setNome(e.target.value)}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por ID do cliente"
+                inputMode="numeric"
+                value={idCliente}
+                onChange={ (e) => limiteIdCliente(e, setIdCliente)}
+                maxLength={7}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por CPF"
+                inputMode="numeric"
+                value={cpf}
+                onChange={ (e) => limiteCpf(e, setCpf)}
+                maxLength={11}
+              />
+              <InputCliente
+                type="text"
+                placeholder="Buscar por ID do documento"
+                inputMode="numeric"
+                value={idDocumento}
+                onChange={ (e) => limiteIdDocumento(e, setIdDocumento)}
+                maxLength={7}
+              />
+
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={consultorFiltro}
+                onChange={(e) => setConsultorFiltro(e.target.value)}
+              >
+                <option value="">Consultor</option>
+
+                {consultoresBusca.map((info) => (
+                  <option key={info.id} value={info.id}>
+                    {info.nome_completo}
+                  </option>
+                ))}
+              </select>
+
              <select 
                   className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
                   value={status}
@@ -266,6 +482,71 @@ export default function RelatorioEmprestimosPendentes() {
                   <option value="Pendente">Status - Pendente</option>
                   <option value="Cancelado"> Status - Cancelado</option>
               </select>
+
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={modalidade}
+                onChange={ (e) => setModalidade(e.target.value)}
+              >
+                <option value=""> Modalidade </option>
+                <option value="Mensal">Mensal</option>
+                <option value="Semanal">Semanal</option>
+                <option value="Diario">Diário</option>
+              </select>
+
+              <select
+                value={estado}
+                onChange={(e) => {
+                  setEstado(e.target.value);
+                  setCidade(""); 
+                }}
+                className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value=""> Selecionar Estado... </option>
+                {estados.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+
+              <select
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value=""> Selecionar Cidade... </option>
+                {cidades.map((cidade) => (
+                  <option key={cidade} value={cidade}>{cidade}</option>
+                ))}
+              </select>
+
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#9eb0c4] text-sm sm:text-base"
+                value={tipoData}
+                onChange={ (e) => setTipoData(e.target.value)}
+              >
+                <option value="emprestimo"> Data Empréstimo </option>
+                <option value="vencimento"> Data Vencimento </option>
+              </select>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <input
+                      type="date"
+                      value={dataInicio}
+                      onChange={ (e) => setDataInicio(e.target.value) }
+                      className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="date"
+                      value={dataFim}
+                      onChange={(e) => setDataFim(e.target.value) }
+                      className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                    />
+                  </div>
+                </div>
 
 
             </div>
