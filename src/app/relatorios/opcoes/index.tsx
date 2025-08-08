@@ -3,8 +3,10 @@
 import { FileText, Users, UserCheck, DollarSign, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import RelatorioClientes from "../clientes";
 import RelatorioComissoes from "../comissoes";
+import RelatorioEmprestimosPendentes from "../contasPendentes";
 
 export default function OpcoesRelatorios() {
+  
   const relatorios = [
     { nome: "Relatório de Clientes", icone: <Users className="w-6 h-6 text-blue-600" /> },
     { nome: "Relatório de Consultores", icone: <UserCheck className="w-6 h-6 text-green-600" /> },
@@ -25,6 +27,8 @@ export default function OpcoesRelatorios() {
         <RelatorioClientes />
 
         <RelatorioComissoes />
+
+        <RelatorioEmprestimosPendentes />
       </div>
 
     </div>
