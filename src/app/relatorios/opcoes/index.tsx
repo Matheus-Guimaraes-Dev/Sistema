@@ -4,6 +4,7 @@ import { FileText, Users, UserCheck, DollarSign, ArrowDownCircle, ArrowUpCircle 
 import RelatorioClientes from "../clientes";
 import RelatorioComissoes from "../comissoes";
 import RelatorioEmprestimosPendentes from "../contasPendentes";
+import RelatorioEmprestimosPagos from "../contasPagas";
 
 export default function OpcoesRelatorios() {
   
@@ -23,12 +24,16 @@ export default function OpcoesRelatorios() {
         Geração de Relatórios em PDF
       </h1>
 
-      <div className="flex gap-4 flex-col sm:flex-row">
+      <div className="flex gap-4 flex-wrap sm:flex-row">
+
         <RelatorioClientes />
 
         <RelatorioComissoes />
 
         <RelatorioEmprestimosPendentes />
+
+        <RelatorioEmprestimosPagos />
+
       </div>
 
     </div>

@@ -37,7 +37,7 @@ interface ValoresTotais {
   receber: number
 }
 
-interface ContasPendentes {
+interface ContasPagas {
   clientes: {
     id: number,
     cpf: string;
@@ -57,7 +57,7 @@ interface ContasPendentes {
   comissao: number,
 }
 
-export default function RelatorioEmprestimosPendentes() {
+export default function RelatorioEmprestimosPagos() {
 
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function RelatorioEmprestimosPendentes() {
   const [idCliente, setIdCliente] = useState("");
   const [idDocumento, setIdDocumento] = useState("");
   const [cpf, setCpf] = useState("");
-  const [status, setStatus] = useState("Pendente");
+  const [status, setStatus] = useState("Pago");
   const [data, setData] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -93,7 +93,7 @@ export default function RelatorioEmprestimosPendentes() {
   const [consultorFiltro, setConsultorFiltro] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
-  const [contasPagas, setContasPagas] = useState<[]>([]);
+  const [contasPagas, setContasPagas] = useState<ContasPagas[]>([]);
   const [filtrosCarregados, setFiltrosCarregados] = useState(false);
 
   const carregado = useRef(false);
@@ -142,31 +142,29 @@ export default function RelatorioEmprestimosPendentes() {
 
   }
 
-  const buscarEmprestimosPendentes = async () => {
+  const buscarEmprestimosPagos = async () => {
 
     setLoading(true);
 
     {/* ========== PDF ========== */}
 
-    const generatePdf = async (data: ContasPendentes[], valores: ValoresTotais) => {
+    const generatePdf = async (data: ContasPagas[], valorTotal: number) => {
 
       const doc = new jsPDF("portrait", "mm", "a4"); 
 
       doc.setFontSize(14);
-      doc.text("Relatório de Empréstimos Pendentes", 105, 15, {align: "center"});
+      doc.text("Relatório de Empréstimos Pagos", 105, 15, {align: "center"});
 
       const cabecalhos = [
-        ["ID", "Cliente", "Consultor", "Valor Emprestado", "Valor a Receber", "Comissão", "Data de Recebimento"]
+        ["ID", "Cliente", "Consultor", "Valor Pago", "Data de Pagamento"]
       ];
 
       const linhas = data.map((lancamento) => [
-        lancamento.id,
-        lancamento.clientes?.nome_completo,
-        lancamento.consultores?.nome_completo,
-        formatarEmReais(lancamento.valor_emprestado),
-        formatarEmReais(lancamento.valor_receber - lancamento.valor_pago),
-        formatarEmReais(lancamento.comissao),
-        formatarDataISO(lancamento.data_vencimento),
+        `${lancamento.contas_receber?.id}.${lancamento.id}`,
+        lancamento.contas_receber?.clientes?.nome_completo,
+        lancamento.contas_receber?.consultores?.nome_completo,
+        formatarEmReais(lancamento?.valor_pago),
+        formatarDataISO(lancamento.data_pagamento),
       ]);
 
       autoTable(doc, {
@@ -189,28 +187,20 @@ export default function RelatorioEmprestimosPendentes() {
         },
         columnStyles: {
           0: { halign: "left", cellWidth: 16 },
-          1: { cellWidth: 54 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 28 },
-          4: { cellWidth: 22 },
-          6: { cellWidth: 30, halign: "left" },
+          1: { cellWidth: 60 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 35 },
+          4: { cellWidth: 40 },
         },
         margin: { left: 8, right: 8},
       });
 
-     autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 10,
-      body: [
-        [{ content: `Total de Comissões: ${formatarEmReais(valores.comissao)}` }],
-        [{ content: `Total de Valor Emprestado: ${formatarEmReais(valores.emprestado)}` }],
-        [{ content: `Total de Valor A Receber: ${formatarEmReais(valores.receber)}` }],
-      ],
-      theme: "plain",
-      styles: { fontSize: 12,  cellPadding: { top: 2, bottom: 2 }, halign: "left" },
-      margin: { left: 8, right: 8 },
-    });
+      const posicaoFinal = (doc as any).lastAutoTable.finalY;
 
-      doc.save(`emprestimosPendentes.pdf`);
+      doc.setFontSize(12);
+      doc.text(`Valor Total Pago: ${formatarEmReais(valorTotal)}`, 8, posicaoFinal + 10);
+
+      doc.save(`emprestimosPagos.pdf`);
 
     }
 
@@ -218,234 +208,132 @@ export default function RelatorioEmprestimosPendentes() {
 
     try {
 
+      let queryContas = supabase.from("contas_receber").select("id");
+
+      if (idCliente.trim()) {
+        queryContas = queryContas.eq("id_cliente", Number(idCliente));
+      }
+
+      if (consultorFiltro.trim()) {
+        queryContas = queryContas.eq("id_consultor", Number(consultorFiltro));
+      }
+
+      if (cpf.trim()) {
+        const { data: clientesCpf, error } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("cpf", `%${cpf.trim()}%`);
+
+        if (error || !clientesCpf?.length) {
+          setContasPagas([]);
+          setTotalPago(0);
+          return;
+        }
+
+        const idsClientes = clientesCpf.map(c => c.id);
+        queryContas = queryContas.in("id_cliente", idsClientes);
+      }
+
+      if (nome.trim()) {
+        const { data: clientesNome, error } = await supabase
+          .from("clientes")
+          .select("id")
+          .ilike("nome_completo", `%${nome.trim()}%`);
+
+        if (error || !clientesNome?.length) {
+          setContasPagas([]);
+          setTotalPago(0);
+          return;
+        }
+
+        const idsClientes = clientesNome.map(c => c.id);
+        queryContas = queryContas.in("id_cliente", idsClientes);
+      }
+
+      if (modalidade.trim()) {
+        queryContas = queryContas.eq("tipo_lancamento", modalidade);
+      }
+
+      if (idDocumento.trim()) {
+        queryContas = queryContas.eq("id", Number(idDocumento));
+      }
+
+      if (estado.trim()) queryContas = queryContas.eq("estado", estado);
+      if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade);
+
+      if ((dataInicio.trim() || dataFim.trim()) && tipoData !== "pagamento") {
+        let colunaData = "data_emprestimo";
+        if (tipoData === "vencimento") colunaData = "data_vencimento";
+
+        if (dataInicio.trim()) queryContas = queryContas.gte(colunaData, dataInicio);
+        if (dataFim.trim()) queryContas = queryContas.lte(colunaData, dataFim);
+      }
+
+      const { data: contasRelacionadas, error: erroContas } = await queryContas;
+      if (erroContas) throw new Error("Erro ao buscar contas filtradas");
+
+      const idsContas = contasRelacionadas?.map(c => c.id) ?? [];
+
+      if (idsContas.length === 0) {
+        setContasPagas([]);
+        setTotalPago(0);
+        return;
+      }
+
       let query = supabase
-        .from("contas_receber")
+        .from("pagamentos_conta_receber")
         .select(`
           id,
-          tipo_lancamento,
-          valor_emprestado,
-          valor_receber,
           valor_pago,
-          data_vencimento,
-          data_cadastro,
-          comissao,
-          clientes:clientes!id_cliente ( id, nome_completo, cpf ),
-          consultores:consultores!id_consultor ( id, nome_completo )
-        `, { count: "exact" });
+          data_pagamento,
+          formas_pagamento ( descricao ),
+          contas_receber (
+            id,
+            tipo_lancamento,
+            clientes ( nome_completo ),
+            consultores ( nome_completo )
+          )
+        `, { count: "exact" })
+        .in("id_conta_receber", idsContas)
+        .order("id_conta_receber", { ascending: true })
 
-        if (status === "Pendente") {
-          query = query.eq("status", "Pendente");
-        } else { 
-          query = query.eq("status", "Cancelado");
-        }
-
-        if (idCliente.trim() !== "") {
-          query = query.eq("id_cliente", Number(idCliente));
-        }
-
-        if (consultorFiltro.trim() !== "") {
-          query = query.eq("id_consultor", consultorFiltro);
-        }
-
-        if (cpf.trim() !== "") {
-          const { data: clientesEncontrados, error: erroClientes } = await supabase
-            .from("clientes")
-            .select("id")
-            .ilike("cpf", `%${cpf.trim()}%`);
-
-          if (!erroClientes && clientesEncontrados?.length) {
-            const idsClientes = clientesEncontrados.map((item) => item.id);
-            query = query.in("id_cliente", idsClientes);
-          } else {
-            query = query.in("id", [-1]);
-          }
-        }
-
-      if (nome.trim() !== "") {
-        const { data: clientesEncontrados, error: erroClientes } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("nome_completo", `%${nome.trim()}%`);
-
-        if (!erroClientes && clientesEncontrados?.length) {
-          const idsClientes = clientesEncontrados.map((item) => item.id);
-
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .in("id_cliente", idsClientes);
-
-          if (!erroContas && contasRelacionadas?.length) {
-            const idsContas = contasRelacionadas.map((item) => item.id);
-            query = query.in("id", idsContas);
-          } else {
-            query = query.in("id", [-1]);
-          }
-        } else {
-          query = query.in("id", [-1]);
-        }
-      }
-      
-      if (modalidade.trim() !== "") {
-        query = query.eq("tipo_lancamento", modalidade);
+      if (tipoData === "pagamento" && (dataInicio.trim() || dataFim.trim())) {
+        if (dataInicio.trim()) query = query.gte("data_pagamento", dataInicio.trim());
+        if (dataFim.trim()) query = query.lte("data_pagamento", dataFim.trim());
       }
 
-      if (idDocumento.trim() !== "") {
-        query = query.eq("id", Number(idDocumento));
+      if (ordenarValor === "asc" || ordenarValor === "desc") {
+        query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
       }
 
-      if (estado.trim() !== "") {
-        query = query.eq("estado", estado);
-      }
+      const { data, count, error } = await query;
+      if (error) throw new Error("Erro ao buscar pagamentos");
 
-      if (cidade.trim() !== "") {
-        query = query.eq("cidade", cidade);
-      }
+      const { data: somaData, error: erroSoma } = await supabase
+        .from("pagamentos_conta_receber")
+        .select("valor_pago")
+        .in("id_conta_receber", idsContas);
 
-      if (dataInicio.trim() || dataFim.trim()) {
-        let colunaData = "data_emprestimo";
+      if (erroSoma) throw new Error("Erro ao calcular soma de pagamentos");
 
-        if (tipoData === "vencimento") {
-          colunaData = "data_vencimento";
-        }
+      const totalPagoCalc = somaData?.reduce((acc, item) => acc + (item.valor_pago ?? 0), 0) ?? 0;
+      setTotalPago(totalPagoCalc);
 
-        if (dataInicio.trim()) query = query.gte(colunaData, dataInicio);
-        if (dataFim.trim()) query = query.lte(colunaData, dataFim);
-      }
-
-      // =============================================================
-
-      let querySoma = supabase
-        .from("contas_receber")
-        .select("valor_emprestado, valor_receber, valor_pago, comissao");
-
-        if (status === "Pendente") {
-          querySoma = querySoma.eq("status", "Pendente");
-        } else { 
-          querySoma = querySoma.eq("status", "Cancelado");
-        }
-
-        if (idCliente.trim() !== "") {
-          querySoma = querySoma.eq("id_cliente", Number(idCliente));
-        }
-
-        if (consultorFiltro.trim() !== "") {
-          querySoma = querySoma.eq("id_consultor", consultorFiltro);
-        }
-
-        if (cpf.trim() !== "") {
-          const { data: clientesEncontrados, error: erroClientes } = await supabase
-            .from("clientes")
-            .select("id")
-            .ilike("cpf", `%${cpf.trim()}%`);
-
-          if (!erroClientes && clientesEncontrados?.length) {
-            const idsClientes = clientesEncontrados.map((item) => item.id);
-            querySoma = querySoma.in("id_cliente", idsClientes);
-          } else {
-            querySoma = querySoma.in("id", [-1]);
-          }
-        }
-
-      if (nome.trim() !== "") {
-        const { data: clientesEncontrados, error: erroClientes } = await supabase
-          .from("clientes")
-          .select("id")
-          .ilike("nome_completo", `%${nome.trim()}%`);
-
-        if (!erroClientes && clientesEncontrados?.length) {
-          const idsClientes = clientesEncontrados.map((item) => item.id);
-
-          const { data: contasRelacionadas, error: erroContas } = await supabase
-            .from("contas_receber")
-            .select("id")
-            .in("id_cliente", idsClientes);
-
-          if (!erroContas && contasRelacionadas?.length) {
-            const idsContas = contasRelacionadas.map((item) => item.id);
-            querySoma = querySoma.in("id", idsContas);
-          } else {
-            querySoma = querySoma.in("id", [-1]);
-          }
-        } else {
-          querySoma = querySoma.in("id", [-1]);
-        }
-      }
-      
-      if (modalidade.trim() !== "") {
-        querySoma = querySoma.eq("tipo_lancamento", modalidade);
-      }
-
-      if (idDocumento.trim() !== "") {
-        querySoma = querySoma.eq("id", Number(idDocumento));
-      }
-
-      if (estado.trim() !== "") {
-        querySoma = querySoma.eq("estado", estado);
-      }
-
-      if (cidade.trim() !== "") {
-        querySoma = querySoma.eq("cidade", cidade);
-      }
-
-      if (dataInicio.trim() || dataFim.trim()) {
-        let colunaData = "data_emprestimo";
-
-        if (tipoData === "vencimento") {
-          colunaData = "data_vencimento";
-        }
-
-        if (dataInicio.trim()) querySoma = querySoma.gte(colunaData, dataInicio);
-        if (dataFim.trim()) querySoma = querySoma.lte(colunaData, dataFim);
-      }
-
-      const { data: somaData, error: erroSoma } = await querySoma;
-
-      let valores = {
-        comissao: 0,
-        emprestado: 0,
-        receber: 0
-      }
-
-      if (erroSoma) {
-        toast.error("Erro ao calcular soma das comissões");
-      } else {
-        const totalQueFoiEmprestado = somaData.reduce((acc, item) => acc + (item.valor_emprestado ?? 0), 0);
-        setTotalEmprestado(totalQueFoiEmprestado);
-        const totalAReceber = somaData.reduce((acc, item) => acc + ((item.valor_receber ?? 0) - (item.valor_pago ?? 0)), 0);
-        setTotalReceber(totalAReceber);
-        const verificarTotalComissao = somaData.reduce( (acc, item) => acc + (item.comissao ?? 0), 0);
-        console.log(verificarTotalComissao)
-        console.log(totalQueFoiEmprestado)
-        console.log("teste")
-        console.log(totalAReceber)
-        valores = {
-          comissao: verificarTotalComissao,
-          emprestado: totalQueFoiEmprestado,
-          receber: totalAReceber
-        }
-      }
-
-      const { data, error } = await query;
-
-      const emprestimoFormatado: ContasPendentes[] = (data || []).map( (item:any) => ({
-        id: item.id,
-        data_cadastro: item.data_cadastro,
-        data_vencimento: item.data_vencimento,
-        tipo_lancamento: item.tipo_lancamento,
-        valor_emprestado: item.valor_emprestado,
-        valor_receber: item.valor_receber,
-        valor_pago: item.valor_pago,
-        consultores: item.consultores,
-        clientes: item.clientes,
-        comissao: item.comissao
+      const dadosTratados: ContasPagas[] = (data || []).map((item: any) => ({
+        ...item,
+        contas_receber: {
+          ...item.contas_receber,
+          clientes: item.contas_receber?.clientes,
+          consultores: item.contas_receber?.consultores,
+        },
+        formas_pagamento: item.formas_pagamento,
       }));
 
-      console.log(data);
+      setContasPagas(dadosTratados);
 
-      console.log("Deu certo:", valores)
+      console.log(dadosTratados);
 
-      generatePdf(emprestimoFormatado, valores)
+      generatePdf(dadosTratados, totalPagoCalc);
 
       setLoading(false);
 
@@ -480,8 +368,8 @@ export default function RelatorioEmprestimosPendentes() {
           setModalEmprestimos(true);
         }}
       > 
-        <FileText className="w-6 h-6 text-purple-600" />
-        <span className="text-lg font-medium text-gray-700"> Relatório de Empréstimos - Pendentes </span> 
+        <FileText className="w-6 h-6 text-green-600" />
+        <span className="text-lg font-medium text-gray-700"> Relatório de Empréstimos - Pagos </span> 
       </button>
       {modalEmprestimos && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -490,7 +378,7 @@ export default function RelatorioEmprestimosPendentes() {
 
           <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
 
-            <h2 className="text-xl font-bold mb-4"> Relatório de Empréstimos Pendentes </h2>
+            <h2 className="text-xl font-bold mb-4"> Relatório de Empréstimos Pagos </h2>
 
             <div className="flex flex-col gap-2">
 
@@ -539,15 +427,6 @@ export default function RelatorioEmprestimosPendentes() {
                 ))}
               </select>
 
-             <select 
-                  className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
-                  value={status}
-                  onChange={ (e) => setStatus(e.target.value)}
-                >
-                  <option value="Pendente">Status - Pendente</option>
-                  <option value="Cancelado"> Status - Cancelado</option>
-              </select>
-
               <select 
                 className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#4b8ed6] text-sm sm:text-base"
                 value={modalidade}
@@ -591,6 +470,7 @@ export default function RelatorioEmprestimosPendentes() {
               >
                 <option value="emprestimo"> Data Empréstimo </option>
                 <option value="vencimento"> Data Vencimento </option>
+                <option value="pagamento"> Data Pagamento </option>
               </select>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -613,12 +493,11 @@ export default function RelatorioEmprestimosPendentes() {
                   </div>
                 </div>
 
-
             </div>
 
             <div className="flex justify-between gap-4">
 
-              <button onClick={buscarEmprestimosPendentes} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Gerar </button>
+              <button onClick={buscarEmprestimosPagos} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Gerar </button>
 
               <button onClick={() => {
                 setModalEmprestimos(false);
