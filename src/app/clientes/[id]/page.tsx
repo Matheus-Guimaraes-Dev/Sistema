@@ -17,8 +17,6 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
 
   const { data, error } = await supabase.auth.getUser();
 
-  const teste = "123"
-
   if (error || !data?.user) {
     redirect('/auth/login')
   };
