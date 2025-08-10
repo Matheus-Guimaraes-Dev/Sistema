@@ -44,6 +44,7 @@ export interface Contas {
   valor_emprestado: number;
   valor_receber: number;
   valor_pago: number;
+  descricao: string;
   data_vencimento: string;
   data_cadastro: string;
   clientes: {

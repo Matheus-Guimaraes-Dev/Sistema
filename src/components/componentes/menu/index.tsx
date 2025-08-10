@@ -57,6 +57,12 @@ export function Menu() {
     router.push("/relatorios");
   }
 
+  function paginaDashboard() {
+    setMostrarModal(false);
+    router.push("/dashboard");
+  }
+
+
   function paginaContas() {
     setMostrarModal(false);
     router.push("/contas");
@@ -130,25 +136,26 @@ export function Menu() {
 
             {grupo !== "Consultor" && (
               <div className="flex items-center text-black gap-2 px-4 mt-6">
-                <CgNotes size={34} color="#111" className="cursor-pointer"  />
-                <span
-                  className={`transition-all duration-300 text-lg cursor-pointer ${
-                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
-                  }`}
-                > Notas Promissórias
-                </span>
-              </div>
-            )}
-
-            {grupo !== "Consultor" && (
-              <div className="flex items-center text-black gap-2 px-4 mt-6">
-                <RiDashboard3Line onClick={paginaRelatorios} size={34} color="#111" className="cursor-pointer"  />
+                <CgNotes onClick={paginaRelatorios} size={34} color="#111" className="cursor-pointer"  />
                 <span
                   onClick={paginaRelatorios}
                   className={`transition-all duration-300 text-lg cursor-pointer ${
                     mostrarModal ? 'opacity-100 scale-100' : 'hidden'
                   }`}
                 > Relatórios
+                </span>
+              </div>
+            )}
+
+            {grupo !== "Consultor" && (
+              <div className="flex items-center text-black gap-2 px-4 mt-6">
+                <RiDashboard3Line onClick={paginaDashboard} size={34} color="#111" className="cursor-pointer"  />
+                <span
+                  onClick={paginaDashboard}
+                  className={`transition-all duration-300 text-lg cursor-pointer ${
+                    mostrarModal ? 'opacity-100 scale-100' : 'hidden'
+                  }`}
+                > DashBoard
                 </span>
               </div>
             )}
@@ -254,25 +261,26 @@ export function Menu() {
 
         {grupo !== "Consultor" && (
           <div className="flex items-center text-white gap-2 px-4 mt-6">
-            <CgNotes size={34} color="#fff" className="cursor-pointer"  />
+            <CgNotes onClick={paginaRelatorios} size={34} color="#fff" className="cursor-pointer"  />
             <span
+              onClick={paginaRelatorios}
               className={`transition-all duration-300 text-lg cursor-pointer ${
                 menu ? 'opacity-100 scale-100' : 'hidden'
               }`}
-            > Notas Promissórias
+            > Relatórios
             </span>
           </div>
         )}
 
       {grupo !== "Consultor" && (
         <div className="flex items-center text-white gap-2 px-4 mt-6">
-          <RiDashboard3Line onClick={paginaRelatorios} size={34} color="#fff" className="cursor-pointer"  />
+          <RiDashboard3Line onClick={paginaDashboard} size={34} color="#fff" className="cursor-pointer"  />
           <span
-            onClick={paginaRelatorios}
+            onClick={paginaDashboard}
             className={`transition-all duration-300 text-lg cursor-pointer ${
               menu ? 'opacity-100 scale-100' : 'hidden'
             }`}
-          > Relatórios
+          > DashBoard
           </span>
         </div>
       )}

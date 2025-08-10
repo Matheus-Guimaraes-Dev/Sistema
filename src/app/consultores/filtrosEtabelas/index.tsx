@@ -224,8 +224,9 @@ async function buscarComissoes() {
     }
 
     // 🔹 Filtro de datas dinâmico
-    if (dataInicio.trim() || dataFim.trim()) {
-      let colunaData = "data_emprestimo"; // padrão
+    if ((dataInicio.trim() || dataFim.trim()) && tipoData !== "pagamento_comissao") {
+
+      let colunaData = "data_emprestimo";
       if (tipoData === "pagamento") {
         colunaData = "data_pagamento_total";
         queryContas = queryContas.eq("status", "Pago");
@@ -233,6 +234,7 @@ async function buscarComissoes() {
 
       if (dataInicio.trim()) queryContas = queryContas.gte(colunaData, dataInicio);
       if (dataFim.trim()) queryContas = queryContas.lte(colunaData, dataFim);
+
     }
 
     const { data: contasRelacionadas, error: erroContas } = await queryContas;
@@ -264,6 +266,11 @@ async function buscarComissoes() {
       .order("id_conta_receber", { ascending: true })
       .range(inicio, fim);
 
+    if (tipoData === "pagamento_comissao" && (dataInicio.trim() || dataFim.trim())) {
+      if (dataInicio.trim()) query = query.gte("data_pagamento", dataInicio.trim());
+      if (dataFim.trim()) query = query.lte("data_pagamento", dataFim.trim());
+    }
+
     if (idsContas.length > 0) query = query.in("id_conta_receber", idsContas);
     if (id.trim()) query = query.eq("id_conta_receber", Number(id));
     if (status.trim()) query = query.eq("status", status);
@@ -291,7 +298,13 @@ async function buscarComissoes() {
     if (id.trim()) somaQuery = somaQuery.eq("id_conta_receber", Number(id));
     if (status.trim()) somaQuery = somaQuery.eq("status", status);
 
+    if (tipoData === "pagamento_comissao" && (dataInicio.trim() || dataFim.trim())) {
+      if (dataInicio.trim()) somaQuery = somaQuery.gte("data_pagamento", dataInicio.trim());
+      if (dataFim.trim()) somaQuery = somaQuery.lte("data_pagamento", dataFim.trim());
+    }
+
     const { data: somaData, error: erroSoma } = await somaQuery;
+
     if (erroSoma) {
       toast.error("Erro ao calcular soma das comissões");
     } else {
@@ -589,7 +602,9 @@ async function buscarComissoes() {
               onChange={ (e) => setTipoData(e.target.value)}
             >
               <option value="emprestimo"> Data Empréstimo </option>
-              <option value="pagamento"> Data Pagamento </option>
+              <option value="pagamento"> Data Pagamento - Empréstimo </option>
+              <option value="pagamento_comissao"> Data Pagamento - Comissão </option>
+
             </select>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

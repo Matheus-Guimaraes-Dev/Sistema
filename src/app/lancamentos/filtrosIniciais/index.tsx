@@ -38,7 +38,8 @@ interface ContasPagas {
       nome_completo: string,
     },
     id: number,
-    tipo_lancamento: string
+    tipo_lancamento: string,
+    descricao: string,
   }
 }
 
@@ -334,6 +335,7 @@ export function FiltrosLancamentos() {
           valor_pago,
           data_vencimento,
           data_cadastro,
+          descricao,
           clientes:clientes!id_cliente ( id, nome_completo, cpf ),
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
@@ -658,9 +660,8 @@ async function buscarContasPagas() {
     if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade);
 
     // 🔹 Filtro de data dinâmica baseado em tipoData
-    if (dataInicio.trim() || dataFim.trim()) {
-      let colunaData = "data_emprestimo"; // padrão
-      if (tipoData === "pagamento") colunaData = "data_pagamento_total";
+    if ((dataInicio.trim() || dataFim.trim()) && tipoData !== "pagamento") {
+      let colunaData = "data_emprestimo";
       if (tipoData === "vencimento") colunaData = "data_vencimento";
 
       if (dataInicio.trim()) queryContas = queryContas.gte(colunaData, dataInicio);
@@ -692,6 +693,7 @@ async function buscarContasPagas() {
         contas_receber (
           id,
           tipo_lancamento,
+          descricao,
           clientes ( nome_completo ),
           consultores ( nome_completo )
         )
@@ -699,6 +701,11 @@ async function buscarContasPagas() {
       .in("id_conta_receber", idsContas)
       .order("id_conta_receber", { ascending: true })
       .range(inicio, fim);
+
+    if (tipoData === "pagamento" && (dataInicio.trim() || dataFim.trim())) {
+      if (dataInicio.trim()) query = query.gte("data_pagamento", dataInicio.trim());
+      if (dataFim.trim()) query = query.lte("data_pagamento", dataFim.trim());
+    }
 
     if (ordenarValor === "asc" || ordenarValor === "desc") {
       query = query.order("valor_pago", { ascending: ordenarValor === "asc" });
@@ -716,7 +723,11 @@ async function buscarContasPagas() {
 
     if (erroSoma) throw new Error("Erro ao calcular soma de pagamentos");
 
-    const totalPagoCalc = somaData?.reduce((acc, item) => acc + (item.valor_pago ?? 0), 0) ?? 0;
+    const totalPagoCalc = (data ?? []).reduce(
+      (acc, item) => acc + Number(item.valor_pago ?? 0),
+      0
+    );
+    
     setTotalPago(totalPagoCalc);
 
     // ================================
@@ -1318,11 +1329,12 @@ async function buscarContasPagas() {
                     <th className="w-1"> </th>
                     <th className="px-2 py-3 w-5">ID</th>
                     <th className="px-2 py-3 w-50">Cliente</th>
-                    <th className="px-2 py-3 w-50">Consultor</th>
+                    <th className="px-2 py-3 w-40">Consultor</th>
                     <th className="px-2 py-3 w-25">Tipo</th>
-                    <th className="px-2 py-3 w-45">Valor Emprestado</th>
-                    <th className="px-2 py-3 w-45">Valor a Receber</th>
-                    <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Vencimento</th>
+                    <th className="px-2 py-3 w-40">Valor Emprestado</th>
+                    <th className="px-2 py-3 w-40">Valor a Receber</th>
+                    <th className="hidden lg:table-cell px-2 py-3 w-40">Data de Vencimento</th>
+                    <th className="px-2 py-3 w-45">Observação</th>
                     <th className="px-2 py-3 text-center w-20"> Detalhes</th>
                   </tr>
                 </thead>
@@ -1340,7 +1352,7 @@ async function buscarContasPagas() {
                         </td>
                         <td className="px-2 w-5"> {info.id} </td>
                         <td className="px-2 py-1.5 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
-                        <td className="px-2 py-1.5 max-w-[90px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
+                        <td className="px-2 py-1.5 max-w-[70px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
                         <td className="px-2 py-1.5"> {info.tipo_lancamento} </td>
                         <td className="px-2 py-1.5"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
                       style: 'currency',
@@ -1351,6 +1363,7 @@ async function buscarContasPagas() {
                       currency: 'BRL',
                     })} </td>
                         <td className="hidden lg:table-cell px-2 py-1.5"> {formatarData(info.data_vencimento)} </td>
+                        <td className="px-2 py-1.5 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.descricao || ""} </td>
                         <td className="px-4 py-1.5 flex justify-center">
                           <button onClick={() => detalhes(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                         </td>
@@ -1378,6 +1391,7 @@ async function buscarContasPagas() {
                     <th className="px-2 py-3 w-25">Tipo</th>
                     <th className="px-2 py-3 w-45">Valor Pago</th>
                     <th className="hidden lg:table-cell px-2 py-3 w-45">Data de Pagamento</th>
+                    <th className="px-2 py-3 w-45">Observacao</th>
                     <th className="px-2 py-3 text-center w-20"> Detalhes</th>
                   </tr>
                 </thead>
@@ -1409,6 +1423,7 @@ async function buscarContasPagas() {
                       currency: 'BRL',
                     })} </td>
                         <td className="hidden lg:table-cell px-2 py-2"> {formatarData(info?.data_pagamento)} </td>
+                        <td className="px-2 py-2"> {info?.contas_receber?.descricao} </td>
                         <td className="px-4 py-2 flex justify-center">
                           <button onClick={() => detalhesPagos(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                         </td>

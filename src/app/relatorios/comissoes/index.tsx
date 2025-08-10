@@ -62,10 +62,6 @@ export default function RelatorioComissoes() {
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
   : [];
 
-  useEffect( () => {
-    consultoresBuscando();
-  }, [])
-
   async function consultoresBuscando() {
 
     const { data, error } = await supabase  
@@ -86,6 +82,9 @@ export default function RelatorioComissoes() {
 
   const buscarComissoes = async () => {
 
+    if (dataInicio === "") return toast.error("Digite a data de início");
+    if (dataFim === "") return toast.error("Digite a data de final");
+    
     setLoading(true);
 
     {/* ========== PDF ========== */}
@@ -241,7 +240,6 @@ export default function RelatorioComissoes() {
         consultores: item.consultores,
       }));
 
-      console.log(comissoesFormatadas);
       setComissoes(comissoesFormatadas);
 
       let somaQuery = supabase.from("comissoes_consultores").select("valor_comissao");
@@ -294,12 +292,14 @@ export default function RelatorioComissoes() {
 
         <button
           className="flex items-center gap-4 p-6 bg-white rounded-xl shadow hover:shadow-lg hover:scale-105 transition-transform cursor-pointer"
-          onClick={() => setModalClientes(true)}
+          onClick={() => {
+            setModalClientes(true);
+            consultoresBuscando();
+          }}
         > 
           <DollarSign className="w-6 h-6 text-yellow-600" />
           <span className="text-lg font-medium text-gray-700"> Relatório de Comissões </span> 
         </button>
-
       {modalClientes && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
 

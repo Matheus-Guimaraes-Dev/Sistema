@@ -12,7 +12,7 @@ import { ClienteInfo, ConsultorInfo, Emprestimo, PropsAlterar, Recebimentos} fro
 import { limiteDataEmprestimo, limiteDataPagamento, limiteDataVencimento } from "@/funcoes/limitacao";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/contexts/UserContext";
-import NotaPromissoria from "@/app/testePDF";
+import NotaPromissoria from "@/app/notaPromissoria";
 
 export default function Opcoes({ informacoesEmprestimo, valorDoJuros }: PropsAlterar ) {
 

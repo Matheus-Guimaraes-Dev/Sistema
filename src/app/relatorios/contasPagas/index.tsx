@@ -144,6 +144,9 @@ export default function RelatorioEmprestimosPagos() {
 
   const buscarEmprestimosPagos = async () => {
 
+    if (dataInicio === "") return toast.error("Digite a data de início");
+    if (dataFim === "") return toast.error("Digite a data de final");
+    
     setLoading(true);
 
     {/* ========== PDF ========== */}
@@ -309,14 +312,10 @@ export default function RelatorioEmprestimosPagos() {
       const { data, count, error } = await query;
       if (error) throw new Error("Erro ao buscar pagamentos");
 
-      const { data: somaData, error: erroSoma } = await supabase
-        .from("pagamentos_conta_receber")
-        .select("valor_pago")
-        .in("id_conta_receber", idsContas);
-
-      if (erroSoma) throw new Error("Erro ao calcular soma de pagamentos");
-
-      const totalPagoCalc = somaData?.reduce((acc, item) => acc + (item.valor_pago ?? 0), 0) ?? 0;
+      const totalPagoCalc = (data ?? []).reduce(
+        (acc, item) => acc + Number(item.valor_pago ?? 0),
+        0
+      );
       setTotalPago(totalPagoCalc);
 
       const dadosTratados: ContasPagas[] = (data || []).map((item: any) => ({
@@ -331,8 +330,6 @@ export default function RelatorioEmprestimosPagos() {
 
       setContasPagas(dadosTratados);
 
-      console.log(dadosTratados);
-
       generatePdf(dadosTratados, totalPagoCalc);
 
       setLoading(false);
@@ -341,7 +338,6 @@ export default function RelatorioEmprestimosPagos() {
       console.log("Erro: ", err)
     }
  
-
   }
 
   function formatarEmReais(valor: number): string {
@@ -364,7 +360,7 @@ export default function RelatorioEmprestimosPagos() {
       <button
         className="flex items-center gap-4 p-6 bg-white rounded-xl shadow hover:shadow-lg hover:scale-105 transition-transform cursor-pointer"
         onClick={() => {
-          consultoresBuscando()
+          consultoresBuscando();
           setModalEmprestimos(true);
         }}
       > 

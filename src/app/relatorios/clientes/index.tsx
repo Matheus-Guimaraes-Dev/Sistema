@@ -7,6 +7,7 @@ import { cidadesPorEstado } from "@/app/clientes/estados-cidades";
 import { createClient } from "@/lib/client";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import toast from "react-hot-toast";
 
 interface ConsultorBusca {
   id: number;
@@ -67,6 +68,10 @@ export default function RelatorioClientes() {
 
   const buscarClientes = async () => {
 
+    
+    if (dataInicio === "") return toast.error("Digite a data de início");
+    if (dataFim === "") return toast.error("Digite a data de final");
+    
     setLoading(true);
 
     {/* ========== PDF ========== */}

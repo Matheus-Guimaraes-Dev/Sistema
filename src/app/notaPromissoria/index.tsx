@@ -277,7 +277,7 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     doc.text(`No dia ${dataEmExtenso}`, 45, 25);
     doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
     doc.setFont("helvetica", "bold")
-    doc.text("A PEREIRA CONSULTORIA EMPRESA SIMPLES DE CREDITO LTDA     CPF/CNPJ: 47.094.674/0001-66", 45, 38);
+    doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
     doc.setFont("helvetica", "normal");
     doc.text("OU À SUA ORDEM,", 45, 44);
     doc.text("A QUANTIA DE", 45, 48);
@@ -293,7 +293,7 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
 
     doc.text(valorAjustado, 73, 44);
 
-    const cidadeEbairro = `${informacoes.clientes.cidade} - ${informacoes.clientes.bairro}`
+    const cidadeEbairro = `${informacoes.clientes.cidade} - ${informacoes.clientes.bairro || "Não informado"}`
     doc.text("Cidade: ", 45, 56);
     doc.text(cidadeEbairro, 64, 56);
 
@@ -311,7 +311,7 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     doc.text("CPF/CNPJ: ", 45, 68);
     doc.text(cpfCliente, 64, 68);
 
-    const endereco = `${informacoes.clientes.rua}, Nº: ${informacoes.clientes.numero_casa}`
+    const endereco = `${informacoes.clientes.rua || "Não informado"}, Nº: ${informacoes.clientes.numero_casa || "Não informado"}`
     doc.text("Endereço: ", 105, 68);
     doc.text(endereco, 120, 68);
 

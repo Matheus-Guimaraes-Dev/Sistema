@@ -144,6 +144,9 @@ export default function RelatorioEmprestimosPendentes() {
 
   const buscarEmprestimosPendentes = async () => {
 
+    if (dataInicio === "") return toast.error("Digite a data de início");
+    if (dataFim === "") return toast.error("Digite a data de final");
+    
     setLoading(true);
 
     {/* ========== PDF ========== */}
@@ -476,7 +479,7 @@ export default function RelatorioEmprestimosPendentes() {
       <button
         className="flex items-center gap-4 p-6 bg-white rounded-xl shadow hover:shadow-lg hover:scale-105 transition-transform cursor-pointer"
         onClick={() => {
-          consultoresBuscando()
+          consultoresBuscando();
           setModalEmprestimos(true);
         }}
       > 
