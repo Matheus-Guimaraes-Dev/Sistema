@@ -802,7 +802,7 @@ async function buscarComissoes() {
                   value={recebimentoSelecionado}
                   onChange={(e) => setRecebimentoSelecionado(e.target.value)}
                 >
-                  <option value="">Selecione a forma de recebimento</option>
+                  <option value="">Selecione a forma de pagamento</option>
 
                   {formasRecebimento.map((forma) => (
                     <option key={forma.id} value={forma.id}>
