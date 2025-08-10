@@ -795,7 +795,7 @@ async function buscarComissoes() {
               </div>
 
               <div className="mb-3">
-                <Label> Forma de Recebimento </Label>
+                <Label> Forma de Pagamento </Label>
 
                 <select 
                   className="w-full h-8 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
