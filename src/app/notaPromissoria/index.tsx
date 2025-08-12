@@ -44,8 +44,6 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
 
     console.log(informacoes);
 
-    const teste = '1342'
-
     if (valor === 0) return "zero real";
 
     const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
