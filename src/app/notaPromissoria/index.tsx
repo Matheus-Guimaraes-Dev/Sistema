@@ -275,7 +275,7 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     doc.text(`No dia ${dataEmExtenso}`, 45, 25);
     doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
     doc.setFont("helvetica", "bold")
-    doc.text("A PEREIRA CONSULTORIA EMPRESA SIMPLES DE CREDITO LTDA     CPF/CNPJ: 47.094.674/0001-66", 45, 38);
+    doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
     doc.setFont("helvetica", "normal");
     doc.text("OU À SUA ORDEM,", 45, 44);
     doc.text("A QUANTIA DE", 45, 48);
