@@ -113,27 +113,7 @@ export function Formulario() {
     e.preventDefault()
 
     if (!nome.trim()) return toast.error("Digite o nome do cliente!");
-    // if (!email.trim()) return toast.error("Digite o email do cliente!");
-    // if (!cpf.trim()) return toast.error("Digite o cpf!");
-    // if (!rg.trim()) return toast.error("Digite o rg!");
-    // if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
-    // if (!orgaoExpedidor.trim()) return toast.error("Digite o Orgão Expedidor!");
-    // if (!sexo.trim()) return toast.error("Selecione o sexo!");
-    // if (!estadoCivil.trim()) return toast.error("Selecione estado civil!");
-    // if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
     if (!whatsapp.trim()) return toast.error("Digite o whatsapp!");
-    // if (!cep.trim()) return toast.error("Digite o cep!");
-    // if (!bairro.trim()) return toast.error("Digite o bairro!");
-    // if (!rua.trim()) return toast.error("Digite a sua rua!");
-    // if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
-    // if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
-    // if (!estado.trim()) return toast.error("Selecione o estado!");
-    // if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
-    // if (!pix.trim()) return toast.error("Digite a sua chave pix!");
-    // if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    // if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
-
-    const teste2 = "Teste2"
 
     setLoading(true);
 
@@ -157,35 +137,35 @@ export function Formulario() {
     if(verificarTelefone && verificarTelefone.length > 0) { 
 
       const dadosAtualizados = {
-        nome_completo: nome,
-        email: email,
+        nome_completo: nome.toLocaleUpperCase(),
+        email: email.toLocaleUpperCase(),
         cpf: cpf || "00000000000",
         rg: rg,
         data_emissao_rg: dataRg || "01/01/1000",
-        orgao_expedidor: orgaoExpedidor,
-        sexo: sexo,
-        estado_civil: estadoCivil,
-        nome_completo_companheiro: nomeCompanheiro.trim(),
+        orgao_expedidor: orgaoExpedidor.toLocaleUpperCase(),
+        sexo: sexo.toLocaleUpperCase(),
+        estado_civil: estadoCivil.toLocaleUpperCase(),
+        nome_completo_companheiro: nomeCompanheiro.trim().toLocaleUpperCase(),
         cpf_companheiro: cpfCompanheiro.trim(),
         whatsapp_companheiro: whatsappCompanheiro,
         data_nascimento: dataNascimento || "01/01/1000",
         whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
-        nome_referencia: nomeReferencia,
+        nome_referencia: nomeReferencia.toLocaleUpperCase(),
         telefone_referencia: telefoneReferencia,
         cep: cep,
-        bairro: bairro,
-        rua: rua,
+        bairro: bairro.toLocaleUpperCase(),
+        rua: rua.toLocaleUpperCase(),
         numero_casa: Ncasa,
-        moradia: moradia,
-        condicoes_moradia: condicaoMoradia,
+        moradia: moradia.toLocaleUpperCase(),
+        condicoes_moradia: condicaoMoradia.toLocaleUpperCase(),
         valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
         valor_aluguel: valorAluguelCorreto,
-        categoria_veiculo: veiculoSelecionado,
-        condicao_veiculo: condicaoVeiculo,
+        categoria_veiculo: veiculoSelecionado.toLocaleUpperCase(),
+        condicao_veiculo: condicaoVeiculo.toLocaleUpperCase(),
         valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-        cidade: cidade,
-        estado: estado,
+        cidade: cidade.toLocaleUpperCase(),
+        estado: estado.toLocaleUpperCase(),
         pix: pix,
         id_consultor: consultorSelecionado || null,
         valor_solicitado: valorMonetarioCorreto
@@ -321,35 +301,35 @@ export function Formulario() {
       const { data: clienteData, error: insertError } = await supabase
         .from("clientes")
         .insert({ 
-          nome_completo: nome.trim(),
-          email: email.trim(),
+          nome_completo: nome.trim().toLocaleUpperCase(),
+          email: email.trim().toLocaleUpperCase(),
           cpf: cpf.trim() || "00000000000",
           rg: rg.trim(),
           data_emissao_rg: dataRg || "01/01/1000",
           orgao_expedidor: orgaoExpedidor.trim(),
-          sexo,
-          estado_civil: estadoCivil,
-          nome_completo_companheiro: nomeCompanheiro.trim(),
+          sexo: sexo.toLocaleUpperCase(),
+          estado_civil: estadoCivil.toLocaleUpperCase(),
+          nome_completo_companheiro: nomeCompanheiro.trim().toLocaleUpperCase(),
           cpf_companheiro: cpfCompanheiro.trim(),
           whatsapp_companheiro: whatsappCompanheiro,
           data_nascimento: dataNascimento || "01/01/1000",
           whatsapp,
           telefone_reserva: telefoneReserva,
-          nome_referencia: nomeReferencia,
+          nome_referencia: nomeReferencia.toLocaleUpperCase(),
           telefone_referencia: telefoneReferencia,
           cep,
-          bairro: bairro.trim(),
-          rua: rua.trim(),
+          bairro: bairro.trim().toLocaleUpperCase(),
+          rua: rua.trim().toLocaleUpperCase(),
           numero_casa: Ncasa.trim(),
-          moradia,
-          condicoes_moradia: condicaoMoradia,
+          moradia: moradia.toLocaleUpperCase(),
+          condicoes_moradia: condicaoMoradia.toLocaleUpperCase(),
           valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
           valor_aluguel: valorAluguelCorreto,
-          categoria_veiculo: veiculoSelecionado,
-          condicao_veiculo: condicaoVeiculo,
+          categoria_veiculo: veiculoSelecionado.toLocaleUpperCase(),
+          condicao_veiculo: condicaoVeiculo.toLocaleUpperCase(),
           valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-          estado,
-          cidade,
+          estado: estado.toLocaleUpperCase(),
+          cidade: cidade.toLocaleUpperCase(),
           pix: pix.trim(),
           observacao: observacao,
           id_consultor: consultorSelecionado || null,
@@ -479,152 +459,6 @@ export function Formulario() {
 
       setLoading(false);
     }
-
-    // const { data: clienteData, error: insertError } = await supabase
-    //   .from("clientes")
-    //   .insert({ 
-    //     nome_completo: nome.trim(),
-    //     email: email.trim(),
-    //     cpf: cpf.trim(),
-    //     rg: rg.trim(),
-    //     data_emissao_rg: dataRg,
-    //     orgao_expedidor: orgaoExpedidor.trim(),
-    //     sexo,
-    //     estado_civil: estadoCivil,
-    //     nome_completo_companheiro: nomeCompanheiro.trim(),
-    //     cpf_companheiro: cpfCompanheiro.trim(),
-    //     whatsapp_companheiro: whatsappCompanheiro,
-    //     data_nascimento: dataNascimento,
-    //     whatsapp,
-    //     telefone_reserva: telefoneReserva,
-    //     cep,
-    //     bairro: bairro.trim(),
-    //     rua: rua.trim(),
-    //     numero_casa: Ncasa.trim(),
-    //     moradia,
-    //     condicoes_moradia: condicaoMoradia,
-    //     valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
-    //     valor_aluguel: valorAluguelCorreto,
-    //     categoria_veiculo: veiculoSelecionado,
-    //     condicao_veiculo: condicaoVeiculo,
-    //     valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-    //     estado,
-    //     cidade,
-    //     pix: pix.trim(),
-    //     observacao: observacao,
-    //     valor_solicitado: valorMonetarioCorreto
-    //   })
-    //   .select()
-
-    // if (insertError || !clienteData || clienteData.length === 0) {
-    //   return toast.error("Erro ao criar cliente")
-    // } else { 
-    //   setNome("");
-    //   setEmail("");
-    //   setCpf("");
-    //   setRg("");
-    //   setDataRg("");
-    //   setOrgaoExpedidor("");
-    //   setSexo("");
-    //   setEstadoCivil("");
-    //   setNomeCompanheiro("");
-    //   setCpfCompanheiro("");
-    //   setWhatsappCompanheiro("");
-    //   setDataNascimento("");
-    //   setWhatsapp("");
-    //   setTelefoneReserva("");
-    //   setCep("");
-    //   setBairro("");
-    //   setRua("");
-    //   setNcasa("");
-    //   setMoradia("");
-    //   setEstado("");
-    //   setCidade("");
-    //   setPix("");
-    //   setCondicaoMoradia("");
-    //   setValorFinanciamento("");
-    //   setValorAluguel("");
-    //   setVerificarVeiculo("");
-    //   setVeiculoSelecionado("");
-    //   setCondicaoVeiculo("");
-    //   setValorFinanciamentoVeiculo("");
-    //   setValorSolicitado("");
-    //   setObservacao("");
-    //   setComprovanteRenda(null);
-    //   setComprovanteEndereco(null);
-    //   setDocumentoFrente(null);
-    //   setDocumentoVerso(null);
-    //   setArquivo(null);
-
-    //   rendaRef.current!.value = "";
-    //   enderecoRef.current!.value = "";
-    //   frenteRef.current!.value = "";
-    //   versoRef.current!.value = "";
-    //   outroRef.current!.value = "";
-    //   segurandoDocRef.current!.value = "";
-    //   toast.success('Cliente Cadastrado com Sucesso!')
-    // }
-
-    // const idCliente = clienteData[0].id
-    // const arquivos: { arquivo: File | null, campo: string }[] = [
-    //   { arquivo: comprovanteRenda, campo: "foto_comprovante_renda" },
-    //   { arquivo: comprovanteEndereco, campo: "foto_comprovante_endereco" },
-    //   { arquivo: documentoFrente, campo: "foto_identidade_frente" },
-    //   { arquivo: documentoVerso, campo: "foto_identidade_verso" },
-    //   { arquivo: segurandoDocumento, campo: "segurando_documento" },
-    //   { arquivo: arquivo, campo: "outro_arquivo" },
-    // ];
-    // const urls: Record<string, string> = {}
-
-    // for (const { arquivo, campo } of arquivos) {
-      
-    //   if (!arquivo) continue;
-
-    //   try {
-        
-    //     const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase() || "file";
-    //     const isPDF = arquivo.type === "application/pdf";
-
-    //     let arquivoFinal: Blob;
-    //     let extensao: string;
-
-    //     if (isPDF) {
-    //       arquivoFinal = arquivo;
-    //       extensao = "pdf";
-    //     } else {
-    //       const convertido = await converterImagemParaWebP(arquivo);
-    //       arquivoFinal = convertido;
-    //       extensao = "webp";
-    //     }
-
-    //     const nomeArquivo = campo === "outro_arquivo"
-    //       ? `clientes/${idCliente}/${limparNomeArquivo(arquivo.name)}`
-    //       : `clientes/${idCliente}/${campo}-${Date.now()}.${extensao}`;
-
-    //     const { error: uploadError } = await supabase
-    //       .storage
-    //       .from("clientes")
-    //       .upload(nomeArquivo, arquivoFinal, {
-    //         contentType: arquivoFinal.type,
-    //       });
-
-    //     if (uploadError) {
-    //       return alert(`Erro ao enviar ${campo}`);
-    //     }
-
-    //     const { data: urlData } = supabase
-    //       .storage
-    //       .from("clientes")
-    //       .getPublicUrl(nomeArquivo);
-
-    //     urls[campo] = urlData.publicUrl;
-
-    //   } catch (erro) {
-    //     return alert(`Erro ao processar o arquivo: ${campo}`);
-    //   }
-    // }
-
-    // setLoading(false);
 
   }
 

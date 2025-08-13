@@ -25,8 +25,6 @@ export function FomularioComponente() {
 
   const supabase = createClient();
 
-  const teste= "Teste";
- 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
@@ -59,6 +57,7 @@ export function FomularioComponente() {
   const [whatsappCompanheiro, setWhatsappCompanheiro] = useState("");
   const [pix, setPix] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
+  const [tipoDeReferencia, setTipoDeReferencia] = useState("");
   const [comprovanteRenda, setComprovanteRenda] = useState<File | null>(null);
   const [comprovanteEndereco, setComprovanteEndereco] = useState<File | null>(null);
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
@@ -166,35 +165,35 @@ export function FomularioComponente() {
     if(verificarTelefone && verificarTelefone.length > 0) {
 
       const dadosAtualizados = {
-        nome_completo: nome,
-        email: email,
+        nome_completo: nome.toLocaleUpperCase(),
+        email: email.toLocaleUpperCase(),
         cpf: cpf,
         rg: rg,
         data_emissao_rg: dataRg || null,
-        orgao_expedidor: orgaoExpedidor,
-        sexo: sexo,
-        estado_civil: estadoCivil,
-        nome_completo_companheiro: nomeCompanheiro.trim(),
+        orgao_expedidor: orgaoExpedidor.toLocaleUpperCase(),
+        sexo: sexo.toLocaleUpperCase(),
+        estado_civil: estadoCivil.toLocaleUpperCase(),
+        nome_completo_companheiro: nomeCompanheiro.trim().toLocaleUpperCase(),
         cpf_companheiro: cpfCompanheiro.trim(),
         whatsapp_companheiro: whatsappCompanheiro,
         data_nascimento: dataNascimento,
         whatsapp: whatsapp,
         telefone_reserva: telefoneReserva,
-        nome_referencia: nomeReferencia,
+        nome_referencia: nomeReferencia.toLocaleUpperCase(),
         telefone_referencia: telefoneReferencia,
         cep: cep,
-        bairro: bairro,
-        rua: rua,
+        bairro: bairro.toLocaleUpperCase(),
+        rua: rua.toLocaleUpperCase(),
         numero_casa: Ncasa,
-        moradia: moradia,
-        condicoes_moradia: condicaoMoradia,
+        moradia: moradia.toLocaleUpperCase(),
+        condicoes_moradia: condicaoMoradia.toLocaleUpperCase(),
         valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
         valor_aluguel: valorAluguelCorreto,
-        categoria_veiculo: veiculoSelecionado,
-        condicao_veiculo: condicaoVeiculo,
+        categoria_veiculo: veiculoSelecionado.toLocaleUpperCase(),
+        condicao_veiculo: condicaoVeiculo.toLocaleUpperCase(),
         valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-        cidade: cidade,
-        estado: estado,
+        cidade: cidade.toLocaleUpperCase(),
+        estado: estado.toLocaleUpperCase(),
         pix: pix,
         id_consultor: consultorSelecionado,
         valor_solicitado: valorMonetarioCorreto
@@ -312,35 +311,35 @@ export function FomularioComponente() {
       const { data: clienteData, error: insertError } = await supabase
         .from("clientes")
         .insert({ 
-          nome_completo: nome.trim(),
-          email: email.trim(),
-          cpf: cpf.trim(),
+          nome_completo: nome.trim().toLocaleUpperCase(),
+          email: email.trim().toLocaleUpperCase(),
+          cpf: cpf.trim().toLocaleUpperCase(),
           rg: rg.trim(),
           data_emissao_rg: dataRg || null,
-          orgao_expedidor: orgaoExpedidor.trim(),
-          sexo,
-          estado_civil: estadoCivil,
-          nome_completo_companheiro: nomeCompanheiro.trim(),
+          orgao_expedidor: orgaoExpedidor.trim().toLocaleUpperCase(),
+          sexo: sexo.toLocaleUpperCase(),
+          estado_civil: estadoCivil.toLocaleUpperCase(),
+          nome_completo_companheiro: nomeCompanheiro.trim().toLocaleUpperCase(),
           cpf_companheiro: cpfCompanheiro.trim(),
           whatsapp_companheiro: whatsappCompanheiro,
           data_nascimento: dataNascimento,
           whatsapp,
           telefone_reserva: telefoneReserva,
-          nome_referencia: nomeReferencia,
-          telefone_referencia: telefoneReferencia,
+          nome_referencia: nomeReferencia.toLocaleUpperCase(),
+          telefone_referencia: telefoneReferencia.toLocaleUpperCase(),
           cep,
-          bairro: bairro.trim(),
-          rua: rua.trim(),
+          bairro: bairro.trim().toLocaleUpperCase(),
+          rua: rua.trim().toLocaleUpperCase(),
           numero_casa: Ncasa.trim(),
-          moradia,
-          condicoes_moradia: condicaoMoradia,
+          moradia: moradia.toLocaleUpperCase(),
+          condicoes_moradia: condicaoMoradia.toLocaleUpperCase(),
           valor_financiamento_moradia: valorFinanciamentoMoradiaCorreto,
           valor_aluguel: valorAluguelCorreto,
-          categoria_veiculo: veiculoSelecionado,
-          condicao_veiculo: condicaoVeiculo,
+          categoria_veiculo: veiculoSelecionado.toLocaleUpperCase(),
+          condicao_veiculo: condicaoVeiculo.toLocaleUpperCase(),
           valor_financiamento_veiculo: valorFinanciamentoVeiculoCoreto,
-          estado,
-          cidade,
+          estado: estado.toLocaleUpperCase(),
+          cidade: cidade.toLocaleUpperCase(),
           pix: pix.trim(),
           id_consultor: consultorSelecionado,
           valor_solicitado: valorMonetarioCorreto
@@ -519,6 +518,18 @@ export function FomularioComponente() {
     { label: "Consórcio", value: "Consórcio" },
   ];
 
+  const tipoReferencia = [
+    { label: "Pai", value: "Pai" },
+    { label: "Mãe", value: "Mãe" },
+    { label: "Irmão / Irmã", value: "Irmão / Irmã" },
+    { label: "Filho / Filha", value: "Filho / Filha" },
+    { label: "Esposo / Esposa", value: "Esposo / Esposa" },
+    { label: "Companheiro(a)", value: "Companheiro(a)" },
+    { label: "Amigo / Amiga", value: "Amigo / Amiga" },
+    { label: "Colega de trabalho", value: "Colega de trabalho" },
+    { label: "Outro parente", value: "Outro parente" }
+  ]
+
   return(
     <form className="bg-white w-80 sm:w-full rounded-3xl pb-6 px-1 md:w-full" onSubmit={enviarFormulario}>
 
@@ -613,6 +624,29 @@ export function FomularioComponente() {
 
         <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
+          <Label> Data Nascimento </Label>
+          <InputAlterar 
+            type="date"
+            value={dataNascimento}
+            onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Whatsapp </Label>
+          <Input 
+            type="number"
+            value={whatsapp}
+            onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
+            maxLength={13}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
           <Label> Estado Civil </Label>
           <Select 
             value={estadoCivil}
@@ -655,7 +689,7 @@ export function FomularioComponente() {
         {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
           <div className="mx-2 mt-[-8px] md:mx-0 md:mt-0">
 
-            <Label> Celular do Companheiro(a) </Label>
+            <Label> Whatsapp do Companheiro(a) </Label>
             <Input 
               type="number"
               value={whatsappCompanheiro}
@@ -666,44 +700,9 @@ export function FomularioComponente() {
           </div>
         )}
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
-          
-          <Label> Data Nascimento </Label>
-          <InputAlterar 
-            type="date"
-            value={dataNascimento}
-            onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
-          />
-          
-        </div>
-
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
-          
-          <Label> Whatsapp </Label>
-          <Input 
-            type="number"
-            value={whatsapp}
-            onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
-            maxLength={13}
-          />
-          
-        </div>
-
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
-          
-          <Label> Telefone Reserva </Label>
-          <Input 
-            type="number"
-            value={telefoneReserva}
-            onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
-            maxLength={13}
-          />
-          
-        </div>
-
         <div className="mx-2 mt-[-12px] md:mx-0 md:mt-0">
 
-          <Label> Nome de referência </Label>
+          <Label> Nome de referência pessoal </Label>
           <Input 
             type="text"
             value={nomeReferencia}
@@ -725,6 +724,18 @@ export function FomularioComponente() {
           
         </div>
 
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          
+          <Label> Tipo de referência </Label>
+          <Select 
+            value={tipoDeReferencia}
+            onChange={setTipoDeReferencia} 
+            placeholder="Selecionar..."
+            options={tipoReferencia}
+          />
+          
+        </div>
+
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
           <Label> CEP </Label>
@@ -742,22 +753,22 @@ export function FomularioComponente() {
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
-          <Label> Bairro </Label>
+          <Label> Rua </Label>
           <Input 
             type="text"
-            value={bairro}
-            onChange={ (e) => setBairro(e.target.value)}
+            value={rua}
+            onChange={ (e) => setRua(e.target.value)}
           />
           
         </div>
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
-          <Label> Rua </Label>
+          <Label> Bairro </Label>
           <Input 
             type="text"
-            value={rua}
-            onChange={ (e) => setRua(e.target.value)}
+            value={bairro}
+            onChange={ (e) => setBairro(e.target.value)}
           />
           
         </div>
