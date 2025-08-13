@@ -6,6 +6,7 @@ import FormasDePagamento from "../formasDePagamento";
 import Juros from "../juros";
 import JurosVencimento from "../jurosVencimento";
 import SaldoCaixa from "../saldoCaixa";
+import VerificarVencimento from "../sistemaVencimento";
 
 export default function PaginaInicial() {
 
@@ -26,6 +27,10 @@ export default function PaginaInicial() {
 
       {grupo === "Administrador" && (
         <SaldoCaixa />
+      )}
+
+      {grupo === "Administrador" && (
+        <VerificarVencimento />
       )}
 
     </div>

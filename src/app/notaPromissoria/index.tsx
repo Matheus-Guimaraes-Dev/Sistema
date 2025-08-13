@@ -42,8 +42,6 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
 
   function numeroPorExtenso(valor: number): string {
 
-    console.log(informacoes);
-
     if (valor === 0) return "zero real";
 
     const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
