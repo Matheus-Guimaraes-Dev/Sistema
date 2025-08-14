@@ -50,22 +50,6 @@ export function FormularioConsultor() {
     e.preventDefault()
 
     if (!nome.trim()) return toast.error("Digite o seu nome!");
-    if (!email.trim()) return toast.error("Digite o seu email!");
-    if (!cpf.trim()) return toast.error("Digite o seu cpf!");
-    if (!rg.trim()) return toast.error("Digite o seu rg!");
-    if (!dataRg.trim()) return toast.error("Insira a data do Rg!");
-    if (!orgaoExpedidor.trim()) return toast.error("Digite o seu Orgão Expedidor!");
-    if (!sexo.trim()) return toast.error("Selecione o seu sexo!");
-    if (!estadoCivil.trim()) return toast.error("Selecione seu estado civil!");
-    if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
-    if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
-    if (!cep.trim()) return toast.error("Digite o seu cep!");
-    if (!bairro.trim()) return toast.error("Digite o seu bairro!");
-    if (!rua.trim()) return toast.error("Digite a sua rua!");
-    if (!Ncasa.trim()) return toast.error("Digite o número da casa!");
-    if (!moradia.trim()) return toast.error("Selecione a sua moradia!");
-    if (!estado.trim()) return toast.error("Selecione o seu estado!");
-    if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
     if (!comissaoDiario.trim()) return toast.error("Digite o valor da Comissão Diário!");
     if (!comissaoSemanal.trim()) return toast.error("Digite o valor da Comissão Semanal!");
     if (!comissaoMensal.trim()) return toast.error("Digite o valor da Comissão Mensal!");
@@ -79,11 +63,11 @@ export function FormularioConsultor() {
         email: email.trim(),
         cpf: cpf.trim(),
         rg: rg.trim(),
-        data_emissao_rg: dataRg,
+        data_emissao_rg: dataRg || "01/01/1000",
         orgao_expedidor: orgaoExpedidor.trim(),
         sexo,
         estado_civil: estadoCivil,
-        data_nascimento: dataNascimento,
+        data_nascimento: dataNascimento || "01/01/1000",
         whatsapp,
         telefone_reserva: telefoneReserva,
         cep,

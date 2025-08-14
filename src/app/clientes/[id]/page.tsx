@@ -86,10 +86,11 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>CPF do Companheiro(a):</strong> {cliente.cpf_companheiro || "Não possui"} </p>
             <p><strong>Whatsapp do Companheiro(a):</strong> {cliente.whatsapp_companheiro || "Não possui"} </p>
             <p><strong>Nome de Referência):</strong> {cliente.nome_referencia || "Não possui"} </p>
+            <p><strong>Contato de Referência:</strong> {cliente.telefone_referencia || "Não possui"} </p>
+            <p><strong>Tipo de Refência:</strong> {cliente.tipo_referencia || "Não possui"} </p>
           </div>
 
           <div>
-            <p><strong>Contato de Referência:</strong> {cliente.telefone_referencia || "Não possui"} </p>
             <p><strong>Data de Nascimento:</strong> {formatarData(cliente.data_nascimento) || ""} </p>
             <p><strong>Email:</strong> {cliente.email || ""} </p>
             <p><strong>WhatsApp:</strong> {cliente.whatsapp || ""} </p>
@@ -114,17 +115,19 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Veículo:</strong> {cliente.categoria_veiculo || "Não possui"}</p>
             <p><strong>Condições do Veículo:</strong> {cliente.condicao_veiculo || "Não possui"}</p>
             <p><strong>Valor do Financiamento/Consórcio do Veículo:</strong> {formatarDinheiro(cliente.valor_financiamento_veiculo) || "Não possui"}</p>
-
-
+            <p><strong>Nome da Empresa:</strong> {cliente.nome_empresa}</p>
+            <p><strong>Endereço da Empresa:</strong> {cliente.endereco_empresa}</p>
+            <p><strong>Contato do RH da Empresa:</strong> {cliente.numero_rh_empresa}</p>
           </div>
 
           <div>
             <p><strong>CEP:</strong> {cliente.cep}</p>
-            <p><strong>Bairro:</strong> {cliente.bairro}</p>
             <p><strong>Rua:</strong> {cliente.rua}</p>
+            <p><strong>Bairro:</strong> {cliente.bairro}</p>
             <p><strong>Número:</strong> {cliente.numero_casa}</p>
-            <p><strong>Cidade:</strong> {cliente.cidade}</p>
             <p><strong>Estado:</strong> {cliente.estado}</p>
+            <p><strong>Cidade:</strong> {cliente.cidade}</p>
+
           </div>
 
         </section>

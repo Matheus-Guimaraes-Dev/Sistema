@@ -58,6 +58,10 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [cpfCompanheiro, setCpfCompanheiro] = useState("");
   const [whatsappCompanheiro, setWhatsappCompanheiro] = useState("");
   const [pix, setPix] = useState("");
+  const [tipoDeReferencia, setTipoDeReferencia] = useState("");
+  const [nomeDaEmpresa, setNomeDaEmpresa] = useState("");
+  const [enderecoDaEmpresa, setEnderecoDaEmpresa] = useState("");
+  const [contatoDaEmpresa, setContatoDaEmpresa] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [observacao, setObservacao] = useState("");
   const [loading, setLoading] = useState(false);
@@ -134,6 +138,10 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setCpfCompanheiro(informacoesCliente.cpf_companheiro || ""),
       setWhatsappCompanheiro(informacoesCliente.whatsapp_companheiro || ""),
       setPix(informacoesCliente.pix || "");
+      setTipoDeReferencia(informacoesCliente.tipo_referencia || ""),
+      setNomeDaEmpresa(informacoesCliente.nome_empresa || ""),
+      setEnderecoDaEmpresa(informacoesCliente.endereco_empresa || ""),
+      setContatoDaEmpresa(informacoesCliente.numero_rh_empresa || ""),
       setConsultorSelecionado(informacoesCliente.consultores?.id.toString() || "")
       setValorSolicitado(Number(informacoesCliente.valor_solicitado || "").toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
       setObservacao(informacoesCliente.observacao || "")
@@ -175,6 +183,10 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       cidade: cidade,
       estado: estado,
       pix: pix,
+      tipo_referencia: tipoDeReferencia,
+      nome_empresa: nomeDaEmpresa.trim(),
+      endereco_empresa: enderecoDaEmpresa.trim(),
+      numero_rh_empresa: contatoDaEmpresa.trim(),
       id_consultor: consultorSelecionado || null,
       valor_solicitado: valorMonetarioCorreto,
       observacao: observacao,
@@ -269,51 +281,64 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   }
 
   const sexoOptions = [
-    { label: "Masculino", value: "Masculino" },
-    { label: "Feminino", value: "Feminino" }
-  ];
+  { label: "Masculino", value: "MASCULINO" },
+  { label: "Feminino", value: "FEMININO" }
+];
 
-  const estadoCivilOptions = [
-    { label: "Solteiro(a)", value: "Solteiro(a)" },
-    { label: "Casado(a)", value: "Casado(a)" },
-    { label: "Companheiro(a)", value: "Companheiro(a)"},
-    { label: "Seperado(a)", value: "Separado(a)" },
-    { label: "Divorciado(a)", value: "Divorciado(a)" },
-    { label: "Viúvo(a)", value: "Viuvo(a)" },
-  ];
+const estadoCivilOptions = [
+  { label: "Solteiro(a)", value: "SOLTEIRO(A)" },
+  { label: "Casado(a)", value: "CASADO(A)" },
+  { label: "Companheiro(a)", value: "COMPANHEIRO(A)" },
+  { label: "Seperado(a)", value: "SEPARADO(A)" },
+  { label: "Divorciado(a)", value: "DIVORCIADO(A)" },
+  { label: "Viúvo(a)", value: "VIUVO(A)" },
+];
 
-  const moradiaOptions = [
-    { label: "Casa", value: "Casa" },
-    { label: "Apartamento", value: "Apartamento" },
-    { label: "Aluguel", value: "Aluguel" },
-    { label: "Área rural", value: "Area rural" },
-  ];
+const moradiaOptions = [
+  { label: "Casa", value: "CASA" },
+  { label: "Apartamento", value: "APARTAMENTO" },
+  { label: "Aluguel", value: "ALUGUEL" },
+  { label: "Área rural", value: "AREA RURAL" },
+];
 
-  const condicaoMoradiaOptions = [
-    { label: "Próprio Quitado", value: "Próprio Quitado" },
-    { label: "Própria Financiada", value: "Própria Financiada" },
-    { label: "Alugada", value: "Alugada" },
-    { label: "Imóvel Cedido", value: "Imóvel Cedido"}
-  ];
+const condicaoMoradiaOptions = [
+  { label: "Próprio Quitado", value: "PRÓPRIO QUITADO" },
+  { label: "Própria Financiada", value: "PRÓPRIA FINANCIADA" },
+  { label: "Alugada", value: "ALUGADA" },
+  { label: "Imóvel Cedido", value: "IMÓVEL CEDIDO" }
+];
 
-  const verificarVeiculoOptions = [
-    { label: "Sim", value: "Sim" },
-    { label: "Não", value: "Não" },
-  ];
+const verificarVeiculoOptions = [
+  { label: "Sim", value: "SIM" },
+  { label: "Não", value: "NÃO" },
+];
 
-  const veiculosOptions = [
-    { label: "Carro", value: "Carro" },
-    { label: "Moto", value: "Moto" },
-    { label: "Caminhão", value: "Caminhão" },
-    { label: "Van", value: "Van" },
-    { label: "Ônibus", value: "Ônibus" },
-  ];
+const veiculosOptions = [
+  { label: "Carro", value: "CARRO" },
+  { label: "Moto", value: "MOTO" },
+  { label: "Caminhão", value: "CAMINHÃO" },
+  { label: "Van", value: "VAN" },
+  { label: "Ônibus", value: "ÔNIBUS" },
+];
 
-  const condicaoVeiculoOptions = [
-    { label: "Quitado", value: "Quitado" },
-    { label: "Financiado", value: "Financiado" },
-    { label: "Consórcio", value: "Consórcio" },
-  ];
+const condicaoVeiculoOptions = [
+  { label: "Quitado", value: "QUITADO" },
+  { label: "Financiado", value: "FINANCIADO" },
+  { label: "Consórcio", value: "CONSÓRCIO" },
+];
+
+const tipoReferencia = [
+  { label: "Pai", value: "PAI" },
+  { label: "Mãe", value: "MÃE" },
+  { label: "Irmão / Irmã", value: "IRMÃO / IRMÃ" },
+  { label: "Filho / Filha", value: "FILHO / FILHA" },
+  { label: "Esposo / Esposa", value: "ESPOSO / ESPOSA" },
+  { label: "Companheiro(a)", value: "COMPANHEIRO(A)" },
+  { label: "Amigo / Amiga", value: "AMIGO / AMIGA" },
+  { label: "Colega de trabalho", value: "COLEGA DE TRABALHO" },
+  { label: "Outro parente", value: "OUTRO PARENTE" }
+];
+
 
   return(
     <div>
@@ -412,6 +437,25 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                   options={sexoOptions}
                 />
             </div>
+
+            <div>
+              <Label> Data Nascimento </Label>
+              <InputAlterar 
+                type="date"
+                value={dataNascimento}
+                onChange={ (e) => setDataNascimento(e.target.value)}
+              />
+            </div>
+      
+            <div>
+              <Label> Whatsapp </Label>
+              <InputAlterar 
+                type="number"
+                value={whatsapp}
+                onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
+                maxLength={13}
+              />
+            </div>
       
             <div>
               <Label> Estado Civil </Label>
@@ -449,7 +493,7 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
             {(estadoCivil === "Casado(a)" || estadoCivil === "Companheiro(a)") && (
             <div>
-              <Label> Celular do Companheiro(a) </Label>
+              <Label> Whatsapp do Companheiro(a) </Label>
               <InputAlterar 
                 type="number"
                 value={whatsappCompanheiro}
@@ -458,38 +502,9 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
               />
             </div>
             )}
-      
-            <div>
-              <Label> Data Nascimento </Label>
-              <InputAlterar 
-                type="date"
-                value={dataNascimento}
-                onChange={ (e) => setDataNascimento(e.target.value)}
-              />
-            </div>
-      
-            <div>
-              <Label> Whatsapp </Label>
-              <InputAlterar 
-                type="number"
-                value={whatsapp}
-                onChange={(e) => limiteWhatsapp(e, setWhatsapp)}
-                maxLength={13}
-              />
-            </div>
-      
-            <div>
-              <Label> Telefone Reserva </Label>
-              <InputAlterar 
-                type="number"
-                value={telefoneReserva}
-                onChange={(e) => limiteTelefoneReserva(e, setTelefoneReserva)}
-                maxLength={13}
-              />
-            </div>
 
             <div>
-              <Label> Nome Referência </Label>
+              <Label> Nome Referência pessoal </Label>
               <InputAlterar 
                 type="text"
                 value={nomeReferencia}
@@ -498,12 +513,22 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             </div>
 
             <div>
-              <Label> Contato Referência </Label>
+              <Label> Whatsapp de Referência </Label>
               <InputAlterar 
                 type="number"
                 value={telefoneReferencia}
                 onChange={(e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
                 maxLength={13}
+              />
+            </div>
+
+            <div>
+              <Label> Tipo de referência </Label>
+              <Select 
+                value={tipoDeReferencia}
+                onChange={setTipoDeReferencia}
+                placeholder="Selecionar..."
+                options={tipoReferencia}
               />
             </div>
       
@@ -521,20 +546,20 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
             </div>
       
             <div>
-              <Label> Bairro </Label>
-              <InputAlterar 
-                type="text"
-                value={bairro}
-                onChange={ (e) => setBairro(e.target.value)}
-              />
-            </div>
-      
-            <div>
               <Label> Rua </Label>
               <InputAlterar 
                 type="text"
                 value={rua}
                 onChange={ (e) => setRua(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label> Bairro </Label>
+              <InputAlterar 
+                type="text"
+                value={bairro}
+                onChange={ (e) => setBairro(e.target.value)}
               />
             </div>
       
@@ -545,6 +570,37 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
                 value={Ncasa}
                 onChange={ (e) => setNcasa(e.target.value)}
               />
+            </div>
+
+            <div>
+              <Label> Estado </Label>
+              <select
+                value={estado}
+                onChange={(e) => {
+                  setEstado(e.target.value);
+                  setCidade(""); 
+                }}
+                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value="" disabled>Selecionar Estado...</option>
+                {estados.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </div>
+      
+            <div>
+              <Label> Cidade </Label>
+              <select
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value="" disabled>Selecionar Cidade...</option>
+                {cidades.map((cidade) => (
+                  <option key={cidade} value={cidade}>{cidade}</option>
+                ))}
+              </select>
             </div>
       
             <div>
@@ -656,38 +712,35 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
     
               </div>
             )}
-          
+
             <div>
-              <Label> Estado </Label>
-              <select
-                value={estado}
-                onChange={(e) => {
-                  setEstado(e.target.value);
-                  setCidade(""); 
-                }}
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-              >
-                <option value="" disabled>Selecionar Estado...</option>
-                {estados.map((uf) => (
-                  <option key={uf} value={uf}>{uf}</option>
-                ))}
-              </select>
+              <Label> Nome da Empresa que Trabalha </Label>
+              <InputAlterar 
+                type="text"
+                value={nomeDaEmpresa}
+                onChange={ (e) => setNomeDaEmpresa(e.target.value)}
+              />
             </div>
       
             <div>
-              <Label> Cidade </Label>
-              <select
-                value={cidade}
-                onChange={(e) => setCidade(e.target.value)}
-                className="w-full h-8 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-              >
-                <option value="" disabled>Selecionar Cidade...</option>
-                {cidades.map((cidade) => (
-                  <option key={cidade} value={cidade}>{cidade}</option>
-                ))}
-              </select>
+              <Label> Endereço da Empresa </Label>
+              <InputAlterar 
+                type="text"
+                value={enderecoDaEmpresa}
+                onChange={ (e) => setEnderecoDaEmpresa(e.target.value)}
+              />
             </div>
-      
+
+            <div>
+              <Label> Número do RH da Empresa </Label>
+              <InputAlterar 
+                type="number"
+                value={contatoDaEmpresa}
+                onChange={(e) => limiteTelefoneReserva(e, setContatoDaEmpresa)}
+                maxLength={13}
+              />
+            </div>
+
             <div>
               <Label> Chave Pix </Label>
               <InputAlterar 

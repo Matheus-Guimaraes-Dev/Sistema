@@ -55,6 +55,10 @@ export function Formulario() {
   const [whatsappCompanheiro, setWhatsappCompanheiro] = useState("");
   const [pix, setPix] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [tipoDeReferencia, setTipoDeReferencia] = useState("");
+  const [nomeDaEmpresa, setNomeDaEmpresa] = useState("");
+  const [enderecoDaEmpresa, setEnderecoDaEmpresa] = useState("");
+  const [contatoDaEmpresa, setContatoDaEmpresa] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [comprovanteRenda, setComprovanteRenda] = useState<File | null>(null);
   const [comprovanteEndereco, setComprovanteEndereco] = useState<File | null>(null);
@@ -167,6 +171,10 @@ export function Formulario() {
         cidade: cidade.toLocaleUpperCase(),
         estado: estado.toLocaleUpperCase(),
         pix: pix,
+        tipo_referencia: tipoDeReferencia.toLocaleUpperCase(),
+        nome_empresa: nomeDaEmpresa.trim().toLocaleUpperCase(),
+        endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
+        numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
         id_consultor: consultorSelecionado || null,
         valor_solicitado: valorMonetarioCorreto
       }
@@ -215,6 +223,10 @@ export function Formulario() {
         setValorSolicitado("");
         setConsultorSelecionado("");
         setObservacao("");
+        setNomeDaEmpresa("");
+        setEnderecoDaEmpresa("");
+        setContatoDaEmpresa("");
+        setTipoDeReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -332,6 +344,10 @@ export function Formulario() {
           cidade: cidade.toLocaleUpperCase(),
           pix: pix.trim(),
           observacao: observacao,
+          tipo_referencia: tipoDeReferencia.toLocaleUpperCase(),
+          nome_empresa: nomeDaEmpresa.trim().toLocaleUpperCase(),
+          endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
+          numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
           id_consultor: consultorSelecionado || null,
           valor_solicitado: valorMonetarioCorreto
         })
@@ -377,6 +393,10 @@ export function Formulario() {
         setValorSolicitado("");
         setConsultorSelecionado("");
         setObservacao("");
+        setNomeDaEmpresa("");
+        setEnderecoDaEmpresa("");
+        setContatoDaEmpresa("");
+        setTipoDeReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -531,6 +551,18 @@ export function Formulario() {
     { label: "Consórcio", value: "Consórcio" },
   ];
 
+  const tipoReferencia = [
+    { label: "Pai", value: "Pai" },
+    { label: "Mãe", value: "Mãe" },
+    { label: "Irmão / Irmã", value: "Irmão / Irmã" },
+    { label: "Filho / Filha", value: "Filho / Filha" },
+    { label: "Esposo / Esposa", value: "Esposo / Esposa" },
+    { label: "Companheiro(a)", value: "Companheiro(a)" },
+    { label: "Amigo / Amiga", value: "Amigo / Amiga" },
+    { label: "Colega de trabalho", value: "Colega de trabalho" },
+    { label: "Outro parente", value: "Outro parente" }
+  ]
+
   return(
     <form className="grid md:grid-cols-3 bg-white shadow rounded-xl p-6 my-5 gap-2" onSubmit={enviarFormulario}>
 
@@ -604,6 +636,25 @@ export function Formulario() {
       </div>
 
       <div>
+        <label> Data Nascimento </label>
+        <InputAlterar 
+          type="date"
+          value={dataNascimento}
+          onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
+        />
+      </div>
+
+      <div>
+        <label className="text-red-600"> Whatsapp </label>
+        <InputAlterar 
+          type="number"
+          value={whatsapp}
+          onChange={ (e) => limiteWhatsapp(e, setWhatsapp)}
+          maxLength={13}
+        />
+      </div>
+
+      <div>
         <Label> Estado Civil </Label>
         <Select 
           value={estadoCivil}
@@ -651,36 +702,7 @@ export function Formulario() {
       )}
 
       <div>
-        <label> Data Nascimento </label>
-        <InputAlterar 
-          type="date"
-          value={dataNascimento}
-          onChange={(e) => limiteDataNascimento(e, setDataNascimento)}
-        />
-      </div>
-
-      <div>
-        <label className="text-red-600"> Whatsapp </label>
-        <InputAlterar 
-          type="number"
-          value={whatsapp}
-          onChange={ (e) => limiteWhatsapp(e, setWhatsapp)}
-          maxLength={13}
-        />
-      </div>
-
-      <div>
-        <Label> Telefone Reserva </Label>
-        <InputAlterar 
-          type="number"
-          value={telefoneReserva}
-          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReserva)}
-          maxLength={13}
-        />
-      </div>
-
-      <div>
-        <Label> Nome Referência </Label>
+        <Label> Nome de referência pessoal </Label>
         <InputAlterar 
           type="text"
           value={nomeReferencia}
@@ -690,12 +712,22 @@ export function Formulario() {
       </div>
 
       <div>
-        <Label> Contato de Referência </Label>
+        <Label> Whatsapp de Referência </Label>
         <InputAlterar 
           type="number"
           value={telefoneReferencia}
           onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
           maxLength={13}
+        />
+      </div>
+
+      <div>
+        <Label> Tipo de referência </Label>
+        <Select 
+          value={tipoDeReferencia}
+          onChange={setTipoDeReferencia} 
+          placeholder="Selecionar..."
+          options={tipoReferencia}
         />
       </div>
 
@@ -713,20 +745,20 @@ export function Formulario() {
       </div>
 
       <div>
-        <Label> Bairro </Label>
-        <InputAlterar 
-          type="text"
-          value={bairro}
-          onChange={ (e) => setBairro(e.target.value)}
-        />
-      </div>
-
-      <div>
         <Label> Rua </Label>
         <InputAlterar 
           type="text"
           value={rua}
           onChange={ (e) => setRua(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <Label> Bairro </Label>
+        <InputAlterar 
+          type="text"
+          value={bairro}
+          onChange={ (e) => setBairro(e.target.value)}
         />
       </div>
 
@@ -737,6 +769,37 @@ export function Formulario() {
           value={Ncasa}
           onChange={ (e) => setNcasa(e.target.value)}
         />
+      </div>
+
+      <div>
+        <Label> Estado </Label>
+        <select
+          value={estado}
+          onChange={(e) => {
+            setEstado(e.target.value);
+            setCidade(""); 
+          }}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Estado...</option>
+          {estados.map((uf) => (
+            <option key={uf} value={uf}>{uf}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <Label> Cidade </Label>
+        <select
+          value={cidade}
+          onChange={(e) => setCidade(e.target.value)}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidades.map((cidade) => (
+            <option key={cidade} value={cidade}>{cidade}</option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -848,36 +911,33 @@ export function Formulario() {
 
         </div>
       )}
-    
+
       <div>
-        <Label> Estado </Label>
-        <select
-          value={estado}
-          onChange={(e) => {
-            setEstado(e.target.value);
-            setCidade(""); 
-          }}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Estado...</option>
-          {estados.map((uf) => (
-            <option key={uf} value={uf}>{uf}</option>
-          ))}
-        </select>
+        <Label> Nome da Empresa que Trabalha </Label>
+        <InputAlterar 
+          type="text"
+          value={nomeDaEmpresa}
+          onChange={ (e) => setNomeDaEmpresa(e.target.value)}
+        />
       </div>
 
       <div>
-        <Label> Cidade </Label>
-        <select
-          value={cidade}
-          onChange={(e) => setCidade(e.target.value)}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Cidade...</option>
-          {cidades.map((cidade) => (
-            <option key={cidade} value={cidade}>{cidade}</option>
-          ))}
-        </select>
+        <Label> Endereço da Empresa </Label>
+        <InputAlterar 
+          type="text"
+          value={enderecoDaEmpresa}
+          onChange={ (e) => setEnderecoDaEmpresa(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <Label> Número do RH da Empresa </Label>
+        <InputAlterar 
+          type="number"
+          value={contatoDaEmpresa}
+          onChange={ (e) => limiteTelefoneReserva(e, setContatoDaEmpresa)}
+          maxLength={13}
+        />
       </div>
 
       <div>

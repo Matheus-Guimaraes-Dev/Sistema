@@ -58,6 +58,9 @@ export function FomularioComponente() {
   const [pix, setPix] = useState("");
   const [valorSolicitado, setValorSolicitado] = useState("");
   const [tipoDeReferencia, setTipoDeReferencia] = useState("");
+  const [nomeDaEmpresa, setNomeDaEmpresa] = useState("");
+  const [enderecoDaEmpresa, setEnderecoDaEmpresa] = useState("");
+  const [contatoDaEmpresa, setContatoDaEmpresa] = useState("");
   const [comprovanteRenda, setComprovanteRenda] = useState<File | null>(null);
   const [comprovanteEndereco, setComprovanteEndereco] = useState<File | null>(null);
   const [documentoFrente, setDocumentoFrente] = useState<File | null>(null);
@@ -123,7 +126,6 @@ export function FomularioComponente() {
     if (!dataNascimento.trim()) return toast.error("Insira a data de nascimento!");
     if (!whatsapp.trim()) return toast.error("Digite o seu whatsapp!");
     if (!nomeReferencia.trim()) return toast.error("Digite o nome de referência!");
-    if (!telefoneReferencia.trim()) return toast.error("Digite contato de referência!");
     if (!cep.trim()) return toast.error("Digite o seu cep!");
     if (!bairro.trim()) return toast.error("Digite o seu bairro!");
     if (!rua.trim()) return toast.error("Digite a sua rua!");
@@ -138,6 +140,7 @@ export function FomularioComponente() {
     if (condicaoVeiculo === "Financiado" && !valorFinanciamentoVeiculo) return toast.error("Digite o valor do financimento/consórcio do veículo");
     if (!estado.trim()) return toast.error("Selecione o seu estado!");
     if (!cidade.trim()) return toast.error("Selecione a sua cidade!");
+    if (!tipoDeReferencia.trim()) return toast.error("Selecione o tipo de referência!");
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
@@ -195,6 +198,10 @@ export function FomularioComponente() {
         cidade: cidade.toLocaleUpperCase(),
         estado: estado.toLocaleUpperCase(),
         pix: pix,
+        tipo_referencia: tipoDeReferencia.toLocaleUpperCase(),
+        nome_empresa: nomeDaEmpresa.trim().toLocaleUpperCase(),
+        endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
+        numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
         id_consultor: consultorSelecionado,
         valor_solicitado: valorMonetarioCorreto
       }
@@ -293,6 +300,10 @@ export function FomularioComponente() {
       setCondicaoVeiculo("");
       setValorFinanciamentoVeiculo("");
       setValorSolicitado("");
+      setNomeDaEmpresa("");
+      setEnderecoDaEmpresa("");
+      setContatoDaEmpresa("");
+      setTipoDeReferencia("");
       setComprovanteRenda(null);
       setComprovanteEndereco(null);
       setDocumentoFrente(null);
@@ -341,6 +352,10 @@ export function FomularioComponente() {
           estado: estado.toLocaleUpperCase(),
           cidade: cidade.toLocaleUpperCase(),
           pix: pix.trim(),
+          tipo_referencia: tipoDeReferencia.toLocaleUpperCase(),
+          nome_empresa: nomeDaEmpresa.trim().toLocaleUpperCase(),
+          endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
+          numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
           id_consultor: consultorSelecionado,
           valor_solicitado: valorMonetarioCorreto
         })
@@ -435,6 +450,10 @@ export function FomularioComponente() {
       setCondicaoVeiculo("");
       setValorFinanciamentoVeiculo("");
       setValorSolicitado("");
+      setNomeDaEmpresa("");
+      setEnderecoDaEmpresa("");
+      setContatoDaEmpresa("");
+      setTipoDeReferencia("");
       setComprovanteRenda(null);
       setComprovanteEndereco(null);
       setDocumentoFrente(null);
@@ -714,7 +733,7 @@ export function FomularioComponente() {
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
-          <Label> Contato de referência </Label>
+          <Label> Whatsapp de referência </Label>
           <Input 
             type="number"
             value={telefoneReferencia}
@@ -782,6 +801,43 @@ export function FomularioComponente() {
             onChange={ (e) => setNcasa(e.target.value)}
           />
           
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Estado </Label>
+
+          <select
+          value={estado}
+          onChange={(e) => {
+            setEstado(e.target.value);
+            setCidade(""); 
+          }}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Estado...</option>
+          {estados.map((uf) => (
+            <option key={uf} value={uf}>{uf}</option>
+          ))}
+        </select>
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Cidade </Label>
+
+          <select
+          value={cidade}
+          onChange={(e) => setCidade(e.target.value)}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidades.map((cidade) => (
+            <option key={cidade} value={cidade}>{cidade}</option>
+          ))}
+        </select>
+
         </div>
 
         <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
@@ -895,42 +951,39 @@ export function FomularioComponente() {
 
           </div>
         )}
-      
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
-          <Label> Estado </Label>
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
 
-          <select
-          value={estado}
-          onChange={(e) => {
-            setEstado(e.target.value);
-            setCidade(""); 
-          }}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Estado...</option>
-          {estados.map((uf) => (
-            <option key={uf} value={uf}>{uf}</option>
-          ))}
-        </select>
-
+          <Label> Nome da Empresa que Trabalha </Label>
+          <Input 
+            type="text"
+            value={nomeDaEmpresa}
+            onChange={ (e) => setNomeDaEmpresa(e.target.value)}
+          />
+          
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
 
-          <Label> Cidade </Label>
+          <Label> Endereço da Empresa </Label>
+          <Input 
+            type="text"
+            value={enderecoDaEmpresa}
+            onChange={ (e) => setEnderecoDaEmpresa(e.target.value)}
+          />
+          
+        </div>
 
-          <select
-          value={cidade}
-          onChange={(e) => setCidade(e.target.value)}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Cidade...</option>
-          {cidades.map((cidade) => (
-            <option key={cidade} value={cidade}>{cidade}</option>
-          ))}
-        </select>
-
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          
+          <Label> Número do RH da Empresa </Label>
+          <Input 
+            type="number"
+            value={contatoDaEmpresa}
+            onChange={ (e) => limiteTelefoneReserva(e, setContatoDaEmpresa)}
+            maxLength={13}
+          />
+          
         </div>
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
