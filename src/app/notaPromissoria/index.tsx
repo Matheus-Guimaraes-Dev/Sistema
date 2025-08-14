@@ -40,8 +40,6 @@ interface InformacoesProps {
 
 export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
 
-  const teste = "123"
-
   function numeroPorExtenso(valor: number): string {
 
     if (valor === 0) return "zero real";
