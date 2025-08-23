@@ -225,139 +225,138 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     return `${dia}/${mes}/${ano}`;
   }
 
-const generatePdf = async () => {
-  const doc = new jsPDF("portrait", "mm", "a4");
+  const generatePdf = async () => {
+    
+    const doc = new jsPDF("portrait", "mm", "a4");
 
-  // ==== layout fixo do seu modelo ====
-  doc.setFillColor(255, 245, 120);
-  doc.setLineWidth(0.5);
-  doc.rect(5, 5, 200, 90, "FD");
+    doc.setFillColor(255, 245, 120);
+    doc.setLineWidth(0.5);
+    doc.rect(5, 5, 200, 90, "FD");
 
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("Nº", 45, 15);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.4);
-  doc.rect(51, 11, 25, 5, "FD");
-  doc.setFontSize(10);
-  const IdPromissoria = informacoes.id.toString();
-  doc.text(IdPromissoria, 52, 14.8);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Nº", 45, 15);
+    doc.setFillColor(255, 255, 255);
+    doc.setLineWidth(0.4);
+    doc.rect(51, 11, 25, 5, "FD");
+    doc.setFontSize(10);
+    const IdPromissoria = informacoes.id.toString();
+    doc.text(IdPromissoria, 52, 14.8);
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("AVALISTA(S)", 11, 92, { angle: 90 });
-  doc.text("Nome: .........................................................................", 18, 92, { angle: 90 });
-  doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92, { angle: 90 });
-  doc.text("Nome: .........................................................................", 31, 92, { angle: 90 });
-  doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92, { angle: 90 });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("AVALISTA(S)", 11, 92, { angle: 90 });
+    doc.text("Nome: .........................................................................", 18, 92, { angle: 90 });
+    doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92, { angle: 90 });
+    doc.text("Nome: .........................................................................", 31, 92, { angle: 90 });
+    doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92, { angle: 90 });
 
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("R$", 153, 15);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.4);
-  doc.rect(160, 11, 42, 5, "FD");
-  doc.setFontSize(10);
-  const valorFinanceiro = formatarMoedaBR(informacoes.valor_receber);
-  doc.text(valorFinanceiro, 161, 14.8);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("R$", 153, 15);
+    doc.setFillColor(255, 255, 255);
+    doc.setLineWidth(0.4);
+    doc.rect(160, 11, 42, 5, "FD");
+    doc.setFontSize(10);
+    const valorFinanceiro = formatarMoedaBR(informacoes.valor_receber);
+    doc.text(valorFinanceiro, 161, 14.8);
 
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  const dataVencimento = capitalizarData(informacoes.data_vencimento);
-  doc.text("Vencimento:", 133, 9);
-  doc.text(dataVencimento, 153, 9);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const dataVencimento = capitalizarData(informacoes.data_vencimento);
+    doc.text("Vencimento:", 133, 9);
+    doc.text(dataVencimento, 153, 9);
 
-  const dataEmExtenso = dataPorExtenso(informacoes.data_vencimento);
-  doc.text(`No dia ${dataEmExtenso}`, 45, 25);
-  doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
-  doc.setFont("helvetica", "bold");
-  doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
-  doc.setFont("helvetica", "normal");
-  doc.text("OU À SUA ORDEM,", 45, 44);
-  doc.text("A QUANTIA DE", 45, 48);
+    const dataEmExtenso = dataPorExtenso(informacoes.data_vencimento);
+    doc.text(`No dia ${dataEmExtenso}`, 45, 25);
+    doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
+    doc.setFont("helvetica", "bold");
+    doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
+    doc.setFont("helvetica", "normal");
+    doc.text("OU À SUA ORDEM,", 45, 44);
+    doc.text("A QUANTIA DE", 45, 48);
 
-  const xBox = 72;           // início do retângulo
-  const yBox = 41;           // topo do retângulo
-  const wBox = 130;          // largura do retângulo
-  const minBoxHeight = 10;   // altura mínima do retângulo (seu layout)
-  const xText = 73;          // X onde começa o texto
-  const yText = 44;          // baseline da 1ª linha
-  const margemDireita = 3;   // folga à direita (setinha/borda)
+    const xBox = 72;           // início do retângulo
+    const yBox = 41;           // topo do retângulo
+    const wBox = 130;          // largura do retângulo
+    const minBoxHeight = 10;   // altura mínima do retângulo (seu layout)
+    const xText = 73;          // X onde começa o texto
+    const yText = 44;          // baseline da 1ª linha
+    const margemDireita = 3;   // folga à direita (setinha/borda)
 
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
 
-  const larguraUtil = (xBox + wBox - margemDireita) - xText;
+    const larguraUtil = (xBox + wBox - margemDireita) - xText;
 
-  const valorExtenso = numeroPorExtenso(informacoes.valor_receber).toUpperCase();
-  const base = `${valorExtenso} EM MOEDA CORRENTE DESTE PAÍS`.trim();
+    const valorExtenso = numeroPorExtenso(informacoes.valor_receber).toUpperCase();
+    const base = `${valorExtenso} EM MOEDA CORRENTE DESTE PAÍS`.trim();
 
-  let linhas = doc.splitTextToSize(base, larguraUtil);
+    let linhas = doc.splitTextToSize(base, larguraUtil);
 
-  const pt2mm = 0.352777778;
-  const lineFactor = doc.getLineHeightFactor ? doc.getLineHeightFactor() : 1.15;
-  const lineHeightMm = doc.getFontSize() * lineFactor * pt2mm;
-  const paddingV = 2;
+    const pt2mm = 0.352777778;
+    const lineFactor = doc.getLineHeightFactor ? doc.getLineHeightFactor() : 1.15;
+    const lineHeightMm = doc.getFontSize() * lineFactor * pt2mm;
+    const paddingV = 2;
 
-  const hBox = Math.max(minBoxHeight, linhas.length * lineHeightMm + paddingV);
+    const hBox = Math.max(minBoxHeight, linhas.length * lineHeightMm + paddingV);
 
-  const linhasQueCabem = Math.ceil((hBox - paddingV) / lineHeightMm);
+    const linhasQueCabem = Math.ceil((hBox - paddingV) / lineHeightMm);
 
-  const wAst = doc.getTextWidth("*");
-  const qtdAstLinhaCheia = Math.floor(larguraUtil / wAst);
-  const linhasCompletas = [];
+    const wAst = doc.getTextWidth("*");
+    const qtdAstLinhaCheia = Math.floor(larguraUtil / wAst);
+    const linhasCompletas = [];
 
-  for (let i = 0; i < linhasQueCabem; i++) {
-    if (i < linhas.length) {
-      const t = linhas[i].trim();
-      const w = doc.getTextWidth(t);
-      const restante = Math.max(0, larguraUtil - w);
-      const qtdAst = Math.floor(restante / wAst);
-      linhasCompletas.push(t + "*".repeat(qtdAst));
-    } else {
-      linhasCompletas.push("*".repeat(qtdAstLinhaCheia));
+    for (let i = 0; i < linhasQueCabem; i++) {
+      if (i < linhas.length) {
+        const t = linhas[i].trim();
+        const w = doc.getTextWidth(t);
+        const restante = Math.max(0, larguraUtil - w);
+        const qtdAst = Math.floor(restante / wAst);
+        linhasCompletas.push(t + "*".repeat(qtdAst));
+      } else {
+        linhasCompletas.push("*".repeat(qtdAstLinhaCheia));
+      }
     }
-  }
 
-  doc.setFillColor(255, 255, 255);
-  doc.rect(xBox, yBox, wBox, hBox, "F");
-  doc.text(linhasCompletas, xText, yText);
+    doc.setFillColor(255, 255, 255);
+    doc.rect(xBox, yBox, wBox, hBox, "F");
+    doc.text(linhasCompletas, xText, yText);
 
-  const cidadeEbairro = `${informacoes.clientes.cidade} - ${informacoes.clientes.bairro || "Não informado"}`;
-  doc.text("Cidade: ", 45, 56);
-  doc.text(cidadeEbairro, 64, 56);
+    const cidadeEbairro = `${informacoes.clientes.cidade} - ${informacoes.clientes.bairro || "Não informado"}`;
+    doc.text("Cidade: ", 45, 56);
+    doc.text(cidadeEbairro, 64, 56);
 
-  const dataEmissao = formatarDataISO(informacoes.data_emprestimo);
-  doc.text("Data de Emissão: ", 150, 56);
-  doc.setFont("helvetica", "bold");
-  doc.text(dataEmissao, 175, 56);
-  doc.setFont("helvetica", "normal");
+    const dataEmissao = formatarDataISO(informacoes.data_emprestimo);
+    doc.text("Data de Emissão: ", 150, 56);
+    doc.setFont("helvetica", "bold");
+    doc.text(dataEmissao, 175, 56);
+    doc.setFont("helvetica", "normal");
 
-  const nomeCliente = informacoes.clientes.nome_completo;
-  doc.text("Nome: ", 45, 62);
-  doc.text(nomeCliente, 64, 62);
+    const nomeCliente = informacoes.clientes.nome_completo;
+    doc.text("Nome: ", 45, 62);
+    doc.text(nomeCliente, 64, 62);
 
-  const cpfCliente = formatarCpfCnpj(informacoes.clientes.cpf);
-  doc.text("CPF/CNPJ: ", 45, 68);
-  doc.text(cpfCliente, 64, 68);
+    const cpfCliente = formatarCpfCnpj(informacoes.clientes.cpf);
+    doc.text("CPF/CNPJ: ", 45, 68);
+    doc.text(cpfCliente, 64, 68);
 
-  const endereco = `${informacoes.clientes.rua || "Não informado"}, Nº: ${informacoes.clientes.numero_casa || "Não informado"}`;
-  doc.text("Endereço: ", 105, 68);
-  doc.text(endereco, 120, 68);
+    const endereco = `${informacoes.clientes.rua || "Não informado"}, Nº: ${informacoes.clientes.numero_casa || "Não informado"}`;
+    doc.text("Endereço: ", 105, 68);
+    doc.text(endereco, 120, 68);
 
-  doc.setLineWidth(0.45);
-  doc.line(45, 87, 140, 87);
-  doc.text(nomeCliente, 74, 92);
+    doc.setLineWidth(0.45);
+    doc.line(45, 87, 140, 87);
+    doc.text(nomeCliente, 74, 92);
 
-  doc.text("Assinatura Digital", 164, 93);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.4);
-  doc.rect(145, 75, 57, 15, "FD");
-  doc.setFontSize(10);
+    doc.text("Assinatura Digital", 164, 93);
+    doc.setFillColor(255, 255, 255);
+    doc.setLineWidth(0.4);
+    doc.rect(145, 75, 57, 15, "FD");
+    doc.setFontSize(10);
 
-  doc.save(`nota-promissoria-${informacoes.id}.pdf`);
-};
-
+    doc.save(`nota-promissoria-${informacoes.id}.pdf`);
+  };
 
   return (
       <button
