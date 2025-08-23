@@ -253,6 +253,7 @@ export function FomularioComponente() {
             console.error(uploadError);
             setLoading(false);
             verificarSeTemErro = "Sim";
+            setPossuiErro(true);
             setMensagemErro("Ocorreu um erro ao enviar arquivos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             setMensagensFalhas( prev => [...prev, uploadError.message]);
             throw new Error(`Erro ao enviar ${nomeCampo}`);
@@ -269,6 +270,7 @@ export function FomularioComponente() {
           console.error("Erro na conversão:", erro);
           setLoading(false);
           verificarSeTemErro = "Sim";
+          setPossuiErro(true);
           const mensagemErro = erro instanceof Error ? erro.message : String(erro);
           setMensagensFalhas( prev => [...prev, mensagemErro]);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
@@ -328,6 +330,8 @@ export function FomularioComponente() {
         router.push("/formulario/obrigado");
 
       }
+
+      setLoading(false);
 
       return;
 
@@ -413,6 +417,8 @@ export function FomularioComponente() {
           if (uploadError) {
             console.error(uploadError);
             setLoading(false);
+            verificarSeTemErro = "Sim";
+            setPossuiErro(true);
             setMensagensFalhas( prev => [...prev, uploadError.message]);
             setMensagemErro("Ocorreu um erro ao enviar documentos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             throw new Error(`Erro ao enviar ${nomeCampo}`);
@@ -428,6 +434,8 @@ export function FomularioComponente() {
         } catch (erro) {
           console.error("Erro na conversão:", erro);
           setLoading(false);
+          verificarSeTemErro = "Sim";
+          setPossuiErro(true);
           const mensagemErro = erro instanceof Error ? erro.message : String(erro);
           setMensagensFalhas(prev => [...prev, mensagemErro]);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
@@ -487,6 +495,8 @@ export function FomularioComponente() {
         router.push("/formulario/obrigado");
         
       }
+
+      setLoading(false);
 
     }
 
