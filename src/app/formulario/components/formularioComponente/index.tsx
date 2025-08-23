@@ -14,7 +14,7 @@ import { viaCep } from "@/components/types/types";
 import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Select } from "@/app/clientes/componentes/select-cliente";
-
+import { GoAlertFill } from "react-icons/go";
 
 interface ConsultorBusca {
   id: number;
@@ -73,6 +73,9 @@ export function FomularioComponente() {
 
   const [loading, setLoading] = useState(false);
   const [mensagemErro, setMensagemErro] = useState(""); 
+  const [possuiErro, setPossuiErro] = useState(false);
+
+  const [mensagensFalhas, setMensagensFalhas] = useState<string[]>([]);
 
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
@@ -223,6 +226,8 @@ export function FomularioComponente() {
       const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
+      let verificarSeTemErro = "";
+
       const uploadPromises = arquivos.map(async (arquivo, i) => {
         
         if (!arquivo) return;
@@ -247,7 +252,9 @@ export function FomularioComponente() {
           if (uploadError) {
             console.error(uploadError);
             setLoading(false);
+            verificarSeTemErro = "Sim";
             setMensagemErro("Ocorreu um erro ao enviar arquivos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
+            setMensagensFalhas( prev => [...prev, uploadError.message]);
             throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
 
@@ -261,59 +268,66 @@ export function FomularioComponente() {
         } catch (erro) {
           console.error("Erro na conversão:", erro);
           setLoading(false);
+          verificarSeTemErro = "Sim";
+          const mensagemErro = erro instanceof Error ? erro.message : String(erro);
+          setMensagensFalhas( prev => [...prev, mensagemErro]);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
       });
 
-      await Promise.all(uploadPromises);
+      if (verificarSeTemErro !== "Sim") {
 
-      setNome("");
-      setEmail("");
-      setCpf("");
-      setRg("");
-      setDataRg("");
-      setOrgaoExpedidor("");
-      setSexo("");
-      setEstadoCivil("");
-      setNomeCompanheiro("");
-      setCpfCompanheiro("");
-      setWhatsappCompanheiro("");
-      setDataNascimento("");
-      setWhatsapp("");
-      setTelefoneReserva("");
-      setNomeReferencia("");
-      setTelefoneReferencia("");
-      setCep("");
-      setBairro("");
-      setRua("");
-      setNcasa("");
-      setMoradia("");
-      setEstado("");
-      setCidade("");
-      setConsultorSelecionado("");
-      setPix("");
-      setCondicaoMoradia("");
-      setValorFinanciamento("");
-      setValorAluguel("");
-      setVerificarVeiculo("");
-      setVeiculoSelecionado("");
-      setCondicaoVeiculo("");
-      setValorFinanciamentoVeiculo("");
-      setValorSolicitado("");
-      setNomeDaEmpresa("");
-      setEnderecoDaEmpresa("");
-      setContatoDaEmpresa("");
-      setTipoDeReferencia("");
-      setComprovanteRenda(null);
-      setComprovanteEndereco(null);
-      setDocumentoFrente(null);
-      setDocumentoVerso(null);
-      setSegurandoDocumento(null);
-      setCarteiraDigital(null);
+        await Promise.all(uploadPromises);
 
-      setLoading(false);
+        setNome("");
+        setEmail("");
+        setCpf("");
+        setRg("");
+        setDataRg("");
+        setOrgaoExpedidor("");
+        setSexo("");
+        setEstadoCivil("");
+        setNomeCompanheiro("");
+        setCpfCompanheiro("");
+        setWhatsappCompanheiro("");
+        setDataNascimento("");
+        setWhatsapp("");
+        setTelefoneReserva("");
+        setNomeReferencia("");
+        setTelefoneReferencia("");
+        setCep("");
+        setBairro("");
+        setRua("");
+        setNcasa("");
+        setMoradia("");
+        setEstado("");
+        setCidade("");
+        setConsultorSelecionado("");
+        setPix("");
+        setCondicaoMoradia("");
+        setValorFinanciamento("");
+        setValorAluguel("");
+        setVerificarVeiculo("");
+        setVeiculoSelecionado("");
+        setCondicaoVeiculo("");
+        setValorFinanciamentoVeiculo("");
+        setValorSolicitado("");
+        setNomeDaEmpresa("");
+        setEnderecoDaEmpresa("");
+        setContatoDaEmpresa("");
+        setTipoDeReferencia("");
+        setComprovanteRenda(null);
+        setComprovanteEndereco(null);
+        setDocumentoFrente(null);
+        setDocumentoVerso(null);
+        setSegurandoDocumento(null);
+        setCarteiraDigital(null);
 
-      router.push("/formulario/obrigado");
+        setLoading(false);
+
+        router.push("/formulario/obrigado");
+
+      }
 
       return;
 
@@ -373,6 +387,8 @@ export function FomularioComponente() {
       const campos = ["foto_comprovante_renda", "foto_comprovante_endereco", "foto_identidade_frente", "foto_identidade_verso", "segurando_documento", "CarteiraDigital"]
       const urls: Record<string, string> = {}
 
+      let verificarSeTemErro = "";
+
       const uploadPromises = arquivos.map(async (arquivo, i) => {
 
         if (!arquivo) return;
@@ -397,6 +413,7 @@ export function FomularioComponente() {
           if (uploadError) {
             console.error(uploadError);
             setLoading(false);
+            setMensagensFalhas( prev => [...prev, uploadError.message]);
             setMensagemErro("Ocorreu um erro ao enviar documentos. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.");
             throw new Error(`Erro ao enviar ${nomeCampo}`);
           }
@@ -411,59 +428,65 @@ export function FomularioComponente() {
         } catch (erro) {
           console.error("Erro na conversão:", erro);
           setLoading(false);
+          const mensagemErro = erro instanceof Error ? erro.message : String(erro);
+          setMensagensFalhas(prev => [...prev, mensagemErro]);
           alert(`Ocorreu um erro ao processar o documento referente a '${nomeCampo}'. Por gentileza, entre em contato com seu consultor responsável e informe o ocorrido para que a situação possa ser verificada.`);
         }
       });
 
-      await Promise.all(uploadPromises);
+      if (verificarSeTemErro !== "Sim") {
 
-      setNome("");
-      setEmail("");
-      setCpf("");
-      setRg("");
-      setDataRg("");
-      setOrgaoExpedidor("");
-      setSexo("");
-      setEstadoCivil("");
-      setNomeCompanheiro("");
-      setCpfCompanheiro("");
-      setWhatsappCompanheiro("");
-      setDataNascimento("");
-      setWhatsapp("");
-      setTelefoneReserva("");
-      setNomeReferencia("");
-      setTelefoneReferencia("");
-      setCep("");
-      setBairro("");
-      setRua("");
-      setNcasa("");
-      setMoradia("");
-      setEstado("");
-      setCidade("");
-      setConsultorSelecionado("");
-      setPix("");
-      setCondicaoMoradia("");
-      setValorFinanciamento("");
-      setValorAluguel("");
-      setVerificarVeiculo("");
-      setVeiculoSelecionado("");
-      setCondicaoVeiculo("");
-      setValorFinanciamentoVeiculo("");
-      setValorSolicitado("");
-      setNomeDaEmpresa("");
-      setEnderecoDaEmpresa("");
-      setContatoDaEmpresa("");
-      setTipoDeReferencia("");
-      setComprovanteRenda(null);
-      setComprovanteEndereco(null);
-      setDocumentoFrente(null);
-      setDocumentoVerso(null);
-      setSegurandoDocumento(null);
-      setCarteiraDigital(null);
+        await Promise.all(uploadPromises);
 
-      setLoading(false);
+        setNome("");
+        setEmail("");
+        setCpf("");
+        setRg("");
+        setDataRg("");
+        setOrgaoExpedidor("");
+        setSexo("");
+        setEstadoCivil("");
+        setNomeCompanheiro("");
+        setCpfCompanheiro("");
+        setWhatsappCompanheiro("");
+        setDataNascimento("");
+        setWhatsapp("");
+        setTelefoneReserva("");
+        setNomeReferencia("");
+        setTelefoneReferencia("");
+        setCep("");
+        setBairro("");
+        setRua("");
+        setNcasa("");
+        setMoradia("");
+        setEstado("");
+        setCidade("");
+        setConsultorSelecionado("");
+        setPix("");
+        setCondicaoMoradia("");
+        setValorFinanciamento("");
+        setValorAluguel("");
+        setVerificarVeiculo("");
+        setVeiculoSelecionado("");
+        setCondicaoVeiculo("");
+        setValorFinanciamentoVeiculo("");
+        setValorSolicitado("");
+        setNomeDaEmpresa("");
+        setEnderecoDaEmpresa("");
+        setContatoDaEmpresa("");
+        setTipoDeReferencia("");
+        setComprovanteRenda(null);
+        setComprovanteEndereco(null);
+        setDocumentoFrente(null);
+        setDocumentoVerso(null);
+        setSegurandoDocumento(null);
+        setCarteiraDigital(null);
 
-      router.push("/formulario/obrigado");
+        setLoading(false);
+
+        router.push("/formulario/obrigado");
+        
+      }
 
     }
 
@@ -1110,6 +1133,14 @@ export function FomularioComponente() {
         </div>
       )}
 
+      {mensagensFalhas && (
+
+        mensagensFalhas.map( (erro, index) => (
+          <p className="mb-4 px-2 text-yellow-900" key={index}> - {erro} </p>
+        ))
+
+      )}
+
         <div className="col-span-2 mt-[-12px] mx-2 md:mt-0 md:mx-0">
 
           <div className="cursor-pointer">
@@ -1118,6 +1149,25 @@ export function FomularioComponente() {
 
         </div>
       </div>
+
+      {possuiErro && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+          <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+            <h2 className="text-xl font-bold mb-4 flex justify-center items-center gap-2"> <GoAlertFill className="inline" color="red" size={24} /> Erro Encontrato <GoAlertFill className="inline" color="red" size={24} /> </h2>
+
+            <p className="mb-4"> Ocorreu um erro durante o processo. Por gentileza, entre em contato com seu consultor responsável e informe detalhadamente a situação para que possamos auxiliá-lo da melhor forma possível. </p>
+
+            <div className="flex justify-center gap-4">
+
+              <button onClick={() => setPossuiErro(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ========== LOADING ========== */}
 
