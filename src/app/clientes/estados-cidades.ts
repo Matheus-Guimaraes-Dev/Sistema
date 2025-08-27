@@ -4,7 +4,7 @@ export const cidadesPorEstado = {
     "Guajará-Mirim", "Jaru", "Pimenta Bueno", "Machadinho d'Oeste", "Buritis",
     "Ouro Preto do Oeste", "Espigão d'Oeste", "Nova Mamoré", "Candeias do Jamari",
     "Alta Floresta d'Oeste", "Presidente Médici", "Cujubim", "São Miguel do Guaporé",
-    "Alto Paraíso", "Alvorada D'Oeste"
+    "Alto Paraíso", "Alvorada D'Oeste", "Chupinguaia"
   ],
   AC: [
     "Rio Branco",

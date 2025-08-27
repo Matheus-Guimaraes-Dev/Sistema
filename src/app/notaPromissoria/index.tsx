@@ -346,14 +346,8 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     doc.text(endereco, 120, 68);
 
     doc.setLineWidth(0.45);
-    doc.line(45, 87, 140, 87);
-    doc.text(nomeCliente, 74, 92);
-
-    doc.text("Assinatura Digital", 164, 93);
-    doc.setFillColor(255, 255, 255);
-    doc.setLineWidth(0.4);
-    doc.rect(145, 75, 57, 15, "FD");
-    doc.setFontSize(10);
+    doc.line(55, 87, 190, 87);
+    doc.text(nomeCliente, 92, 92);
 
     doc.save(`nota-promissoria-${informacoes.id}.pdf`);
   };
