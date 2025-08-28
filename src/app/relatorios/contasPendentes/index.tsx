@@ -298,11 +298,11 @@ export default function RelatorioEmprestimosPendentes() {
       }
 
       if (estado.trim() !== "") {
-        query = query.eq("estado", estado);
+        query = query.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade.trim() !== "") {
-        query = query.eq("cidade", cidade);
+        query = query.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (dataInicio.trim() || dataFim.trim()) {
@@ -384,11 +384,11 @@ export default function RelatorioEmprestimosPendentes() {
       }
 
       if (estado.trim() !== "") {
-        querySoma = querySoma.eq("estado", estado);
+        querySoma = querySoma.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade.trim() !== "") {
-        querySoma = querySoma.eq("cidade", cidade);
+        querySoma = querySoma.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (dataInicio.trim() || dataFim.trim()) {

@@ -169,11 +169,11 @@ export function FiltrosClientes() {
       }
 
       if (estado !== "") {
-        query = query.eq("estado", estado);
+        query = query.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade !== "") {
-        query = query.eq("cidade", cidade);
+        query = query.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (data === "asc" || data === "desc") {

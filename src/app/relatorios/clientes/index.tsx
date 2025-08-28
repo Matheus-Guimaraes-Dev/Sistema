@@ -146,11 +146,11 @@ export default function RelatorioClientes() {
       }
 
       if (estado !== "") {
-        query = query.eq("estado", estado);
+        query = query.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade !== "") {
-        query = query.eq("cidade", cidade);
+        query = query.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (dataInicio.trim()) query = query.gte("data_cadastro", dataInicio);

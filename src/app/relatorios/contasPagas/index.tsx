@@ -261,8 +261,8 @@ export default function RelatorioEmprestimosPagos() {
         queryContas = queryContas.eq("id", Number(idDocumento));
       }
 
-      if (estado.trim()) queryContas = queryContas.eq("estado", estado);
-      if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade);
+      if (estado.trim()) queryContas = queryContas.eq("estado", estado.toLocaleUpperCase());
+      if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade.toLocaleUpperCase());
 
       if ((dataInicio.trim() || dataFim.trim()) && tipoData !== "pagamento") {
         let colunaData = "data_emprestimo";

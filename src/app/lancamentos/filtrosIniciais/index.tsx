@@ -204,8 +204,8 @@ export function FiltrosLancamentos() {
     localStorage.setItem("id_documento_lancamento", idDocumento);
     localStorage.setItem("modalidade_lancamento", modalidade)
     localStorage.setItem("consultor_lancamento", consultorFiltro);
-    localStorage.setItem("estado_lancamento", estado);
-    localStorage.setItem("cidade_lancamento", cidade);
+    localStorage.setItem("estado_lancamento", estado.toLocaleUpperCase());
+    localStorage.setItem("cidade_lancamento", cidade.toLocaleUpperCase());
     localStorage.setItem("tipo_data_lancamentos", tipoData);
 
     
@@ -412,11 +412,11 @@ export function FiltrosLancamentos() {
       }
 
       if (estado.trim() !== "") {
-        query = query.eq("estado", estado);
+        query = query.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade.trim() !== "") {
-        query = query.eq("cidade", cidade);
+        query = query.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (dataInicio.trim() || dataFim.trim()) {
@@ -511,11 +511,11 @@ export function FiltrosLancamentos() {
       }
 
       if (estado.trim() !== "") {
-        somaQuery = somaQuery.eq("estado", estado);
+        somaQuery = somaQuery.eq("estado", estado.toLocaleUpperCase());
       }
 
       if (cidade.trim() !== "") {
-        somaQuery = somaQuery.eq("cidade", cidade);
+        somaQuery = somaQuery.eq("cidade", cidade.toLocaleUpperCase());
       }
 
       if (dataInicio.trim() || dataFim.trim()) {
@@ -656,8 +656,8 @@ async function buscarContasPagas() {
     }
 
     // Filtro por estado e cidade
-    if (estado.trim()) queryContas = queryContas.eq("estado", estado);
-    if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade);
+    if (estado.trim()) queryContas = queryContas.eq("estado", estado.toLocaleUpperCase());
+    if (cidade.trim()) queryContas = queryContas.eq("cidade", cidade.toLocaleUpperCase());
 
     // 🔹 Filtro de data dinâmica baseado em tipoData
     if ((dataInicio.trim() || dataFim.trim()) && tipoData !== "pagamento") {
