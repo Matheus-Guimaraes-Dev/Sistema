@@ -12,6 +12,7 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Recebimentos } from "@/app/lancamentos/types";
 import { useUser } from '@/contexts/UserContext';
+import { FaArrowRightArrowLeft } from "react-icons/fa6";
 
 interface LancamentosEntrada { 
   id: number;
@@ -49,9 +50,7 @@ export default function LancamentosContas() {
 
   const [id, setId] = useState("");
   const [tipoLancamentoFiltro, setTipoLancamentoFiltro] = useState("");
-  const [tipoLancamento, setTipoLancamento] = useState<string | null>("Entrada");
   const [lancamentosEntrada, setLancamentosEntrada] = useState<LancamentosEntrada[]>([]);
-  const [conta, setConta] = useState("");
   const [lancamentosSaida, setLancamentosSaida] = useState<LancamentosSaida[]>([]);
   const [selecionarTipoLancamento, setSelecionarTipoLancamento] = useState<string | null>(null);
   const [selecionarTipoLancamentoFiltro, setSelecionarTipoLancamentoFiltro] = useState<string>('');
@@ -60,6 +59,8 @@ export default function LancamentosContas() {
   const [valorLancamento, setValorLancamento] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ordemFiltros, setOrdemFiltros] = useState("id");
+  const [crescenteOuDecrecente, setCrecenteOuDecrecente] = useState(true);
 
   const { grupo } = useUser();
 
@@ -79,8 +80,6 @@ export default function LancamentosContas() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
-
-  const [valorAntigo, setValorAntigo] = useState("");
 
   const router = useRouter(); 
 
@@ -110,16 +109,12 @@ export default function LancamentosContas() {
     if (filtrosCarregados) {
       buscarLancamentos();
     }
-  }, [paginaAtual, filtrosCarregados, selecionarTipoLancamentoFiltro])
+  }, [paginaAtual, filtrosCarregados, selecionarTipoLancamentoFiltro, ordemFiltros, crescenteOuDecrecente])
 
   useEffect(() => {
     formasDeRecebimento();
     buscarPlanoContas();
   }, [selecionarTipoLancamento]);
-
-  useEffect(() => {
-    buscarPlanoContas();
-  }, [selecionarTipoLancamentoFiltro]);
 
   useEffect(() => {
 
@@ -199,6 +194,7 @@ export default function LancamentosContas() {
               descricao
             )
           `, { count: "exact" })
+          .order(ordemFiltros, { ascending: crescenteOuDecrecente });
         
         if (id.trim() !== "") {
           query = query.eq("id", Number(id));
@@ -224,6 +220,7 @@ export default function LancamentosContas() {
 
         if (inicio >= total && total > 0) {
           setPaginaAtual(1);
+          setLoading(false);
           return;
         }
 
@@ -232,6 +229,7 @@ export default function LancamentosContas() {
 
         if(error) {
           console.log("Erro ao buscar contas: ", error);
+          setLoading(false);
         } else {
 
           let resultadoFiltrado = (resultado || []).map( (item) => ({
@@ -240,7 +238,9 @@ export default function LancamentosContas() {
             plano_conta_entrada_lancamento: Array.isArray(item.plano_conta_entrada_lancamento) ? item.plano_conta_entrada_lancamento[0] : item.plano_conta_entrada_lancamento,
           }));
 
+          console.log(resultadoFiltrado)
           setLancamentosEntrada(resultadoFiltrado);
+          setLoading(false);
 
           const total = Math.ceil((count ?? 0) / itensPorPagina);
           setTotalPaginas(total);
@@ -265,6 +265,7 @@ export default function LancamentosContas() {
               descricao
             )
           `, { count: "exact" })
+          .order(ordemFiltros, { ascending: crescenteOuDecrecente });
 
         if (id.trim() !== "") {
           query = query.eq("id", Number(id));
@@ -362,7 +363,16 @@ export default function LancamentosContas() {
       if(!data) {
         setLoading(false);
         toast.success("Lançamento realizado com sucesso!");
-        window.location.reload();
+        buscarLancamentos();
+        setAbrirModal(false);
+        setSelecionarTipoLancamento("");
+        setPlanoConta([]);
+        setPlanoContaSelecionada("");
+        setDataLancamento("");
+        setValorLancamento(""); 
+        setObservacoes("");
+        setFormasRecebimento([]);
+        setRecebimentoSelecionado("");
       }
 
     } else if (selecionarTipoLancamento === "Saída") {
@@ -386,7 +396,16 @@ export default function LancamentosContas() {
       if(!data) {
         setLoading(false);
         toast.success("Lançamento realizado com sucesso!");
-        window.location.reload();
+        buscarLancamentos();
+        setAbrirModal(false);
+        setSelecionarTipoLancamento("");
+        setPlanoConta([]);
+        setPlanoContaSelecionada("");
+        setDataLancamento("");
+        setValorLancamento(""); 
+        setObservacoes("");
+        setFormasRecebimento([]);
+        setRecebimentoSelecionado("");
       }
 
     }
@@ -407,6 +426,9 @@ export default function LancamentosContas() {
       toast.error("A data inicial não pode ser maior que a data final.");
       return;
     } 
+
+    setOrdemFiltros("id");
+    setCrecenteOuDecrecente(true);
 
     setPaginaAtual(1);
 
@@ -439,7 +461,9 @@ export default function LancamentosContas() {
 
   async function buscarPlanoContas() {
 
-    if(selecionarTipoLancamento === "Entrada" || selecionarTipoLancamentoFiltro === "Entrada") {
+    const tipo = selecionarTipoLancamento || selecionarTipoLancamentoFiltro;
+
+    if(tipo === "Entrada") {
 
       const { data, error } = await supabase
         .from("plano_conta_entrada_lancamento")
@@ -457,7 +481,7 @@ export default function LancamentosContas() {
 
       }
 
-    } else if (selecionarTipoLancamento === "Saída" || selecionarTipoLancamentoFiltro === "Saída") {
+    } else if (tipo === "Saída") {
 
       
       const { data, error } = await supabase
@@ -493,7 +517,16 @@ export default function LancamentosContas() {
     router.push(`contas/pagamentosDespesa/${id}`);
   }
 
-  
+  function ordemDatas() {
+
+    if (ordemFiltros === "id" || crescenteOuDecrecente === false) {
+      setOrdemFiltros("data_lancamento");
+      setCrecenteOuDecrecente(true);
+    } else if (ordemFiltros === "data_lancamento") {
+      setCrecenteOuDecrecente(false);
+    }
+
+  }
 
   return(
 
@@ -568,8 +601,6 @@ export default function LancamentosContas() {
 
           {(grupo === "Administrador" || grupo === "Proprietario") && (
             <button type="button" onClick={() => {
-              setValorAntigo(selecionarTipoLancamentoFiltro)
-              setSelecionarTipoLancamentoFiltro("");
               setAbrirModal(true);
             }} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Lançamento 
             </button>
@@ -587,7 +618,7 @@ export default function LancamentosContas() {
               <th className="px-2 py-4 w-10"> ID </th>
               <th className="px-2 py-3 w-50"> Conta </th>
               <th className="px-2 py-3 w-50"> Valor </th>
-              <th className="px-2 py-3 w-50"> Data de Lançamento </th>
+              <th className="px-2 py-3 w-50 "> <div className="flex items-center gap-1">Data de Lançamento <FaArrowRightArrowLeft size={20} className="inline transform rotate-90 cursor-pointer" onClick={ordemDatas} /></div> </th>
               <th className="px-2 py-3 text-center w-20"> Detalhes </th>
             </tr>
           </thead>
@@ -764,7 +795,6 @@ export default function LancamentosContas() {
                     setObservacoes("");
                     setFormasRecebimento([]);
                     setRecebimentoSelecionado("");
-                    setSelecionarTipoLancamentoFiltro(valorAntigo);
                   }} 
                   className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
               </div>

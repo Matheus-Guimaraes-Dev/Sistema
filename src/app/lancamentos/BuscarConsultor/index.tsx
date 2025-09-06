@@ -40,7 +40,7 @@ export default function BuscarConsultor({
 
       const { data, error } = await supabase
         .from('consultores')
-        .select('id, nome_completo, cpf, comissao_mensal, comissao_semanal, comissao_semanal')
+        .select('id, nome_completo, cpf, comissao_mensal, comissao_semanal, comissao_diaria')
         .or(
           [
             `nome_completo.ilike.%${pesquisa}%`,
