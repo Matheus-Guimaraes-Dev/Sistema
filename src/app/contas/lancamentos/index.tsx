@@ -109,7 +109,7 @@ export default function LancamentosContas() {
 
   useEffect( () => {
     if (filtrosCarregados) {
-      buscarLancamentos();
+      buscarLancamentos(setOrdemFiltros, setCrecenteOuDecrecente);
     }
   }, [paginaAtual, filtrosCarregados, selecionarTipoLancamentoFiltro, ordemFiltros, crescenteOuDecrecente])
 
@@ -168,7 +168,7 @@ export default function LancamentosContas() {
 
   // ========== BUSCAR AS CONTAS ==========
 
-  async function buscarLancamentos() {
+  async function buscarLancamentos(parametro: any, ordem: any) {
 
     const inicio = (paginaAtual - 1) * itensPorPagina;
     const fim = inicio + itensPorPagina - 1;
@@ -240,7 +240,6 @@ export default function LancamentosContas() {
             plano_conta_entrada_lancamento: Array.isArray(item.plano_conta_entrada_lancamento) ? item.plano_conta_entrada_lancamento[0] : item.plano_conta_entrada_lancamento,
           }));
 
-          console.log(resultadoFiltrado)
           setLancamentosEntrada(resultadoFiltrado);
 
           const calcularValores = resultadoFiltrado?.reduce((acc, item) => acc + (item.valor_recebido ?? 0), 0) ?? 0;
@@ -373,7 +372,7 @@ export default function LancamentosContas() {
       if(!data) {
         setLoading(false);
         toast.success("Lançamento realizado com sucesso!");
-        buscarLancamentos();
+        buscarLancamentos(setOrdemFiltros, setCrecenteOuDecrecente);
         setAbrirModal(false);
         setSelecionarTipoLancamento("");
         setPlanoConta([]);
@@ -406,7 +405,7 @@ export default function LancamentosContas() {
       if(!data) {
         setLoading(false);
         toast.success("Lançamento realizado com sucesso!");
-        buscarLancamentos();
+        buscarLancamentos(setOrdemFiltros, setCrecenteOuDecrecente);
         setAbrirModal(false);
         setSelecionarTipoLancamento("");
         setPlanoConta([]);
@@ -447,7 +446,7 @@ export default function LancamentosContas() {
 
     setPaginaAtual(1);
 
-    buscarLancamentos();
+    buscarLancamentos("id", true);
 
     setLoading(false);
 
