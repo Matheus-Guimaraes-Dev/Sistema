@@ -77,6 +77,8 @@ export default function LancamentosContas() {
   const [planoContaFiltro, setPlanoContaFiltro] = useState<Recebimentos[]>([]);
   const [planoContaSelecionadaFiltro, setPlanoContaSelecionadaFiltro] = useState("");
 
+  const [somaTotal, setSomaTotal] = useState(0);
+
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 30;
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -114,7 +116,7 @@ export default function LancamentosContas() {
   useEffect(() => {
     formasDeRecebimento();
     buscarPlanoContas();
-  }, [selecionarTipoLancamento]);
+  }, [selecionarTipoLancamento, selecionarTipoLancamentoFiltro]);
 
   useEffect(() => {
 
@@ -240,6 +242,10 @@ export default function LancamentosContas() {
 
           console.log(resultadoFiltrado)
           setLancamentosEntrada(resultadoFiltrado);
+
+          const calcularValores = resultadoFiltrado?.reduce((acc, item) => acc + (item.valor_recebido ?? 0), 0) ?? 0;
+          setSomaTotal(calcularValores);
+
           setLoading(false);
 
           const total = Math.ceil((count ?? 0) / itensPorPagina);
@@ -311,6 +317,10 @@ export default function LancamentosContas() {
 
           const total = Math.ceil((count ?? 0) / itensPorPagina);
           setTotalPaginas(total);
+
+          const calcularValores = resultadoFiltrado?.reduce((acc, item) => acc + (item.valor_recebido ?? 0), 0) ?? 0;
+          setSomaTotal(calcularValores);
+          
 
         } 
 
@@ -417,13 +427,18 @@ export default function LancamentosContas() {
   // ========== APLICAR OS FILTROS DE PESQUISA ==========
 
   const aplicarFiltro = (e:React.FormEvent) => {
+
+    
     e.preventDefault();
+    
+    setLoading(true);
 
     const inicio = new Date(dataInicio);
     const fim = new Date(dataFim);
 
     if (inicio.getTime() > fim.getTime()) {
       toast.error("A data inicial não pode ser maior que a data final.");
+      setLoading(false);
       return;
     } 
 
@@ -434,6 +449,7 @@ export default function LancamentosContas() {
 
     buscarLancamentos();
 
+    setLoading(false);
 
   }
 
@@ -532,146 +548,161 @@ export default function LancamentosContas() {
 
     <div className="flex-1">
 
-      <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lançamentos de Entrada / Saída </h1>
+      <div className="min-h-screen flex flex-col">
 
-      {/* ========== FILTROS DE PESQUISA ========== */}
+        <h1 className="text-2xl font-semibold text-blue-900 text-center my-5"> Lançamentos de Entrada / Saída </h1>
 
-      <form onSubmit={aplicarFiltro}>
-        <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        {/* ========== FILTROS DE PESQUISA ========== */}
 
-          <InputCliente
-            type="text"
-            placeholder="Buscar por ID da conta"
-            inputMode="numeric"
-            value={id}
-            onChange={ (e) => limiteId(e, setId)}
-            maxLength={7}
-          />
+        <form onSubmit={aplicarFiltro}>
+          <div className="bg-white p-4 rounded-xl shadow-md grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
 
-        <div>
-          <select
-            className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
-            value={selecionarTipoLancamentoFiltro ?? undefined}
-            onChange={(e) => trocarTipoLancamentoFiltro(e.target.value)}
-          >
-            <option value="Entrada">Entrada</option>
-            <option value="Saída">Saída</option>
-          </select>
-        </div>
+            <InputCliente
+              type="text"
+              placeholder="Buscar por ID da conta"
+              inputMode="numeric"
+              value={id}
+              onChange={ (e) => limiteId(e, setId)}
+              maxLength={7}
+            />
 
           <div>
-
-            <select 
+            <select
               className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
-              value={planoContaSelecionadaFiltro}
-              onChange={(e) => setPlanoContaSelecionadaFiltro(e.target.value)}
+              value={selecionarTipoLancamentoFiltro ?? undefined}
+              onChange={(e) => trocarTipoLancamentoFiltro(e.target.value)}
             >
-              <option value="">Selecione a Conta </option>
-
-              {planoContaFiltro.map((forma) => (
-                <option key={forma.id} value={forma.id}>
-                  {forma.descricao}
-                </option>
-              ))}
+              <option value="Entrada">Entrada</option>
+              <option value="Saída">Saída</option>
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <input
-                type="date"
-                placeholder="Teste"
-                value={dataInicio}
-                onChange={handleDataInicioChange}
-                className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
-              />
+
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base"
+                value={planoContaSelecionadaFiltro}
+                onChange={(e) => setPlanoContaSelecionadaFiltro(e.target.value)}
+              >
+                <option value="">Selecione a Conta </option>
+
+                {planoContaFiltro.map((forma) => (
+                  <option key={forma.id} value={forma.id}>
+                    {forma.descricao}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <input
-                type="date"
-                value={dataFim}
-                onChange={handleDataFimChange}
-                className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <input
+                  type="date"
+                  placeholder="Teste"
+                  value={dataInicio}
+                  onChange={handleDataInicioChange}
+                  className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                />
+              </div>
+
+              <div>
+                <input
+                  type="date"
+                  value={dataFim}
+                  onChange={handleDataFimChange}
+                  className="w-full h-9 border-2 border-[#002956] rounded px-2 focus:outline-[#4b8ed6] text-sm sm:text-base"
+                />
+              </div>
             </div>
-          </div>
 
-          <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9"> Atualizar </button>
+            <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9"> Atualizar </button>
 
-          {(grupo === "Administrador" || grupo === "Proprietario") && (
-            <button type="button" onClick={() => {
-              setAbrirModal(true);
-            }} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Lançamento 
-            </button>
-          )}
-
-        </div>
-      </form>
-
-    {/* ========== TABELA DE COMISSOES ========== */}
-
-      <div className="bg-white shadow-md overflow-x-auto px-4 mb-4">
-        <table className="min-w-full text-sm text-left border-collapse">
-          <thead className="bg-blue-700 text-white">
-            <tr>
-              <th className="px-2 py-4 w-10"> ID </th>
-              <th className="px-2 py-3 w-50"> Conta </th>
-              <th className="px-2 py-3 w-50"> Valor </th>
-              <th className="px-2 py-3 w-50 "> <div className="flex items-center gap-1">Data de Lançamento <FaArrowRightArrowLeft size={20} className="inline transform rotate-90 cursor-pointer" onClick={ordemDatas} /></div> </th>
-              <th className="px-2 py-3 text-center w-20"> Detalhes </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {selecionarTipoLancamentoFiltro === "Entrada" ? (
-              lancamentosEntrada.map( (info) => (
-                <tr key={info.id} className="border-b-3 border-gray-600">
-                  <td className="px-2 py-2"> {info.id} </td>
-                  <td className="px-2 py-2"> {info.plano_conta_entrada_lancamento?.descricao} </td>
-                  <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
-                  <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
-                  <td className="px-4 py-2 flex justify-center">
-                    <button  onClick={() => detalhesContasEntrada(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              lancamentosSaida.map( (info) => (
-                <tr key={info.id} className="border-b-3 border-gray-600">
-                  <td className="px-2 py-2"> {info.id} </td>
-                  <td className="px-2 py-2"> {info.plano_conta_despesa_lancamento?.descricao} </td>
-                  <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
-                  <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
-                  <td className="px-4 py-2 flex justify-center">
-                    <button  onClick={() => detalhesContasDespesas(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
-                  </td>
-                </tr>
-              ))
+            {(grupo === "Administrador" || grupo === "Proprietario") && (
+              <button type="button" onClick={() => {
+                setAbrirModal(true);
+              }} className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200"> Lançamento 
+              </button>
             )}
-          </tbody>
-        </table>
-      </div>
 
-      <div className="flex gap-4 justify-center items-center mt-4 mb-6">
-        <button
-          onClick={() => setPaginaAtual((prev) => Math.max(prev - 1, 1))}
-          disabled={paginaAtual === 1}
-          className={`px-4 py-2 rounded text-white 
-            ${paginaAtual === 1 ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
-        >
-          Anterior
-        </button>
+          </div>
+        </form>
 
-        <span> {paginaAtual} </span>
+      {/* ========== TABELA DE COMISSOES ========== */}
 
-        <button
-          onClick={() => setPaginaAtual((prev) => prev + 1)}
-          disabled={paginaAtual >= totalPaginas}
-          className={`px-4 py-2 rounded text-white 
-            ${paginaAtual >= totalPaginas ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
-        >
-          Próxima
-        </button>
+        <div className="bg-white shadow-md overflow-x-auto px-4 mb-4 flex-1">
+          <div className="max-h-[400px] overflow-y-auto">
+            <table className="min-w-full text-sm text-left border-collapse">
+              <thead className="bg-blue-700 text-white">
+                <tr>
+                  <th className="px-2 py-4 w-10"> ID </th>
+                  <th className="px-2 py-3 w-50"> Conta </th>
+                  <th className="px-2 py-3 w-50"> Valor </th>
+                  <th className="px-2 py-3 w-50 "> <div className="flex items-center gap-1">Data de Lançamento <FaArrowRightArrowLeft size={20} className="inline transform rotate-90 cursor-pointer" onClick={ordemDatas} /></div> </th>
+                  <th className="px-2 py-3 text-center w-20"> Detalhes </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {selecionarTipoLancamentoFiltro === "Entrada" ? (
+                  lancamentosEntrada.map( (info) => (
+                    <tr key={info.id} className="border-b-3 border-gray-600">
+                      <td className="px-2 py-2"> {info.id} </td>
+                      <td className="px-2 py-2"> {info.plano_conta_entrada_lancamento?.descricao} </td>
+                      <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
+                      <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
+                      <td className="px-4 py-2 flex justify-center">
+                        <button  onClick={() => detalhesContasEntrada(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  lancamentosSaida.map( (info) => (
+                    <tr key={info.id} className="border-b-3 border-gray-600">
+                      <td className="px-2 py-2"> {info.id} </td>
+                      <td className="px-2 py-2"> {info.plano_conta_despesa_lancamento?.descricao} </td>
+                      <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
+                      <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
+                      <td className="px-4 py-2 flex justify-center">
+                        <button  onClick={() => detalhesContasDespesas(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="flex gap-4 justify-center items-center mt-4 mb-6">
+          <button
+            onClick={() => setPaginaAtual((prev) => Math.max(prev - 1, 1))}
+            disabled={paginaAtual === 1}
+            className={`px-4 py-2 rounded text-white 
+              ${paginaAtual === 1 ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
+          >
+            Anterior
+          </button>
+
+          <span> {paginaAtual} </span>
+
+          <button
+            onClick={() => setPaginaAtual((prev) => prev + 1)}
+            disabled={paginaAtual >= totalPaginas}
+            className={`px-4 py-2 rounded text-white 
+              ${paginaAtual >= totalPaginas ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'}`}
+          >
+            Próxima
+          </button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 px-4 py-3 bg-white border-t border-gray-200 shadow-sm rounded-b-md">
+          <div className="text-sm sm:text-base font-medium text-gray-700">
+            <span className="text-gray-600">Soma das comissões:</span> 
+            <span className="text-blue-700 font-semibold ml-2">
+              {somaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </span>
+          </div>
+        </div>
+
       </div>
 
       {/* ========== FAZER LANÇAMENTO ========== */}
@@ -778,7 +809,6 @@ export default function LancamentosContas() {
                 />
                 
               </div>
-
 
               <button type="submit" className="text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-lg text-center cursor-pointer w-full h-9 bg-[linear-gradient(90deg,_rgba(4,128,8,1)_1%,_rgba(0,125,67,1)_50%,_rgba(10,115,5,1)_100%)] hover:bg-[linear-gradient(90deg,_rgba(6,150,10,1)_1%,_rgba(0,145,77,1)_50%,_rgba(12,135,7,1)_100%)] transition duration-200 my-4"> Salvar </button>
 
