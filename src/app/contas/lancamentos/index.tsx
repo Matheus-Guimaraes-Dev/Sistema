@@ -320,7 +320,6 @@ export default function LancamentosContas() {
           const calcularValores = resultadoFiltrado?.reduce((acc, item) => acc + (item.valor_recebido ?? 0), 0) ?? 0;
           setSomaTotal(calcularValores);
           
-
         } 
 
       }
@@ -637,6 +636,7 @@ export default function LancamentosContas() {
                   <th className="px-2 py-3 w-50"> Conta </th>
                   <th className="px-2 py-3 w-50"> Valor </th>
                   <th className="px-2 py-3 w-50 "> <div className="flex items-center gap-1">Data de Lançamento <FaArrowRightArrowLeft size={20} className="inline transform rotate-90 cursor-pointer" onClick={ordemDatas} /></div> </th>
+                  <th className="px-2 py-3 w-50"> Observação </th>
                   <th className="px-2 py-3 text-center w-20"> Detalhes </th>
                 </tr>
               </thead>
@@ -648,6 +648,7 @@ export default function LancamentosContas() {
                       <td className="px-2 py-2"> {info.plano_conta_entrada_lancamento?.descricao} </td>
                       <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
                       <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
+                      <td className="px-2 py-2"> {info?.descricao} </td>
                       <td className="px-4 py-2 flex justify-center">
                         <button  onClick={() => detalhesContasEntrada(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                       </td>
@@ -660,6 +661,7 @@ export default function LancamentosContas() {
                       <td className="px-2 py-2"> {info.plano_conta_despesa_lancamento?.descricao} </td>
                       <td className="px-2 py-2"> {formatarDinheiro(info.valor_recebido)} </td>
                       <td className="px-2 py-2"> {formatarData(info?.data_lancamento)} </td>
+                      <td className="px-2 py-2"> {info?.descricao} </td>
                       <td className="px-4 py-2 flex justify-center">
                         <button  onClick={() => detalhesContasDespesas(info.id)} className="text-blue-600 hover:underline cursor-pointer bg-white relative rounded-full w-6 h-6"> <IoIosArrowDroprightCircle className="absolute top-[-4px] right-[-4px]" size={32} /> </button>
                       </td>
