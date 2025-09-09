@@ -697,7 +697,7 @@ export default function LancamentosContas() {
 
         <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 px-4 py-3 bg-white border-t border-gray-200 shadow-sm rounded-b-md">
           <div className="text-sm sm:text-base font-medium text-gray-700">
-            <span className="text-gray-600">Soma das comissões:</span> 
+            <span className="text-gray-600">Soma Total:</span> 
             <span className="text-blue-700 font-semibold ml-2">
               {somaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </span>
