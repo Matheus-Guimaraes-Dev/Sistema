@@ -3,42 +3,31 @@
 import jsPDF from "jspdf";
 
 interface Infos {
-  cidade: string;
-  estado: string;
+  id: number;
+  valor_emprestado: number;
+  valor_receber: number;
+  valor_pago: number | null;
+  data_vencimento: string;
+  data_emprestimo: string;
   clientes: {
     id: number;
-    cpf: string;
     nome_completo: string;
+    cpf: string;
     cidade: string;
     estado: string;
     bairro: string;
     rua: string;
     numero_casa: string;
-  },
-  comissao: number;
-  consultores: {
-    id: number;
-    cpf: string;
-    nome_completo: string;
-  },
-  data_emprestimo: string;
-  data_vencimento: string;
-  descricao: string;
-  id: number;
-  numero_promissoria: number | null;
-  status: string;
-  status_comissao: string;
-  tipo_lancamento: string;
-  valor_emprestado: number;
-  valor_pago: number | null;
-  valor_receber: number;
+  };
 }
 
 interface InformacoesProps {
-  informacoes: Infos;
+  informacoes: Infos[];
 }
 
-export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
+export default function GerarNotas({ informacoes } : InformacoesProps  ) {
+
+  console.log("teste");
 
   function numeroPorExtenso(valor: number): string {
 
@@ -231,127 +220,150 @@ export default function NotaPromissoria({ informacoes } : InformacoesProps  ) {
     
     const doc = new jsPDF("portrait", "mm", "a4");
 
-    doc.setFillColor(255, 245, 120);
-    doc.setLineWidth(0.5);
-    doc.rect(5, 5, 200, 90, "FD");
+    const alturaPagina = doc.internal.pageSize.height; // altura total
+    const alturaNota = 86; // altura da nota
+    let yAtual = 5; // margem inicial do topo
+    let deslocamento = 0
 
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Nº", 45, 15);
-    doc.setFillColor(255, 255, 255);
-    doc.setLineWidth(0.4);
-    doc.rect(51, 11, 25, 5, "FD");
-    doc.setFontSize(10);
-    const IdPromissoria = informacoes.id.toString();
-    doc.text(IdPromissoria, 52, 14.8);
+    informacoes.forEach((item, index) => {
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("AVALISTA(S)", 11, 92, { angle: 90 });
-    doc.text("Nome: .........................................................................", 18, 92, { angle: 90 });
-    doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92, { angle: 90 });
-    doc.text("Nome: .........................................................................", 31, 92, { angle: 90 });
-    doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92, { angle: 90 });
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("R$", 153, 15);
-    doc.setFillColor(255, 255, 255);
-    doc.setLineWidth(0.4);
-    doc.rect(160, 11, 42, 5, "FD");
-    doc.setFontSize(10);
-    const valorFinanceiro = formatarMoedaBR(informacoes.valor_receber);
-    doc.text(valorFinanceiro, 161, 14.8);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const dataVencimento = capitalizarData(informacoes.data_vencimento);
-    doc.text("Vencimento:", 133, 9);
-    doc.text(dataVencimento, 153, 9);
-
-    const dataEmExtenso = dataPorExtenso(informacoes.data_vencimento);
-    doc.text(`No dia ${dataEmExtenso}`, 45, 25);
-    doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
-    doc.setFont("helvetica", "bold");
-    doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
-    doc.setFont("helvetica", "normal");
-    doc.text("OU À SUA ORDEM,", 45, 44);
-    doc.text("A QUANTIA DE", 45, 48);
-
-    const xBox = 72;           // início do retângulo
-    const yBox = 41;           // topo do retângulo
-    const wBox = 130;          // largura do retângulo
-    const minBoxHeight = 10;   // altura mínima do retângulo (seu layout)
-    const xText = 73;          // X onde começa o texto
-    const yText = 44;          // baseline da 1ª linha
-    const margemDireita = 3;   // folga à direita (setinha/borda)
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-
-    const larguraUtil = (xBox + wBox - margemDireita) - xText;
-
-    const valorExtenso = numeroPorExtenso(informacoes.valor_receber).toUpperCase();
-    const base = `${valorExtenso} EM MOEDA CORRENTE DESTE PAÍS`.trim();
-
-    let linhas = doc.splitTextToSize(base, larguraUtil);
-
-    const pt2mm = 0.352777778;
-    const lineFactor = doc.getLineHeightFactor ? doc.getLineHeightFactor() : 1.15;
-    const lineHeightMm = doc.getFontSize() * lineFactor * pt2mm;
-    const paddingV = 2;
-
-    const hBox = Math.max(minBoxHeight, linhas.length * lineHeightMm + paddingV);
-
-    const linhasQueCabem = Math.ceil((hBox - paddingV) / lineHeightMm);
-
-    const wAst = doc.getTextWidth("*");
-    const qtdAstLinhaCheia = Math.floor(larguraUtil / wAst);
-    const linhasCompletas = [];
-
-    for (let i = 0; i < linhasQueCabem; i++) {
-      if (i < linhas.length) {
-        const t = linhas[i].trim();
-        const w = doc.getTextWidth(t);
-        const restante = Math.max(0, larguraUtil - w);
-        const qtdAst = Math.floor(restante / wAst);
-        linhasCompletas.push(t + "*".repeat(qtdAst));
-      } else {
-        linhasCompletas.push("*".repeat(qtdAstLinhaCheia));
+      if (yAtual + alturaNota > alturaPagina) {
+        doc.addPage();
+        yAtual = 5;
+        deslocamento =0
+      } else if (index === 2) {
+        console.log("teste fdsfsdf");
+        deslocamento = 100;
       }
-    }
 
-    doc.setFillColor(255, 255, 255);
-    doc.rect(xBox, yBox, wBox, hBox, "F");
-    doc.text(linhasCompletas, xText, yText);
+      console.log(index);
 
-    const cidadeEbairro = `${informacoes.clientes.cidade} - ${informacoes.clientes.bairro || "Não informado"}`;
-    doc.text("Cidade: ", 45, 56);
-    doc.text(cidadeEbairro, 64, 56);
+      doc.setFillColor(255, 245, 120);
+      doc.setLineWidth(0.5);
+      doc.rect(5, yAtual, 200, 90, "FD");
 
-    const dataEmissao = formatarDataISO(informacoes.data_emprestimo);
-    doc.text("Data de Emissão: ", 150, 56);
-    doc.setFont("helvetica", "bold");
-    doc.text(dataEmissao, 175, 56);
-    doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Nº", 45, 15 + deslocamento);
+      doc.setFillColor(255, 255, 255);
+      doc.setLineWidth(0.4);
+      doc.rect(51, 11 + deslocamento, 25, 5, "FD");
+      doc.setFontSize(10);
+      const IdPromissoria = informacoes[index].id.toString();
+      doc.text(IdPromissoria, 52, 14.8 + deslocamento);
 
-    const nomeCliente = informacoes.clientes.nome_completo;
-    doc.text("Nome: ", 45, 62);
-    doc.text(nomeCliente, 64, 62);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("AVALISTA(S)", 11, 92, { angle: 90 });
+      doc.text("Nome: .........................................................................", 18, 92, { angle: 90 });
+      doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92, { angle: 90 });
+      doc.text("Nome: .........................................................................", 31, 92, { angle: 90 });
+      doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92, { angle: 90 });
 
-    const cpfCliente = formatarCpfCnpj(informacoes.clientes.cpf);
-    doc.text("CPF/CNPJ: ", 45, 68);
-    doc.text(cpfCliente, 64, 68);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("R$", 153, 15);
+      doc.setFillColor(255, 255, 255);
+      doc.setLineWidth(0.4);
+      doc.rect(160, 11, 42, 5, "FD");
+      doc.setFontSize(10);
+      const valorFinanceiro = formatarMoedaBR(informacoes[index].valor_receber);
+      doc.text(valorFinanceiro, 161, 14.8);
 
-    const endereco = `${informacoes.clientes.rua || "Não informado"}, Nº: ${informacoes.clientes.numero_casa || "Não informado"}`;
-    doc.text("Endereço: ", 105, 68);
-    doc.text(endereco, 120, 68);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const dataVencimento = capitalizarData(informacoes[index].data_vencimento);
+      doc.text("Vencimento:", 133, 9);
+      doc.text(dataVencimento, 153, 9);
 
-    doc.setLineWidth(0.45);
-    doc.line(55, 87, 190, 87);
-    doc.text(nomeCliente, 92, 92);
+      const dataEmExtenso = dataPorExtenso(informacoes[index].data_vencimento);
+      doc.text(`No dia ${dataEmExtenso}`, 45, 25);
+      doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
+      doc.setFont("helvetica", "bold");
+      doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
+      doc.setFont("helvetica", "normal");
+      doc.text("OU À SUA ORDEM,", 45, 44);
+      doc.text("A QUANTIA DE", 45, 48);
 
-    doc.save(`nota-promissoria-${informacoes.id}.pdf`);
+      const xBox = 72;           // início do retângulo
+      const yBox = 41;           // topo do retângulo
+      const wBox = 130;          // largura do retângulo
+      const minBoxHeight = 10;   // altura mínima do retângulo (seu layout)
+      const xText = 73;          // X onde começa o texto
+      const yText = 44;          // baseline da 1ª linha
+      const margemDireita = 3;   // folga à direita (setinha/borda)
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+
+      const larguraUtil = (xBox + wBox - margemDireita) - xText;
+
+      const valorExtenso = numeroPorExtenso(informacoes[index].valor_receber).toUpperCase();
+      const base = `${valorExtenso} EM MOEDA CORRENTE DESTE PAÍS`.trim();
+
+      let linhas = doc.splitTextToSize(base, larguraUtil);
+
+      const pt2mm = 0.352777778;
+      const lineFactor = doc.getLineHeightFactor ? doc.getLineHeightFactor() : 1.15;
+      const lineHeightMm = doc.getFontSize() * lineFactor * pt2mm;
+      const paddingV = 2;
+
+      const hBox = Math.max(minBoxHeight, linhas.length * lineHeightMm + paddingV);
+
+      const linhasQueCabem = Math.ceil((hBox - paddingV) / lineHeightMm);
+
+      const wAst = doc.getTextWidth("*");
+      const qtdAstLinhaCheia = Math.floor(larguraUtil / wAst);
+      const linhasCompletas = [];
+
+      for (let i = 0; i < linhasQueCabem; i++) {
+        if (i < linhas.length) {
+          const t = linhas[i].trim();
+          const w = doc.getTextWidth(t);
+          const restante = Math.max(0, larguraUtil - w);
+          const qtdAst = Math.floor(restante / wAst);
+          linhasCompletas.push(t + "*".repeat(qtdAst));
+        } else {
+          linhasCompletas.push("*".repeat(qtdAstLinhaCheia));
+        }
+      }
+
+      doc.setFillColor(255, 255, 255);
+      doc.rect(xBox, yBox, wBox, hBox, "F");
+      doc.text(linhasCompletas, xText, yText);
+
+      const cidadeEbairro = `${informacoes[index].clientes.cidade} - ${informacoes[index].clientes.bairro || "Não informado"}`;
+      doc.text("Cidade: ", 45, 56);
+      doc.text(cidadeEbairro, 64, 56);
+
+      const dataEmissao = formatarDataISO(informacoes[index].data_emprestimo);
+      doc.text("Data de Emissão: ", 150, 56);
+      doc.setFont("helvetica", "bold");
+      doc.text(dataEmissao, 175, 56);
+      doc.setFont("helvetica", "normal");
+
+      const nomeCliente = informacoes[index].clientes.nome_completo;
+      doc.text("Nome: ", 45, 62);
+      doc.text(nomeCliente, 64, 62);
+
+      const cpfCliente = formatarCpfCnpj(informacoes[index].clientes.cpf);
+      doc.text("CPF/CNPJ: ", 45, 68);
+      doc.text(cpfCliente, 64, 68);
+
+      const endereco = `${informacoes[index].clientes.rua || "Não informado"}, Nº: ${informacoes[index].clientes.numero_casa || "Não informado"}`;
+      doc.text("Endereço: ", 105, 68);
+      doc.text(endereco, 120, 68);
+
+      doc.setLineWidth(0.45);
+      doc.line(55, 87, 190, 87);
+      doc.text(nomeCliente, 92, 92);
+
+      yAtual += alturaNota + 10;
+      deslocamento += 110
+
+    })
+
+      doc.save(`nota-promissoria.pdf`);
 
   };
 

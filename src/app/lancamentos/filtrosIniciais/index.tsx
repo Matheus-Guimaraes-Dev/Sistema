@@ -2,7 +2,7 @@
 
 import { InputCliente } from "@/app/clientes/componentes/input-cliente";
 import { IoIosArrowDroprightCircle } from "react-icons/io";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, use } from "react";
 import { createClient } from "@/lib/client";
 import { useRouter } from "next/navigation";
 import { limiteCpf, limiteDataPagamento, limiteIdCliente, limiteIdDocumento } from "@/funcoes/limitacao";
@@ -22,6 +22,7 @@ import { limiteDataEmprestimo, limiteDataVencimento } from "@/funcoes/limitacao"
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { useUser } from "@/contexts/UserContext";
 import { Recebimentos } from "../types";
+import GerarNotas from "../gerarNotas";
 
 interface ContasPagas {
   id: number,
@@ -40,6 +41,25 @@ interface ContasPagas {
     id: number,
     tipo_lancamento: string,
     descricao: string,
+  }
+}
+
+interface NotasInfos {
+  id: number;
+  valor_emprestado: number;
+  valor_receber: number;
+  valor_pago: number;
+  data_vencimento: string;
+  data_emprestimo: string;
+  clientes: {
+    id: number;
+    nome_completo: string;
+    cpf: string;
+    cidade: string;
+    estado: string;
+    bairro: string;
+    rua: string;
+    numero_casa: string;
   }
 }
 
@@ -104,6 +124,8 @@ export function FiltrosLancamentos() {
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const [tipoData, setTipoData] = useState("");
+
+  const [notas, setNotas] = useState<NotasInfos[]>([])
   
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -1110,6 +1132,8 @@ async function buscarContasPagas() {
       }
     });
 
+    console.log(selecionadosPagos)
+
   }
 
   const valorTotalSelecionadoPago = useMemo(() => {
@@ -1121,6 +1145,43 @@ async function buscarContasPagas() {
   }, [contasPagas, selecionadosPagos]);
 
   // =======================================================
+
+  async function geraNotasPromissorias() {
+
+    if (selecionadosPendentes.length === 0) return toast.error("Selecione um documento");
+
+    const { data, error } = await supabase
+      .from("contas_receber")
+      .select(`
+        id, 
+        valor_emprestado,
+        valor_receber,
+        valor_pago,
+        data_vencimento,
+        data_emprestimo,
+        clientes (
+          id,
+          nome_completo,
+          cpf,
+          cidade,
+          estado,
+          bairro,
+          rua,
+          numero_casa
+        )
+      `)
+      .in("id", selecionadosPendentes)
+      .order("id", { ascending: true });
+
+    if (error) {
+      toast.error("Erro ao gerar nota promissória");
+      console.error(error);
+    } else {
+      console.log(data);
+      setNotas(data);
+    }
+
+  }
 
   // ========== BUSCAR AS FORMAS DE RECEBIMENTO ==========
 
@@ -1460,9 +1521,26 @@ async function buscarContasPagas() {
 
         <div className="px-4 mb-4 flex gap-2 justify-between">
 
-          {( (status === "Pendente" || status === "Cancelado") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
-            <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
-          )}
+          <div className="flex gap-4">
+            {( (status === "Pendente" || status === "Cancelado") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
+              <button onClick={() => setAbrirModalBaixa(true)} className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md text-sm cursor-pointer"> Baixar </button>
+            )}
+
+            {( (status === "Pendente") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
+              <>
+                <button
+                  onClick={geraNotasPromissorias}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"
+                >
+                  Buscar Notas Promissórias
+                </button>
+
+                {notas.length > 0 && (
+                  <GerarNotas informacoes={notas} />
+                )}
+              </>
+            )}
+          </div>
 
           {( (status === "Pago") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
             <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
