@@ -231,12 +231,7 @@ export default function GerarNotas({ informacoes } : InformacoesProps  ) {
         doc.addPage();
         yAtual = 5;
         deslocamento =0
-      } else if (index === 2) {
-        console.log("teste fdsfsdf");
-        deslocamento = 100;
-      }
-
-      console.log(index);
+      } 
 
       doc.setFillColor(255, 245, 120);
       doc.setLineWidth(0.5);
@@ -254,43 +249,45 @@ export default function GerarNotas({ informacoes } : InformacoesProps  ) {
 
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text("AVALISTA(S)", 11, 92, { angle: 90 });
-      doc.text("Nome: .........................................................................", 18, 92, { angle: 90 });
-      doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92, { angle: 90 });
-      doc.text("Nome: .........................................................................", 31, 92, { angle: 90 });
-      doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92, { angle: 90 });
+      doc.text("AVALISTA(S)", 11, 92 + deslocamento, { angle: 90 });
+      doc.text("Nome: .........................................................................", 18, 92 + deslocamento, { angle: 90 });
+      doc.text("CPF/CNPJ: .............................. Fone: ........................", 25, 92 + deslocamento, { angle: 90 });
+      doc.text("Nome: .........................................................................", 31, 92 + deslocamento, { angle: 90 });
+      doc.text("CPF/CNPJ: .............................. Fone: ........................", 37, 92 + deslocamento, { angle: 90 });
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("R$", 153, 15);
+      doc.text("R$", 153, 15 + deslocamento);
       doc.setFillColor(255, 255, 255);
       doc.setLineWidth(0.4);
-      doc.rect(160, 11, 42, 5, "FD");
+      doc.rect(160, 11 + deslocamento, 42, 5, "FD");
       doc.setFontSize(10);
-      const valorFinanceiro = formatarMoedaBR(informacoes[index].valor_receber);
-      doc.text(valorFinanceiro, 161, 14.8);
+      const valorFinanceiro = formatarMoedaBR(
+        informacoes[index].valor_receber - (informacoes[index].valor_pago || 0)
+      );
+      doc.text(valorFinanceiro, 161, 14.8 + deslocamento);
 
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
       const dataVencimento = capitalizarData(informacoes[index].data_vencimento);
-      doc.text("Vencimento:", 133, 9);
-      doc.text(dataVencimento, 153, 9);
+      doc.text("Vencimento:", 133, 9 + deslocamento);
+      doc.text(dataVencimento, 153, 9 + deslocamento);
 
       const dataEmExtenso = dataPorExtenso(informacoes[index].data_vencimento);
-      doc.text(`No dia ${dataEmExtenso}`, 45, 25);
-      doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32);
+      doc.text(`No dia ${dataEmExtenso}`, 45, 25 + deslocamento);
+      doc.text("...................................................................................................Pagar(ei)(emos) por esta única via de NOTA PROMISSÓRIA a", 45, 32 + deslocamento);
       doc.setFont("helvetica", "bold");
-      doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38);
+      doc.text("FABIANA LANG DE SOUZA     CPF/CNPJ: 612.710.712-15", 45, 38 + deslocamento);
       doc.setFont("helvetica", "normal");
-      doc.text("OU À SUA ORDEM,", 45, 44);
-      doc.text("A QUANTIA DE", 45, 48);
+      doc.text("OU À SUA ORDEM,", 45, 44 + deslocamento);
+      doc.text("A QUANTIA DE", 45, 48 + deslocamento);
 
       const xBox = 72;           // início do retângulo
-      const yBox = 41;           // topo do retângulo
+      const yBox = 41 + deslocamento;           // topo do retângulo
       const wBox = 130;          // largura do retângulo
       const minBoxHeight = 10;   // altura mínima do retângulo (seu layout)
       const xText = 73;          // X onde começa o texto
-      const yText = 44;          // baseline da 1ª linha
+      const yText = 44 + deslocamento;          // baseline da 1ª linha
       const margemDireita = 3;   // folga à direita (setinha/borda)
 
       doc.setFontSize(8);
@@ -298,7 +295,7 @@ export default function GerarNotas({ informacoes } : InformacoesProps  ) {
 
       const larguraUtil = (xBox + wBox - margemDireita) - xText;
 
-      const valorExtenso = numeroPorExtenso(informacoes[index].valor_receber).toUpperCase();
+      const valorExtenso = numeroPorExtenso(informacoes[index].valor_receber - (informacoes[index].valor_pago || 0)).toUpperCase();
       const base = `${valorExtenso} EM MOEDA CORRENTE DESTE PAÍS`.trim();
 
       let linhas = doc.splitTextToSize(base, larguraUtil);
@@ -333,33 +330,33 @@ export default function GerarNotas({ informacoes } : InformacoesProps  ) {
       doc.text(linhasCompletas, xText, yText);
 
       const cidadeEbairro = `${informacoes[index].clientes.cidade} - ${informacoes[index].clientes.bairro || "Não informado"}`;
-      doc.text("Cidade: ", 45, 56);
-      doc.text(cidadeEbairro, 64, 56);
+      doc.text("Cidade: ", 45, 56 + deslocamento);
+      doc.text(cidadeEbairro, 64, 56 + deslocamento);
 
       const dataEmissao = formatarDataISO(informacoes[index].data_emprestimo);
-      doc.text("Data de Emissão: ", 150, 56);
+      doc.text("Data de Emissão: ", 150, 56 + deslocamento);
       doc.setFont("helvetica", "bold");
-      doc.text(dataEmissao, 175, 56);
+      doc.text(dataEmissao, 175, 56 + deslocamento);
       doc.setFont("helvetica", "normal");
 
       const nomeCliente = informacoes[index].clientes.nome_completo;
-      doc.text("Nome: ", 45, 62);
-      doc.text(nomeCliente, 64, 62);
+      doc.text("Nome: ", 45, 62 + deslocamento);
+      doc.text(nomeCliente, 64, 62 + deslocamento);
 
       const cpfCliente = formatarCpfCnpj(informacoes[index].clientes.cpf);
-      doc.text("CPF/CNPJ: ", 45, 68);
-      doc.text(cpfCliente, 64, 68);
+      doc.text("CPF/CNPJ: ", 45, 68 + deslocamento);
+      doc.text(cpfCliente, 64, 68 + deslocamento);
 
       const endereco = `${informacoes[index].clientes.rua || "Não informado"}, Nº: ${informacoes[index].clientes.numero_casa || "Não informado"}`;
-      doc.text("Endereço: ", 105, 68);
-      doc.text(endereco, 120, 68);
+      doc.text("Endereço: ", 105, 68 + deslocamento);
+      doc.text(endereco, 120, 68 + deslocamento);
 
       doc.setLineWidth(0.45);
-      doc.line(55, 87, 190, 87);
-      doc.text(nomeCliente, 92, 92);
+      doc.line(55, 87 + deslocamento, 190, 87 + deslocamento);
+      doc.text(nomeCliente, 92, 92 + deslocamento);
 
       yAtual += alturaNota + 10;
-      deslocamento += 110
+      deslocamento += 96
 
     })
 
