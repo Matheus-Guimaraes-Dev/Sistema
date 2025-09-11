@@ -1902,7 +1902,7 @@ async function buscarContasPagas() {
 
         {/* ========== GERAR NOTAS PROMISSÓRIAS ========== */}
 
-        {mostrarModalNotas && (
+        {mostrarModalNotas && selecionadosPendentes.length >= 1 && (
           <div className="fixed inset-0 flex items-center justify-center z-50">
 
             <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
