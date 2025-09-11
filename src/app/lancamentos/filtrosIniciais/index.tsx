@@ -127,8 +127,6 @@ export function FiltrosLancamentos() {
 
   const [notas, setNotas] = useState<NotasInfos[]>([]);
   const [mostrarModalNotas, setMostrarModalNotas] = useState(false);
-
-  const teste = "123";
   
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
