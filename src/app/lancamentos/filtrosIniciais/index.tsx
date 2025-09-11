@@ -1912,9 +1912,7 @@ async function buscarContasPagas() {
 
               <div className="flex justify-center gap-4">
 
-                {notas.length > 0 && (
-                  <GerarNotas informacoes={notas} />
-                )}
+                <GerarNotas informacoes={notas} />
 
                 <button onClick={() => {
                   setMostrarModalNotas(false);
