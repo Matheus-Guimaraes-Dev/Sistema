@@ -127,8 +127,6 @@ export function FiltrosLancamentos() {
 
   const [notas, setNotas] = useState<NotasInfos[]>([]);
   const [mostrarModalNotas, setMostrarModalNotas] = useState(false);
-
-  const teste = "123";
   
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -1542,11 +1540,12 @@ async function buscarContasPagas() {
                 </button>
               </>
             )}
-          </div>
 
-          {( (status === "Pago") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
-            <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
-          )}
+            {( (status === "Pago") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
+              <button onClick={() => setMostrarModal(true)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"> Estornar </button>
+            )}
+
+          </div>
 
           {valorTotalSelecionadosPendente > 0 && (
             <div className="mt-4 text-right font-semibold text-lg">
@@ -1925,7 +1924,6 @@ async function buscarContasPagas() {
           </div>
         )}
   
-
         {loading && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
             <div className="w-16 h-16 border-4 border-t-blue-500 border-white rounded-full animate-spin"></div>
