@@ -60,7 +60,7 @@ interface NotasInfos {
     bairro: string;
     rua: string;
     numero_casa: string;
-  }
+  } | any
 }
 
 export function FiltrosLancamentos() {
@@ -125,7 +125,8 @@ export function FiltrosLancamentos() {
 
   const [tipoData, setTipoData] = useState("");
 
-  const [notas, setNotas] = useState<NotasInfos[]>([])
+  const [notas, setNotas] = useState<NotasInfos[]>([]);
+  const [mostrarModalNotas, setMostrarModalNotas] = useState(false);
   
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -1529,15 +1530,14 @@ async function buscarContasPagas() {
             {( (status === "Pendente") && (grupo === "Administrador" || grupo === "Proprietario") ) && (
               <>
                 <button
-                  onClick={geraNotasPromissorias}
+                  onClick={() => {
+                    geraNotasPromissorias();
+                    setMostrarModalNotas(true);
+                  }}
                   className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md text-sm cursor-pointer"
                 >
-                  Buscar Notas Promissórias
+                  Gerar Notas Promissórias
                 </button>
-
-                {notas.length > 0 && (
-                  <GerarNotas informacoes={notas} />
-                )}
               </>
             )}
           </div>
@@ -1895,6 +1895,31 @@ async function buscarContasPagas() {
                   className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 cursor-pointer"> Sim </button>
 
                 <button onClick={() => setMostrarModal(false)} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== GERAR NOTAS PROMISSÓRIAS ========== */}
+
+        {mostrarModalNotas && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+
+            <div className="absolute inset-0 backdrop-blur-sm bg-white/10"> </div>
+
+            <div className="relative bg-white p-6 rounded-xl shadow-lg z-10 w-[90%] max-w-md text-center">
+              <h2 className="text-xl font-bold mb-4"> Deseja gerar o arquivo das notas selecionadas? </h2>
+
+              <div className="flex justify-center gap-4">
+
+                {notas.length > 0 && (
+                  <GerarNotas informacoes={notas} />
+                )}
+
+                <button onClick={() => {
+                  setMostrarModalNotas(false);
+                  setSelecionadosPendentes([]);
+                }} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Não </button>
               </div>
             </div>
           </div>
