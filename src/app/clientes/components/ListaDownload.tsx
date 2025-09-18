@@ -241,7 +241,7 @@ const baixar = async (nomeArquivo: string) => {
             <img
               src={imagemPreviewUrl}
               alt="Visualização do arquivo"
-              className="w-full h-auto rounded"
+              className="w-full max-h-[90vh] rounded"
             />
           </div>
         </div>

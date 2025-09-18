@@ -291,7 +291,7 @@ const estadoCivilOptions = [
   { label: "Solteiro(a)", value: "SOLTEIRO(A)" },
   { label: "Casado(a)", value: "CASADO(A)" },
   { label: "Companheiro(a)", value: "COMPANHEIRO(A)" },
-  { label: "Seperado(a)", value: "SEPARADO(A)" },
+  { label: "Separado(a)", value: "SEPARADO(A)" },
   { label: "Divorciado(a)", value: "DIVORCIADO(A)" },
   { label: "Viúvo(a)", value: "VIUVO(A)" },
 ];

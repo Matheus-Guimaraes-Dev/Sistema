@@ -513,7 +513,7 @@ export function Formulario() {
     { label: "Solteiro(a)", value: "Solteiro(a)" },
     { label: "Casado(a)", value: "Casado(a)" },
     { label: "Companheiro(a)", value: "Companheiro(a)"},
-    { label: "Seperado(a)", value: "Separado(a)" },
+    { label: "Separado(a)", value: "Separado(a)" },
     { label: "Divorciado(a)", value: "Divorciado(a)" },
     { label: "Viúvo(a)", value: "Viuvo(a)" },
   ];

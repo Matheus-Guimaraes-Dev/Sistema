@@ -186,7 +186,7 @@ export default function AlterarConsutores({ informacoesConsultor }: PropsAlterar
   const estadoCivilOptions = [
     { label: "Solteiro", value: "Solteiro" },
     { label: "Casado", value: "Casado" },
-    { label: "Seperado", value: "Separado" },
+    { label: "Separado", value: "Separado" },
     { label: "Divorciado", value: "Divorciado" },
     { label: "Viúvo", value: "Viuvo" },
   ];
