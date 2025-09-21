@@ -70,8 +70,6 @@ export function Formulario() {
   const [loading, setLoading] = useState(false);
   const [mensagemErro, setMensagemErro] = useState(""); 
 
-  const teste = "Teste"
-
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 

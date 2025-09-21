@@ -277,9 +277,9 @@ export function FomularioComponente() {
         }
       });
 
-      if (verificarSeTemErro !== "Sim") {
+      await Promise.all(uploadPromises);
 
-        await Promise.all(uploadPromises);
+      if (verificarSeTemErro !== "Sim") {
 
         setNome("");
         setEmail("");
@@ -442,9 +442,9 @@ export function FomularioComponente() {
         }
       });
 
-      if (verificarSeTemErro !== "Sim") {
+      await Promise.all(uploadPromises);
 
-        await Promise.all(uploadPromises);
+      if (verificarSeTemErro !== "Sim") {
 
         setNome("");
         setEmail("");
