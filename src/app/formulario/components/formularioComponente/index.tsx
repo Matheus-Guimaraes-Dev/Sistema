@@ -147,7 +147,6 @@ export function FomularioComponente() {
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
-    if (!comprovanteRenda || !comprovanteEndereco || !documentoFrente || !documentoVerso || !segurandoDocumento) return toast.error("Envie todas os 5 documentos")
 
     setLoading(true);
 
