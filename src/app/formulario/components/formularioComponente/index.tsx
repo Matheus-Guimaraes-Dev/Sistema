@@ -71,6 +71,13 @@ export function FomularioComponente() {
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
+  const [cidadeReferencia, setCidadeReferencia] = useState("");
+  const [estadoReferencia, setEstadoReferencia] = useState("");
+  const [cepReferencia, setCepReferencia] = useState("");
+  const [ruaReferencia, setRuaReferencia] = useState("");
+  const [bairroReferencia, setBairroReferencia] = useState("");
+  const [numeroReferencia, setNumeroReferencia] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [mensagemErro, setMensagemErro] = useState(""); 
   const [possuiErro, setPossuiErro] = useState(false);
@@ -80,6 +87,10 @@ export function FomularioComponente() {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
+
+  const cidadesReferencia = estadoReferencia in cidadesPorEstado
+  ? cidadesPorEstado[estadoReferencia as keyof typeof cidadesPorEstado]
   : [];
 
   const router = useRouter();
@@ -147,6 +158,12 @@ export function FomularioComponente() {
     if (!pix.trim()) return toast.error("Digite a sua chave pix!");
     if (!consultorSelecionado.trim()) return toast.error("Selecione o consultor!");
     if (!valorSolicitado.trim()) return toast.error("Digite a quantia solicitada!");
+    if (!cepReferencia.trim()) return toast.error("Digite o CEP da Referencia Pessoal");
+    if (!ruaReferencia.trim()) return toast.error("Digite a rua da Referencia Pessoal" );
+    if (!bairroReferencia.trim()) return toast.error("Digite o bairro da Referencia Pessoal");
+    if (!numeroReferencia.trim()) return toast.error("Digite o número endereço da Referencia Pessoal");
+    if (!estadoReferencia.trim()) return toast.error("Digite o estado da Referencia Pessoal");
+    if (!cidadeReferencia.trim()) return toast.error("Digite a cidade da Referencia Pessoal");
 
     setLoading(true);
 
@@ -205,7 +222,13 @@ export function FomularioComponente() {
         endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
         numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
         id_consultor: consultorSelecionado,
-        valor_solicitado: valorMonetarioCorreto
+        valor_solicitado: valorMonetarioCorreto,
+        cidade_referencia: cidadeReferencia.trim().toLocaleUpperCase(),
+        estado_referencia: estadoReferencia.trim().toLocaleUpperCase(),
+        cep_referencia: cepReferencia,
+        rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
+        bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
+        numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
       }
 
       const { error } = await supabase
@@ -317,6 +340,12 @@ export function FomularioComponente() {
         setEnderecoDaEmpresa("");
         setContatoDaEmpresa("");
         setTipoDeReferencia("");
+        setCidadeReferencia("");
+        setEstadoReferencia("");
+        setCepReferencia("");
+        setRuaReferencia("");
+        setNumeroReferencia("");
+        setBairroReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -374,7 +403,13 @@ export function FomularioComponente() {
           endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
           numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
           id_consultor: consultorSelecionado,
-          valor_solicitado: valorMonetarioCorreto
+          valor_solicitado: valorMonetarioCorreto,
+          cidade_referencia: cidadeReferencia.trim().toLocaleUpperCase(),
+          estado_referencia: estadoReferencia.trim().toLocaleUpperCase(),
+          cep_referencia: cepReferencia,
+          rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
+          bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
+          numero_referencia: numeroReferencia.trim().toLocaleUpperCase(),
         })
         .select("id")
 
@@ -482,6 +517,12 @@ export function FomularioComponente() {
         setEnderecoDaEmpresa("");
         setContatoDaEmpresa("");
         setTipoDeReferencia("");
+        setCidadeReferencia("");
+        setEstadoReferencia("");
+        setCepReferencia("");
+        setRuaReferencia("");
+        setNumeroReferencia("");
+        setBairroReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -513,6 +554,28 @@ export function FomularioComponente() {
       setRua(data.logradouro ?? '');
       setEstado(data.uf ?? ''); 
       setCidade(data.localidade ?? '');
+
+    } catch(error) {
+      setLoading(false);
+      console.log("Deu errado!");
+    }
+
+    setLoading(false);
+
+  }
+
+  async function buscarCepReferencia(cep: string) {
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data: viaCep = await response.json();
+
+      setBairroReferencia(data.bairro ?? '');
+      setRuaReferencia(data.logradouro ?? '');
+      setEstadoReferencia(data.uf ?? ''); 
+      setCidadeReferencia(data.localidade ?? '');
 
     } catch(error) {
       setLoading(false);
@@ -753,7 +816,7 @@ export function FomularioComponente() {
 
         <div className="mx-2 mt-[-12px] md:mx-0 md:mt-0">
 
-          <Label> Nome de referência pessoal </Label>
+          <Label> Nome de Referência pessoal </Label>
           <Input 
             type="text"
             value={nomeReferencia}
@@ -765,7 +828,7 @@ export function FomularioComponente() {
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
-          <Label> Whatsapp de referência </Label>
+          <Label> Whatsapp de Referência - Pessoal </Label>
           <Input 
             type="number"
             value={telefoneReferencia}
@@ -777,7 +840,7 @@ export function FomularioComponente() {
 
         <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
-          <Label> Tipo de referência </Label>
+          <Label> Tipo de Referência - Pessoal </Label>
           <Select 
             value={tipoDeReferencia}
             onChange={setTipoDeReferencia} 
@@ -785,6 +848,89 @@ export function FomularioComponente() {
             options={tipoReferencia}
           />
           
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+          <Label> CEP - Referência - Pessoal </Label>
+          <Input 
+            type="number"
+            value={cepReferencia}
+            onChange={ (e) => limiteCep(e, setCepReferencia)}
+            onBlur={ () => {
+              if (cepReferencia.length === 8) buscarCepReferencia(cepReferencia);
+            }}
+            maxLength={9}
+          />
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+
+          <Label> Rua - Referência - Pessoal </Label>
+          <Input 
+            type="text"
+            value={ruaReferencia}
+            onChange={ (e) => setRuaReferencia(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+
+          <Label> Bairro - Referência - Pessoal </Label>
+          <Input 
+            type="text"
+            value={bairroReferencia}
+            onChange={ (e) => setBairroReferencia(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+
+          <Label> Número Endereço - Referência - Pessoal </Label>
+          <Input 
+            type="number"
+            value={numeroReferencia}
+            onChange={ (e) => setNumeroReferencia(e.target.value)}
+          />
+          
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Estado - Referência - Pessoal </Label>
+
+          <select
+            value={estadoReferencia}
+            onChange={(e) => {
+              setEstadoReferencia(e.target.value);
+              setCidadeReferencia(""); 
+            }}
+            className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+          >
+          <option value="" disabled>Selecionar Estado...</option>
+            {estados.map((uf) => (
+              <option key={uf} value={uf}>{uf}</option>
+            ))}
+          </select>
+
+        </div>
+
+        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+
+          <Label> Cidade - Referência - Pessoal </Label>
+
+          <select
+          value={cidadeReferencia}
+          onChange={(e) => setCidadeReferencia(e.target.value)}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidadesReferencia.map((cidadesReferencia) => (
+            <option key={cidadesReferencia} value={cidadesReferencia}>{cidadesReferencia}</option>
+          ))}
+        </select>
+
         </div>
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">

@@ -76,6 +76,13 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
+  const [cidadeReferencia, setCidadeReferencia] = useState("");
+  const [estadoReferencia, setEstadoReferencia] = useState("");
+  const [cepReferencia, setCepReferencia] = useState("");
+  const [ruaReferencia, setRuaReferencia] = useState("");
+  const [bairroReferencia, setBairroReferencia] = useState("");
+  const [numeroReferencia, setNumeroReferencia] = useState("");
+
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const [ativar, setAtivar] = useState(false);
@@ -83,6 +90,10 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
+
+  const cidadesReferencia = estadoReferencia in cidadesPorEstado
+  ? cidadesPorEstado[estadoReferencia as keyof typeof cidadesPorEstado]
   : [];
 
   async function consultoresBuscando() {
@@ -146,7 +157,14 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setContatoDaEmpresa(informacoesCliente.numero_rh_empresa || ""),
       setConsultorSelecionado(informacoesCliente.consultores?.id.toString() || "")
       setValorSolicitado(Number(informacoesCliente.valor_solicitado || "").toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', }) || "");
-      setObservacao(informacoesCliente.observacao || "")
+      setObservacao(informacoesCliente.observacao || "");
+      setCepReferencia(informacoesCliente.cep_referencia || "");
+      setBairroReferencia(informacoesCliente.bairro_referencia || "");
+      setRuaReferencia(informacoesCliente.rua_referencia || "");
+      setNumeroReferencia(informacoesCliente.numero_referencia || "");
+      setEstadoReferencia(informacoesCliente.estado_referencia || "");
+      setCidadeReferencia(informacoesCliente.cidade_referencia || "");
+
     }
   }, [informacoesCliente] );
 
@@ -192,6 +210,12 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       id_consultor: consultorSelecionado || null,
       valor_solicitado: valorMonetarioCorreto,
       observacao: observacao,
+      cidade_referencia: cidadeReferencia.trim().toLocaleUpperCase(),
+      estado_referencia: estadoReferencia.trim().toLocaleUpperCase(),
+      cep_referencia: cepReferencia,
+      rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
+      bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
+      numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
     }
 
     const { error } = await supabase
@@ -275,6 +299,28 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
       setCidade(data.localidade);
 
     } catch(error) {
+      console.log("Deu errado!");
+    }
+
+    setLoading(false);
+
+  }
+
+  async function buscarCepReferencia(cep: string) {
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data: viaCep = await response.json();
+
+      setBairroReferencia(data.bairro ?? '');
+      setRuaReferencia(data.logradouro ?? '');
+      setEstadoReferencia(data.uf ?? ''); 
+      setCidadeReferencia(data.localidade ?? '');
+
+    } catch(error) {
+      setLoading(false);
       console.log("Deu errado!");
     }
 
@@ -506,7 +552,7 @@ const tipoReferencia = [
             )}
 
             <div>
-              <Label> Nome Referência pessoal </Label>
+              <Label> Nome Referência - Pessoal </Label>
               <InputAlterar 
                 type="text"
                 value={nomeReferencia}
@@ -515,7 +561,7 @@ const tipoReferencia = [
             </div>
 
             <div>
-              <Label> Whatsapp de Referência </Label>
+              <Label> Whatsapp de Referência - Pessoal </Label>
               <InputAlterar 
                 type="number"
                 value={telefoneReferencia}
@@ -525,7 +571,7 @@ const tipoReferencia = [
             </div>
 
             <div>
-              <Label> Tipo de referência </Label>
+              <Label> Tipo de Referência - Pessoal </Label>
               <Select 
                 value={tipoDeReferencia}
                 onChange={setTipoDeReferencia}
@@ -533,7 +579,90 @@ const tipoReferencia = [
                 options={tipoReferencia}
               />
             </div>
-      
+
+            <div className="mb-[-16px] sm:mb-0">
+              <Label> CEP - Referencia - Pessoal </Label>
+              <Input 
+                type="number"
+                value={cepReferencia}
+                onChange={ (e) => limiteCep(e, setCepReferencia)}
+                onBlur={ () => {
+                  if (cepReferencia.length === 8) buscarCepReferencia(cepReferencia);
+                }}
+                maxLength={9}
+              />
+            </div>
+
+            <div className="mb-[-16px] sm:mb-0">
+
+              <Label> Rua - Referencia - Pessoal </Label>
+              <Input 
+                type="text"
+                value={ruaReferencia}
+                onChange={ (e) => setRuaReferencia(e.target.value)}
+              />
+              
+            </div>
+
+            <div className="mb-[-16px] sm:mb-0">
+
+              <Label> Bairro - Referencia - Pessoal </Label>
+              <Input 
+                type="text"
+                value={bairroReferencia}
+                onChange={ (e) => setBairroReferencia(e.target.value)}
+              />
+              
+            </div>
+
+            <div className="mb-[-16px] sm:mb-0">
+
+              <Label> Número Endereço - Referencia - Pessoal </Label>
+              <Input 
+                type="number"
+                value={numeroReferencia}
+                onChange={ (e) => setNumeroReferencia(e.target.value)}
+              />
+              
+            </div>
+
+            <div>
+
+              <Label> Estado - Referencia - Pessoal </Label>
+
+              <select
+                value={estadoReferencia}
+                onChange={(e) => {
+                  setEstadoReferencia(e.target.value);
+                  setCidadeReferencia(""); 
+                }}
+                className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+                >
+                <option value="" disabled>Selecionar Estado...</option>
+                {estados.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+
+            </div>
+
+            <div>
+
+              <Label> Cidade - Referencia - Pessoal </Label>
+
+              <select
+                value={cidadeReferencia}
+                onChange={(e) => setCidadeReferencia(e.target.value)}
+                className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+              >
+                <option value="" disabled>Selecionar Cidade...</option>
+                {cidadesReferencia.map((cidadesReferencia) => (
+                  <option key={cidadesReferencia} value={cidadesReferencia}>{cidadesReferencia}</option>
+                ))}
+              </select>
+
+            </div>
+    
             <div>
               <Label> CEP </Label>
               <InputAlterar 

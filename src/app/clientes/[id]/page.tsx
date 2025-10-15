@@ -85,9 +85,6 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Nome do Companheiro(a):</strong> {cliente.nome_completo_companheiro || "Não possui"} </p>
             <p><strong>CPF do Companheiro(a):</strong> {cliente.cpf_companheiro || "Não possui"} </p>
             <p><strong>Whatsapp do Companheiro(a):</strong> {cliente.whatsapp_companheiro || "Não possui"} </p>
-            <p><strong>Nome de Referência):</strong> {cliente.nome_referencia || "Não possui"} </p>
-            <p><strong>Contato de Referência:</strong> {cliente.telefone_referencia || "Não possui"} </p>
-            <p><strong>Tipo de Refência:</strong> {cliente.tipo_referencia || "Não possui"} </p>
           </div>
 
           <div>
@@ -127,6 +124,26 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Número:</strong> {cliente.numero_casa}</p>
             <p><strong>Estado:</strong> {cliente.estado}</p>
             <p><strong>Cidade:</strong> {cliente.cidade}</p>
+
+          </div>
+
+        </section>
+
+        <section className="grid md:grid-cols-2 bg-white shadow rounded-xl p-6 my-5">
+
+          <div>
+            <p><strong>Nome de Referência:</strong> {cliente.nome_referencia || "Não possui"} </p>
+            <p><strong>Contato de Referência:</strong> {cliente.telefone_referencia || "Não possui"} </p>
+            <p><strong>Tipo de Refência:</strong> {cliente.tipo_referencia || "Não possui"} </p>
+            <p><strong>CEP Referência:</strong> {cliente.cep_referencia}</p>
+            <p><strong>Rua Referência:</strong> {cliente.rua_referencia}</p>
+          </div>
+
+          <div>
+            <p><strong>Bairro Referência:</strong> {cliente.bairro_referencia}</p>
+            <p><strong>Número Referência:</strong> {cliente.numero_referencia}</p>
+            <p><strong>Estado Referência:</strong> {cliente.estado_referencia}</p>
+            <p><strong>Cidade Referência:</strong> {cliente.cidade_referencia}</p>
 
           </div>
 

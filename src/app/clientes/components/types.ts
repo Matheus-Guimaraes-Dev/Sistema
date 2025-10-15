@@ -42,6 +42,12 @@ export interface infoClientes {
   }
   valor_solicitado: string;
   observacao: string;
+  cidade_referencia: string;
+  estado_referencia: string;
+  cep_referencia: string;
+  rua_referencia: string;
+  bairro_referencia: string;
+  numero_referencia: string; 
 }
 
 export interface PropsAlterar {

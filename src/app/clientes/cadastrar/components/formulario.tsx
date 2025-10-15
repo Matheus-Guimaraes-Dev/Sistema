@@ -73,6 +73,13 @@ export function Formulario() {
   const [consultorSelecionado, setConsultorSelecionado] = useState("");
   const [consultoresBusca, setConsultoresBusca] = useState<ConsultorBusca[]>([]);
 
+  const [cidadeReferencia, setCidadeReferencia] = useState("");
+  const [estadoReferencia, setEstadoReferencia] = useState("");
+  const [cepReferencia, setCepReferencia] = useState("");
+  const [ruaReferencia, setRuaReferencia] = useState("");
+  const [bairroReferencia, setBairroReferencia] = useState("");
+  const [numeroReferencia, setNumeroReferencia] = useState("");
+
   const rendaRef = useRef<HTMLInputElement>(null);
   const enderecoRef = useRef<HTMLInputElement>(null);
   const frenteRef = useRef<HTMLInputElement>(null);
@@ -84,6 +91,10 @@ export function Formulario() {
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
+  : [];
+
+  const cidadesReferencia = estadoReferencia in cidadesPorEstado
+  ? cidadesPorEstado[estadoReferencia as keyof typeof cidadesPorEstado]
   : [];
 
   async function consultoresBuscando() {
@@ -174,7 +185,13 @@ export function Formulario() {
         endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
         numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
         id_consultor: consultorSelecionado || null,
-        valor_solicitado: valorMonetarioCorreto
+        valor_solicitado: valorMonetarioCorreto,
+        cidade_referencia: cidadeReferencia.trim().toLocaleUpperCase(),
+        estado_referencia: estadoReferencia.trim().toLocaleUpperCase(),
+        cep_referencia: cepReferencia,
+        rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
+        bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
+        numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
       }
 
       const { error } = await supabase
@@ -225,6 +242,12 @@ export function Formulario() {
         setEnderecoDaEmpresa("");
         setContatoDaEmpresa("");
         setTipoDeReferencia("");
+        setCidadeReferencia("");
+        setEstadoReferencia("");
+        setCepReferencia("");
+        setRuaReferencia("");
+        setNumeroReferencia("");
+        setBairroReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -347,7 +370,13 @@ export function Formulario() {
           endereco_empresa: enderecoDaEmpresa.trim().toLocaleUpperCase(),
           numero_rh_empresa: contatoDaEmpresa.trim().toLocaleUpperCase(),
           id_consultor: consultorSelecionado || null,
-          valor_solicitado: valorMonetarioCorreto
+          valor_solicitado: valorMonetarioCorreto,
+          cidade_referencia: cidadeReferencia.trim().toLocaleUpperCase(),
+          estado_referencia: estadoReferencia.trim().toLocaleUpperCase(),
+          cep_referencia: cepReferencia,
+          rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
+          bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
+          numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
         })
         .select()
 
@@ -395,6 +424,12 @@ export function Formulario() {
         setEnderecoDaEmpresa("");
         setContatoDaEmpresa("");
         setTipoDeReferencia("");
+        setCidadeReferencia("");
+        setEstadoReferencia("");
+        setCepReferencia("");
+        setRuaReferencia("");
+        setNumeroReferencia("");
+        setBairroReferencia("");
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -496,6 +531,28 @@ export function Formulario() {
     } catch(error) {
       setLoading(false);
       console.log("Erro!");
+    }
+
+    setLoading(false);
+
+  }
+
+  async function buscarCepReferencia(cep: string) {
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data: viaCep = await response.json();
+
+      setBairroReferencia(data.bairro ?? '');
+      setRuaReferencia(data.logradouro ?? '');
+      setEstadoReferencia(data.uf ?? ''); 
+      setCidadeReferencia(data.localidade ?? '');
+
+    } catch(error) {
+      setLoading(false);
+      console.log("Deu errado!");
     }
 
     setLoading(false);
@@ -700,7 +757,7 @@ export function Formulario() {
       )}
 
       <div>
-        <Label> Nome de referência pessoal </Label>
+        <Label> Nome de Referência - Pessoal </Label>
         <InputAlterar 
           type="text"
           value={nomeReferencia}
@@ -710,7 +767,7 @@ export function Formulario() {
       </div>
 
       <div>
-        <Label> Whatsapp de Referência </Label>
+        <Label> Whatsapp de Referência - Pessoal </Label>
         <InputAlterar 
           type="number"
           value={telefoneReferencia}
@@ -720,13 +777,96 @@ export function Formulario() {
       </div>
 
       <div>
-        <Label> Tipo de referência </Label>
+        <Label> Tipo de Referência - Pessoal </Label>
         <Select 
           value={tipoDeReferencia}
           onChange={setTipoDeReferencia} 
           placeholder="Selecionar..."
           options={tipoReferencia}
         />
+      </div>
+
+      <div>
+        <Label> CEP - Referência - Pessoal </Label>
+        <Input 
+          type="number"
+          value={cepReferencia}
+          onChange={ (e) => limiteCep(e, setCepReferencia)}
+          onBlur={ () => {
+            if (cepReferencia.length === 8) buscarCepReferencia(cepReferencia);
+          }}
+          maxLength={9}
+        />
+      </div>
+
+      <div>
+
+        <Label> Rua - Referência - Pessoal </Label>
+        <Input 
+          type="text"
+          value={ruaReferencia}
+          onChange={ (e) => setRuaReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Bairro - Referência - Pessoal </Label>
+        <Input 
+          type="text"
+          value={bairroReferencia}
+          onChange={ (e) => setBairroReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Número  Referência - Pessoal </Label>
+        <Input 
+          type="number"
+          value={numeroReferencia}
+          onChange={ (e) => setNumeroReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Estado - Referência - Pessoal </Label>
+
+        <select
+          value={estadoReferencia}
+          onChange={(e) => {
+            setEstadoReferencia(e.target.value);
+            setCidadeReferencia(""); 
+          }}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Estado...</option>
+          {estados.map((uf) => (
+            <option key={uf} value={uf}>{uf}</option>
+          ))}
+        </select>
+
+      </div>
+
+      <div>
+
+        <Label> Cidade - Referência - Pessoal </Label>
+
+        <select
+          value={cidadeReferencia}
+          onChange={(e) => setCidadeReferencia(e.target.value)}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidadesReferencia.map((cidadesReferencia) => (
+            <option key={cidadesReferencia} value={cidadesReferencia}>{cidadesReferencia}</option>
+          ))}
+        </select>
+
       </div>
 
       <div>
