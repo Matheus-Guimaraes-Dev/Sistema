@@ -757,119 +757,6 @@ export function Formulario() {
       )}
 
       <div>
-        <Label> Nome de Referência - Pessoal </Label>
-        <InputAlterar 
-          type="text"
-          value={nomeReferencia}
-          onChange={ (e) => setNomeReferencia(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <Label> Whatsapp de Referência - Pessoal </Label>
-        <InputAlterar 
-          type="number"
-          value={telefoneReferencia}
-          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
-          maxLength={13}
-        />
-      </div>
-
-      <div>
-        <Label> Tipo de Referência - Pessoal </Label>
-        <Select 
-          value={tipoDeReferencia}
-          onChange={setTipoDeReferencia} 
-          placeholder="Selecionar..."
-          options={tipoReferencia}
-        />
-      </div>
-
-      <div>
-        <Label> CEP - Referência - Pessoal </Label>
-        <Input 
-          type="number"
-          value={cepReferencia}
-          onChange={ (e) => limiteCep(e, setCepReferencia)}
-          onBlur={ () => {
-            if (cepReferencia.length === 8) buscarCepReferencia(cepReferencia);
-          }}
-          maxLength={9}
-        />
-      </div>
-
-      <div>
-
-        <Label> Rua - Referência - Pessoal </Label>
-        <Input 
-          type="text"
-          value={ruaReferencia}
-          onChange={ (e) => setRuaReferencia(e.target.value)}
-        />
-        
-      </div>
-
-      <div>
-
-        <Label> Bairro - Referência - Pessoal </Label>
-        <Input 
-          type="text"
-          value={bairroReferencia}
-          onChange={ (e) => setBairroReferencia(e.target.value)}
-        />
-        
-      </div>
-
-      <div>
-
-        <Label> Número  Referência - Pessoal </Label>
-        <Input 
-          type="number"
-          value={numeroReferencia}
-          onChange={ (e) => setNumeroReferencia(e.target.value)}
-        />
-        
-      </div>
-
-      <div>
-
-        <Label> Estado - Referência - Pessoal </Label>
-
-        <select
-          value={estadoReferencia}
-          onChange={(e) => {
-            setEstadoReferencia(e.target.value);
-            setCidadeReferencia(""); 
-          }}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Estado...</option>
-          {estados.map((uf) => (
-            <option key={uf} value={uf}>{uf}</option>
-          ))}
-        </select>
-
-      </div>
-
-      <div>
-
-        <Label> Cidade - Referência - Pessoal </Label>
-
-        <select
-          value={cidadeReferencia}
-          onChange={(e) => setCidadeReferencia(e.target.value)}
-          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
-        >
-          <option value="" disabled>Selecionar Cidade...</option>
-          {cidadesReferencia.map((cidadesReferencia) => (
-            <option key={cidadesReferencia} value={cidadesReferencia}>{cidadesReferencia}</option>
-          ))}
-        </select>
-
-      </div>
-
-      <div>
         <Label> CEP </Label>
         <InputAlterar 
           type="number"
@@ -1115,6 +1002,129 @@ export function Formulario() {
         
       </div>
 
+      <div className="flex items-center justify-center my-6">
+        <div className="flex items-center w-full">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
+            Dados da Referência Pessoal
+          </h2>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+      </div>
+
+      <div>
+        <Label> Nome de Referência - Pessoal </Label>
+        <InputAlterar 
+          type="text"
+          value={nomeReferencia}
+          onChange={ (e) => setNomeReferencia(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label> Whatsapp de Referência - Pessoal </Label>
+        <InputAlterar 
+          type="number"
+          value={telefoneReferencia}
+          onChange={ (e) => limiteTelefoneReserva(e, setTelefoneReferencia)}
+          maxLength={13}
+        />
+      </div>
+
+      <div>
+        <Label> Tipo de Referência - Pessoal </Label>
+        <Select 
+          value={tipoDeReferencia}
+          onChange={setTipoDeReferencia} 
+          placeholder="Selecionar..."
+          options={tipoReferencia}
+        />
+      </div>
+
+      <div>
+        <Label> CEP - Referência - Pessoal </Label>
+        <Input 
+          type="number"
+          value={cepReferencia}
+          onChange={ (e) => limiteCep(e, setCepReferencia)}
+          onBlur={ () => {
+            if (cepReferencia.length === 8) buscarCepReferencia(cepReferencia);
+          }}
+          maxLength={9}
+        />
+      </div>
+
+      <div>
+
+        <Label> Rua - Referência - Pessoal </Label>
+        <Input 
+          type="text"
+          value={ruaReferencia}
+          onChange={ (e) => setRuaReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Bairro - Referência - Pessoal </Label>
+        <Input 
+          type="text"
+          value={bairroReferencia}
+          onChange={ (e) => setBairroReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Número  Referência - Pessoal </Label>
+        <Input 
+          type="number"
+          value={numeroReferencia}
+          onChange={ (e) => setNumeroReferencia(e.target.value)}
+        />
+        
+      </div>
+
+      <div>
+
+        <Label> Estado - Referência - Pessoal </Label>
+
+        <select
+          value={estadoReferencia}
+          onChange={(e) => {
+            setEstadoReferencia(e.target.value);
+            setCidadeReferencia(""); 
+          }}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Estado...</option>
+          {estados.map((uf) => (
+            <option key={uf} value={uf}>{uf}</option>
+          ))}
+        </select>
+
+      </div>
+
+      <div>
+
+        <Label> Cidade - Referência - Pessoal </Label>
+
+        <select
+          value={cidadeReferencia}
+          onChange={(e) => setCidadeReferencia(e.target.value)}
+          className="w-full h-9 border-2 px-1 border-[#002956] rounded  focus:outline-[#4b8ed6]"
+        >
+          <option value="" disabled>Selecionar Cidade...</option>
+          {cidadesReferencia.map((cidadesReferencia) => (
+            <option key={cidadesReferencia} value={cidadesReferencia}>{cidadesReferencia}</option>
+          ))}
+        </select>
+
+      </div>
+
       <div>
         <Label> Observação </Label>
         <InputAlterar 
@@ -1122,6 +1132,16 @@ export function Formulario() {
           value={observacao ?? ""}
           onChange={ (e) => setObservacao(e.target.value)}
         />
+      </div>
+
+      <div className="flex items-center justify-center my-6">
+        <div className="flex items-center w-full">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
+            Seus Documentos
+          </h2>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
       </div>
 
       <div className="flex items-end">

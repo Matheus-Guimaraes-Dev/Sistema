@@ -85,9 +85,19 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Nome do Companheiro(a):</strong> {cliente.nome_completo_companheiro || "Não possui"} </p>
             <p><strong>CPF do Companheiro(a):</strong> {cliente.cpf_companheiro || "Não possui"} </p>
             <p><strong>Whatsapp do Companheiro(a):</strong> {cliente.whatsapp_companheiro || "Não possui"} </p>
+            <p><strong>Moradia:</strong> {cliente.moradia}</p>
+            <p><strong>Condições da Moradia:</strong> {cliente.condicoes_moradia}</p>
+            <p><strong>Valor do Financiamento/Consórcio do Imóvel:</strong> {formatarDinheiro(cliente.valor_financiamento_moradia) || "Não possui"} </p>
+            <p><strong>Valor do Aluguel:</strong> {formatarDinheiro(cliente.valor_aluguel) || "Não possui"}</p>
+            <p><strong>CEP:</strong> {cliente.cep}</p>
+            <p><strong>Rua:</strong> {cliente.rua}</p>
+            <p><strong>Bairro:</strong> {cliente.bairro}</p>
           </div>
 
           <div>
+            <p><strong>Número:</strong> {cliente.numero_casa}</p>
+            <p><strong>Estado:</strong> {cliente.estado}</p>
+            <p><strong>Cidade:</strong> {cliente.cidade}</p>
             <p><strong>Data de Nascimento:</strong> {formatarData(cliente.data_nascimento) || ""} </p>
             <p><strong>Email:</strong> {cliente.email || ""} </p>
             <p><strong>WhatsApp:</strong> {cliente.whatsapp || ""} </p>
@@ -105,26 +115,15 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
         <section className="grid md:grid-cols-2 bg-white shadow rounded-xl p-6 my-5">
 
           <div>
-            <p><strong>Moradia:</strong> {cliente.moradia}</p>
-            <p><strong>Condições da Moradia:</strong> {cliente.condicoes_moradia}</p>
-            <p><strong>Valor do Financiamento/Consórcio do Imóvel:</strong> {formatarDinheiro(cliente.valor_financiamento_moradia) || "Não possui"} </p>
-            <p><strong>Valor do Aluguel:</strong> {formatarDinheiro(cliente.valor_aluguel) || "Não possui"}</p>
             <p><strong>Veículo:</strong> {cliente.categoria_veiculo || "Não possui"}</p>
             <p><strong>Condições do Veículo:</strong> {cliente.condicao_veiculo || "Não possui"}</p>
             <p><strong>Valor do Financiamento/Consórcio do Veículo:</strong> {formatarDinheiro(cliente.valor_financiamento_veiculo) || "Não possui"}</p>
-            <p><strong>Nome da Empresa:</strong> {cliente.nome_empresa}</p>
-            <p><strong>Endereço da Empresa:</strong> {cliente.endereco_empresa}</p>
-            <p><strong>Contato do RH da Empresa:</strong> {cliente.numero_rh_empresa}</p>
           </div>
 
           <div>
-            <p><strong>CEP:</strong> {cliente.cep}</p>
-            <p><strong>Rua:</strong> {cliente.rua}</p>
-            <p><strong>Bairro:</strong> {cliente.bairro}</p>
-            <p><strong>Número:</strong> {cliente.numero_casa}</p>
-            <p><strong>Estado:</strong> {cliente.estado}</p>
-            <p><strong>Cidade:</strong> {cliente.cidade}</p>
-
+            <p><strong>Nome da Empresa:</strong> {cliente.nome_empresa}</p>
+            <p><strong>Endereço da Empresa:</strong> {cliente.endereco_empresa}</p>
+            <p><strong>Contato do RH da Empresa:</strong> {cliente.numero_rh_empresa}</p>            
           </div>
 
         </section>
