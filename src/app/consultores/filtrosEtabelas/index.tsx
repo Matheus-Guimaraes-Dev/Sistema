@@ -71,6 +71,8 @@ export default function FiltrosETabelas() {
   const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  const [marcarTodos, setMarcarTodos] = useState(false); 
+
   const router = useRouter(); 
 
   const [paginaAtual, setPaginaAtual] = useState(1);
@@ -427,6 +429,7 @@ async function buscarComissoes() {
       toast.success("Todas as comissões foram pagas com sucesso!");
       buscarComissoes();
       setSelecionados([]);
+      setMarcarTodos(false);
       setRecebimentoSelecionado("");
       setDataPagamento("");
       setAbrirModalBaixa(false);
@@ -479,6 +482,7 @@ async function buscarComissoes() {
 
     buscarComissoes();
     setSelecionados([]);
+    setMarcarTodos(false);
     setMostrarModal(false);
   }
 
@@ -522,6 +526,26 @@ async function buscarComissoes() {
 
     }
 
+  }
+
+  useEffect( () => {
+    selecionarTodosPendentes();
+  }, [marcarTodos])
+
+  function selecionarTodosPendentes() {
+
+    const marcados: any = [];
+
+    comissoes.map( (item) => {
+      marcados.push({comissaoId: item.id, contaId: item.contas_receber.id})
+    })
+    
+    if (marcarTodos) {
+      setSelecionados(marcados);
+    } else {
+      setSelecionados([]);
+    }
+    
   }
 
   return(
@@ -638,7 +662,7 @@ async function buscarComissoes() {
       {/* ========== TABELA DE COMISSOES ========== */}
 
         <div className="bg-white shadow-md overflow-x-auto px-4 mb-4 flex-1">
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-y-auto relative">
             <table className="min-w-full text-sm text-left border-collapse">
               <thead className="bg-blue-700 text-white sticky top-0 z-10">
                 <tr>
@@ -696,6 +720,18 @@ async function buscarComissoes() {
                 ))}
               </tbody>
             </table>
+
+            <div className="absolute top-3 left-2 z-10">
+              <input
+                type="checkbox"
+                checked={marcarTodos}
+                onChange={() => { 
+                  setMarcarTodos(!marcarTodos);
+                }}
+                className="w-4 h-4 z-1"
+              />
+            </div>
+
           </div>
         </div>
 

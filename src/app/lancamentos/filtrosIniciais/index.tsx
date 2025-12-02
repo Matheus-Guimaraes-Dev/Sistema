@@ -128,7 +128,9 @@ export function FiltrosLancamentos() {
   const [notas, setNotas] = useState<NotasInfos[]>([]);
   const [mostrarModalNotas, setMostrarModalNotas] = useState(false);
 
-  const teste = "123";
+  const [marcarTodos, setMarcarTodos] = useState(false); 
+  
+  const [marcarTodosPagos, setMarcarTodosPagos] = useState(false);
   
   const trocarTipo = (valor: string) => {
     setTipo(valor === tipo ? null : valor);
@@ -1038,6 +1040,7 @@ async function buscarContasPagas() {
     } else {
       toast.success("Todos os lançamentos baixados com sucesso!");
       buscarContas();
+      setMarcarTodos(false);
       setSelecionadosPendentes([]);
       setDataRecebimento("");
       setRecebimentoSelecionado("");
@@ -1091,6 +1094,7 @@ async function buscarContasPagas() {
 
     toast.success("Estorno realizado com sucesso!");
     buscarContasPagas();
+    setMarcarTodosPagos(false);
     setSelecionadosPagos([]);
     setMostrarModal(false);
     setLoading(false);
@@ -1204,6 +1208,50 @@ async function buscarContasPagas() {
 
     }
 
+  }
+
+  useEffect( () => {
+
+    selecionarTodosPendentes();
+
+  }, [marcarTodos])
+
+  function selecionarTodosPendentes() {
+
+    const marcados: any = [] ;
+
+    contas.map( (item) => { 
+      marcados.push(item.id);
+    })
+
+    if (marcarTodos) {
+      setSelecionadosPendentes(marcados)
+    } else {
+      setSelecionadosPendentes([]);
+    }
+    
+  }
+
+  useEffect( () => {
+
+    selecionarTodosPagos();
+
+  }, [marcarTodosPagos])
+
+  function selecionarTodosPagos() {
+
+    const marcadosPagos: any = [] ;
+
+    contasPagas.map( (item) => { 
+      marcadosPagos.push({contasReceber: item.contas_receber.id, lancamentoPago: item.id, valorPago: item.valor_pago});
+    })
+
+    if (marcarTodosPagos) {
+      setSelecionadosPagos(marcadosPagos)
+    } else {
+      setSelecionadosPagos([]);
+    }
+    
   }
 
   return(
@@ -1386,7 +1434,7 @@ async function buscarContasPagas() {
 
         {(status === "Pendente" || status === "Cancelado") && (
           <div className="bg-white shadow-md overflow-x-auto px-4 mb-4 flex-1">
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-[400px] overflow-y-auto relative">
               <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-blue-700 text-white">
                   <tr>
@@ -1456,7 +1504,7 @@ async function buscarContasPagas() {
 
         {status === "Pago" && (
           <div className="bg-white shadow-md overflow-x-auto px-4 mb-4 flex-1">
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-[400px] overflow-y-auto relative">
               <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-blue-700 text-white">
                   <tr>
@@ -1508,6 +1556,18 @@ async function buscarContasPagas() {
                   )}
                 </tbody>
               </table>
+
+              <div className="absolute top-3.5 left-1">
+                <input
+                  type="checkbox"
+                  checked={marcarTodosPagos}
+                  onChange={() => { 
+                    setMarcarTodosPagos(!marcarTodosPagos);
+                  }}
+                  className="w-4 h-4"
+                />
+              </div>
+
             </div>
           </div>
         )}
