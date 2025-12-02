@@ -1436,6 +1436,18 @@ async function buscarContasPagas() {
                   )}
                 </tbody>
               </table>
+
+              <div className="absolute top-6 left-2">
+                <input
+                  type="checkbox"
+                  checked={marcarTodos}
+                  onChange={() => { 
+                    setMarcarTodos(!marcarTodos);
+                  }}
+                  className="w-4 h-4"
+                />
+              </div>
+
             </div>
           </div>
         )}

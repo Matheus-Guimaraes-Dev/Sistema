@@ -117,8 +117,10 @@ export default function RelatorioEmprestimosPendentes() {
   const [abrirModalBaixa, setAbrirModalBaixa] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const [tipoData, setTipoData] = useState("");
+  const [tipoData, setTipoData] = useState("emprestimo");
 
+  const [ordemDataCrescente, setOrdemDataCrescente] = useState("");
+  
   const estados = Object.keys(cidadesPorEstado);
   const cidades = estado in cidadesPorEstado 
   ? cidadesPorEstado[estado as keyof typeof cidadesPorEstado]
@@ -244,6 +246,16 @@ export default function RelatorioEmprestimosPendentes() {
 
         if (idCliente.trim() !== "") {
           query = query.eq("id_cliente", Number(idCliente));
+        }
+
+        if (ordemDataCrescente === "crescente" && tipoData === "vencimento") {
+          query = query.order("data_vencimento", { ascending: true })
+        } else if (ordemDataCrescente === "decrescente" && tipoData === "vencimento") { 
+          query = query.order("data_vencimento", { ascending: false })
+        } else if (ordemDataCrescente === "crescente" && tipoData === "emprestimo") {
+          query = query.order("data_vencimento", { ascending: true })
+        } else if (ordemDataCrescente === "decrescente" && tipoData === "emprestimo") {
+          query = query.order("data_vencimento", { ascending: false })
         }
 
         if (consultorFiltro.trim() !== "") {
@@ -418,10 +430,6 @@ export default function RelatorioEmprestimosPendentes() {
         const totalAReceber = somaData.reduce((acc, item) => acc + ((item.valor_receber ?? 0) - (item.valor_pago ?? 0)), 0);
         setTotalReceber(totalAReceber);
         const verificarTotalComissao = somaData.reduce( (acc, item) => acc + (item.comissao ?? 0), 0);
-        console.log(verificarTotalComissao)
-        console.log(totalQueFoiEmprestado)
-        console.log("teste")
-        console.log(totalAReceber)
         valores = {
           comissao: verificarTotalComissao,
           emprestado: totalQueFoiEmprestado,
@@ -443,10 +451,6 @@ export default function RelatorioEmprestimosPendentes() {
         clientes: item.clientes,
         comissao: item.comissao
       }));
-
-      console.log(data);
-
-      console.log("Deu certo:", valores)
 
       generatePdf(emprestimoFormatado, valores)
 
@@ -594,6 +598,16 @@ export default function RelatorioEmprestimosPendentes() {
               >
                 <option value="emprestimo"> Data Empréstimo </option>
                 <option value="vencimento"> Data Vencimento </option>
+              </select>
+
+              <select 
+                className="w-full h-9 border-2 border-[#002956] rounded  focus:outline-[#9eb0c4] text-sm sm:text-base"
+                value={ordemDataCrescente}
+                onChange={ (e) => setOrdemDataCrescente(e.target.value)}
+              >
+                <option value=""> Ordem lançamentos </option>
+                <option value="crescente"> Crescente </option>
+                <option value="decrescente"> Decrescente </option>
               </select>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
