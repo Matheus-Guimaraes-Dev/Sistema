@@ -27,8 +27,6 @@ export default function Alterar({ informacoesCliente }: PropsAlterar ) {
 
   const { grupo } = useUser();
 
-  const teste = "3123123";
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
