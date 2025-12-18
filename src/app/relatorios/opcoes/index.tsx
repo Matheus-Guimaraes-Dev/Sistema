@@ -5,6 +5,7 @@ import RelatorioClientes from "../clientes";
 import RelatorioComissoes from "../comissoes";
 import RelatorioEmprestimosPendentes from "../contasPendentes";
 import RelatorioEmprestimosPagos from "../contasPagas";
+import RelatorioEmprestimosPendentesDetalhado from "../contasPendentesDetalhado";
 
 export default function OpcoesRelatorios() {
   
@@ -33,6 +34,8 @@ export default function OpcoesRelatorios() {
         <RelatorioEmprestimosPendentes />
 
         <RelatorioEmprestimosPagos />
+
+        <RelatorioEmprestimosPendentesDetalhado />
 
       </div>
 

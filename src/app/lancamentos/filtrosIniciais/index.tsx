@@ -363,7 +363,7 @@ export function FiltrosLancamentos() {
           data_vencimento,
           data_cadastro,
           descricao,
-          clientes:clientes!id_cliente ( id, nome_completo, cpf ),
+          clientes:clientes!id_cliente ( id, nome_completo, cpf, cidade ),
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
 
@@ -595,6 +595,9 @@ export function FiltrosLancamentos() {
         }));
 
         setContas(resultadoFiltrado);
+
+        console.log(resultadoFiltrado);
+
         setErro("");
 
         const totalPaginas = Math.ceil((count ?? 0) / itensPorPagina);
@@ -1442,6 +1445,7 @@ async function buscarContasPagas() {
                     <th className="px-2 py-3 w-5">ID</th>
                     <th className="px-2 py-3 w-50">Cliente</th>
                     <th className="px-2 py-3 w-40">Consultor</th>
+                    <th className="px-2 py-3 w-40">Cidade</th>
                     <th className="px-2 py-3 w-25">Tipo</th>
                     <th className="px-2 py-3 w-40">Valor Emprestado</th>
                     <th className="px-2 py-3 w-40">Valor a Receber</th>
@@ -1465,6 +1469,7 @@ async function buscarContasPagas() {
                         <td className="px-2 w-5"> {info.id} </td>
                         <td className="px-2 py-1.5 max-w-[120px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.nome_completo || "Sem cliente"} </td>
                         <td className="px-2 py-1.5 max-w-[70px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.consultores?.nome_completo || "Sem consultor"} </td>
+                        <td className="px-2 py-1.5 max-w-[70px] sm:max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis"> {info.clientes?.cidade || "Sem cidade"} </td>
                         <td className="px-2 py-1.5"> {info.tipo_lancamento} </td>
                         <td className="px-2 py-1.5"> {Number(info.valor_emprestado).toLocaleString('pt-BR', {
                       style: 'currency',

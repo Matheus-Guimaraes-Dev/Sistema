@@ -42,6 +42,7 @@ interface ContasPendentes {
     id: number,
     cpf: string;
     nome_completo: string;
+    whatsapp: string;
   },
   consultores: {
     id: number,
@@ -57,7 +58,7 @@ interface ContasPendentes {
   comissao: number,
 }
 
-export default function RelatorioEmprestimosPendentes() {
+export default function RelatorioEmprestimosPendentesDetalhado() {
 
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -155,18 +156,19 @@ export default function RelatorioEmprestimosPendentes() {
 
     const generatePdf = async (data: ContasPendentes[], valores: ValoresTotais) => {
 
-      const doc = new jsPDF("portrait", "mm", "a4"); 
+      const doc = new jsPDF("landscape", "mm", "a4"); 
 
       doc.setFontSize(14);
-      doc.text("Relatório de Empréstimos Pendentes", 105, 15, {align: "center"});
+      doc.text("Relatório de Empréstimos Pendentes Detalhado", 145, 15, {align: "center"});
 
       const cabecalhos = [
-        ["ID", "Cliente", "Consultor", "Valor Emprestado", "Valor a Receber", "Comissão", "Data de Recebimento"]
+        ["ID", "Cliente", "Whatsapp", "Consultor", "Valor Emprestado", "Valor a Receber", "Comissão", "Data de Recebimento"]
       ];
 
       const linhas = data.map((lancamento) => [
         lancamento.id,
         lancamento.clientes?.nome_completo,
+        lancamento.clientes?.whatsapp,
         lancamento.consultores?.nome_completo,
         formatarEmReais(lancamento.valor_emprestado),
         formatarEmReais(lancamento.valor_receber - lancamento.valor_pago),
@@ -193,12 +195,13 @@ export default function RelatorioEmprestimosPendentes() {
           fillColor: [245, 245, 245],
         },
         columnStyles: {
-          0: { halign: "left", cellWidth: 16 },
-          1: { cellWidth: 54 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 28 },
-          4: { cellWidth: 22 },
-          6: { cellWidth: 30, halign: "left" },
+          0: { halign: "left", cellWidth: 15 },
+          1: { cellWidth: 75 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 31 },
+          4: { cellWidth: 33 },
+          5: { cellWidth: 31 },
+          6: { cellWidth: 27, halign: "left" },
         },
         margin: { left: 8, right: 8},
       });
@@ -234,7 +237,7 @@ export default function RelatorioEmprestimosPendentes() {
           data_vencimento,
           data_cadastro,
           comissao,
-          clientes:clientes!id_cliente ( id, nome_completo, cpf ),
+          clientes:clientes!id_cliente ( id, nome_completo, cpf, whatsapp ),
           consultores:consultores!id_consultor ( id, nome_completo )
         `, { count: "exact" });
 
@@ -452,7 +455,9 @@ export default function RelatorioEmprestimosPendentes() {
         comissao: item.comissao
       }));
 
-      generatePdf(emprestimoFormatado, valores)
+      generatePdf(emprestimoFormatado, valores);
+
+      console.log(emprestimoFormatado);
 
       setLoading(false);
 
@@ -488,7 +493,7 @@ export default function RelatorioEmprestimosPendentes() {
         }}
       > 
         <FileText className="w-6 h-6 text-purple-600" />
-        <span className="text-lg font-medium text-gray-700"> Relatório de Empréstimos - Pendentes </span> 
+        <span className="text-lg font-medium text-gray-700"> Relatório de Empréstimos Pendentes - Detalhado </span> 
       </button>
       {modalEmprestimos && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -644,6 +649,7 @@ export default function RelatorioEmprestimosPendentes() {
                 setEstado("");
                 setDataInicio("");
                 setDataFim("");
+                // setStatus("");
               }} className="bg-gray text-black px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"> Fechar </button>
             </div>
 

@@ -50,6 +50,7 @@ export interface Contas {
   clientes: {
     id: number;
     nome_completo: string;
+    cidade: string;
   } | null;
   consultores: {
     id: number;
