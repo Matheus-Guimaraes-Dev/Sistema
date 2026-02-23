@@ -15,10 +15,25 @@ import { limiteDataRg, limiteDataNascimento } from "@/funcoes/limitacao";
 import { InputAlterar } from "@/app/clientes/components/InputAlterar";
 import { Select } from "@/app/clientes/componentes/select-cliente";
 import { GoAlertFill } from "react-icons/go";
+import { CampoInfo } from "../componentes/campo-info";
+import { FormarioInfos } from "../types";
+import { limiteCepNova, limiteCpfNova, limiteTelefoneNova } from "@/funcoes-novas";
 
 interface ConsultorBusca {
   id: number;
   nome_completo: string;
+}
+
+const estadoInicial: FormarioInfos = {
+  nomeDaMae: "",
+  cpfDaMae: "",
+  whatsappMae: "",
+  cepMae: "",
+  ruaMae: "",
+  bairroMae: "",
+  numeroCasaMae: "",
+  estadoMae: "",
+  cidadeMae: ""
 }
 
 export function FomularioComponente() {
@@ -95,6 +110,38 @@ export function FomularioComponente() {
 
   const router = useRouter();
 
+// Novo Código
+
+  const [formulario, setFormulario] = useState<FormarioInfos>(estadoInicial);
+
+  // Função onde irá conseguir ver qual campo no formuário deve ser atualizado.
+  function handleCampoInfoFormulario(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+    const { name, value } = e.target;
+
+    setFormulario( (anterior) => ({
+      ...anterior,
+      [name]: value,
+    }))
+
+  }
+
+  // Função onde irã conseguir aplicar a máscara no input. 
+  function criarOnChangeComMascara<K extends keyof FormarioInfos>(campo: K, mascara?: (v: string) => string) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const valorBruto = e.target.value;
+
+      const valorFinal = mascara ? mascara(valorBruto) : valorBruto;
+
+      setFormulario( (prev) => ({
+        ...prev,
+        [campo]: valorFinal
+      }));
+
+    }
+  }
+
+// Fim Novo Código
+
   async function consultoresBuscando() {
 
     const { data, error } = await supabase  
@@ -122,6 +169,10 @@ export function FomularioComponente() {
   async function enviarFormulario(e: React.FormEvent) {
 
     e.preventDefault()
+
+    console.log(formulario);
+
+    return;
 
     if (!nome.trim()) return toast.error("Digite o seu nome!");
     if (!email.trim()) return toast.error("Digite o seu email!");
@@ -664,6 +715,69 @@ export function FomularioComponente() {
           />
           
         </div>
+
+        <CampoInfo 
+          label="Nome da Mãe" 
+          name="nomeDaMae"
+          value={formulario.nomeDaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="CPF da Mãe"
+          name="cpfDaMae"
+          value={formulario.cpfDaMae}
+          onChange={criarOnChangeComMascara("cpfDaMae", limiteCpfNova)}
+        />
+
+        <CampoInfo 
+          label="Whatsapp da Mãe"
+          name="whatsappMae"
+          value={formulario.whatsappMae}
+          onChange={criarOnChangeComMascara("whatsappMae", limiteTelefoneNova)}
+        />
+
+        <CampoInfo 
+          label="CEP da Mãe"
+          name="cepMae"
+          value={formulario.cepMae}
+          onChange={criarOnChangeComMascara("cepMae", limiteCepNova)}
+        />
+
+        <CampoInfo 
+          label="Rua da Mãe"
+          name="ruaMae"
+          value={formulario.ruaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Bairro da Mãe"
+          name="bairroMae"
+          value={formulario.bairroMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Bairro da Mãe"
+          name="numeroCasaMae"
+          value={formulario.numeroCasaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Estado da Mãe"
+          name="estadoMae"
+          value={formulario.estadoMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Cidade da Mãe"
+          name="cidadeMae"
+          value={formulario.cidadeMae}
+          onChange={handleCampoInfoFormulario}
+        />
 
         <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
           
