@@ -17,7 +17,8 @@ import { Select } from "@/app/clientes/componentes/select-cliente";
 import { GoAlertFill } from "react-icons/go";
 import { CampoInfo } from "../componentes/campo-info";
 import { FormarioInfos } from "../types";
-import { limiteCepNova, limiteCpfNova, limiteTelefoneNova } from "@/funcoes-novas";
+import { buscarCepNova, limiteCepNova, limiteCpfNova, limiteTelefoneNova } from "@/funcoes-novas";
+import { SelectCampo } from "../componentes/campo-select";
 
 interface ConsultorBusca {
   id: number;
@@ -113,6 +114,8 @@ export function FomularioComponente() {
 // Novo Código
 
   const [formulario, setFormulario] = useState<FormarioInfos>(estadoInicial);
+
+  const cidadesMae = formulario?.estadoMae ?? "" in cidadesPorEstado ? cidadesPorEstado[formulario.estadoMae as keyof typeof cidadesPorEstado] : [];
 
   // Função onde irá conseguir ver qual campo no formuário deve ser atualizado.
   function handleCampoInfoFormulario(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
@@ -698,13 +701,13 @@ export function FomularioComponente() {
   return(
     <form className="bg-white w-80 sm:w-full rounded-3xl pb-6 px-1 md:w-full" onSubmit={enviarFormulario}>
 
-      <h1 className="text-center mt-4 font-semibold sm:text-2xl text-xl pt-4 "> Formulário de Cadastro </h1>
+      <h1 className="text-center mt-2 font-semibold sm:text-2xl text-xl pt-4 "> Formulário de Cadastro </h1>
 
       {/* ======== FORMULARIO ========== */}
 
-      <div className="md:grid md:grid-cols-2 md:p-2 md:my-2 md:gap-2">
+      <div className="md:grid md:grid-cols-2 md:p-2 md:my-2 md:gap-4">
 
-        <div className="mx-2 mt-4 md:mx-0 md:mt-0">
+        <div className="mx-2 mt-2 md:mx-0 md:mt-0">
 
           <Label> Nome Completo </Label>
           <Input 
@@ -716,70 +719,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <CampoInfo 
-          label="Nome da Mãe" 
-          name="nomeDaMae"
-          value={formulario.nomeDaMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <CampoInfo 
-          label="CPF da Mãe"
-          name="cpfDaMae"
-          value={formulario.cpfDaMae}
-          onChange={criarOnChangeComMascara("cpfDaMae", limiteCpfNova)}
-        />
-
-        <CampoInfo 
-          label="Whatsapp da Mãe"
-          name="whatsappMae"
-          value={formulario.whatsappMae}
-          onChange={criarOnChangeComMascara("whatsappMae", limiteTelefoneNova)}
-        />
-
-        <CampoInfo 
-          label="CEP da Mãe"
-          name="cepMae"
-          value={formulario.cepMae}
-          onChange={criarOnChangeComMascara("cepMae", limiteCepNova)}
-        />
-
-        <CampoInfo 
-          label="Rua da Mãe"
-          name="ruaMae"
-          value={formulario.ruaMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <CampoInfo 
-          label="Bairro da Mãe"
-          name="bairroMae"
-          value={formulario.bairroMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <CampoInfo 
-          label="Bairro da Mãe"
-          name="numeroCasaMae"
-          value={formulario.numeroCasaMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <CampoInfo 
-          label="Estado da Mãe"
-          name="estadoMae"
-          value={formulario.estadoMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <CampoInfo 
-          label="Cidade da Mãe"
-          name="cidadeMae"
-          value={formulario.cidadeMae}
-          onChange={handleCampoInfoFormulario}
-        />
-
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className="mt-2 mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Email </Label>
           <Input 
@@ -790,7 +730,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> CPF </Label>
           <Input 
@@ -803,7 +743,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> RG </Label>
           <Input 
@@ -816,7 +756,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0 flex-col mb-4 md:mb-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0 flex-col mb-4 md:mb-0">
           
           <Label> Data de Emissão RG </Label>
           <InputAlterar 
@@ -827,7 +767,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Orgão Expedidor </Label>
           <Input 
@@ -838,7 +778,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 flex flex-col mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 flex flex-col mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Sexo </Label>
           <Select 
@@ -850,7 +790,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Data Nascimento </Label>
           <InputAlterar 
@@ -861,7 +801,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Whatsapp </Label>
           <Input 
@@ -873,7 +813,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Estado Civil </Label>
           <Select 
@@ -928,7 +868,7 @@ export function FomularioComponente() {
           </div>
         )}
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> CEP </Label>
           <Input 
@@ -943,7 +883,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Rua </Label>
           <Input 
@@ -954,7 +894,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Bairro </Label>
           <Input 
@@ -965,7 +905,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Nº da Casa </Label>
           <Input 
@@ -976,7 +916,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Estado </Label>
 
@@ -996,7 +936,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Cidade </Label>
 
@@ -1013,7 +953,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Moradia </Label>
           <Select 
@@ -1025,7 +965,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Condições de Moradia </Label>
           <Select 
@@ -1038,7 +978,7 @@ export function FomularioComponente() {
         </div>
 
         {condicaoMoradia === "Própria Financiada" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Valor do Financiamento </Label>
             <Input 
@@ -1050,7 +990,7 @@ export function FomularioComponente() {
         )}
 
         {condicaoMoradia === "Alugada" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Valor do Aluguel </Label>
             <Input 
@@ -1061,7 +1001,7 @@ export function FomularioComponente() {
           </div>
         )}
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Possui Veículo </Label>
           <Select 
@@ -1074,7 +1014,7 @@ export function FomularioComponente() {
         </div>
 
         {verificarVeiculo === "Sim" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Veículo que Possui </Label>
             <Select 
@@ -1088,7 +1028,7 @@ export function FomularioComponente() {
         )}
 
         {verificarVeiculo === "Sim" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Condições do Veículo </Label>
             <Select 
@@ -1102,7 +1042,7 @@ export function FomularioComponente() {
         )}
 
         {condicaoVeiculo === "Financiado" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Valor do Financiamento </Label>
             <Input 
@@ -1114,7 +1054,7 @@ export function FomularioComponente() {
         )}
 
         {condicaoVeiculo === "Consórcio" && (
-          <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+          <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
             
             <Label> Valor do Consórcio </Label>
             <Input 
@@ -1125,7 +1065,7 @@ export function FomularioComponente() {
           </div>
         )}
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
 
           <Label> Nome da Empresa que Trabalha </Label>
           <Input 
@@ -1136,7 +1076,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
 
           <Label> Endereço da Empresa </Label>
           <Input 
@@ -1147,7 +1087,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Número do RH da Empresa </Label>
           <Input 
@@ -1159,7 +1099,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Chave Pix </Label>
           <Input 
@@ -1170,7 +1110,7 @@ export function FomularioComponente() {
           
         </div>
         
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Valor Solicitado </Label>
           <Input 
@@ -1181,7 +1121,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mb-6 mx-2 sm:mt-4 md:mt-0 md:mx-0 sm:mb-0">
+        <div className=" mb-6 mx-2 sm:mt-2 md:mt-0 md:mx-0 sm:mb-0">
           
           <Label> Consultor </Label>
           <select 
@@ -1210,7 +1150,7 @@ export function FomularioComponente() {
           </div>
         </div>
 
-        <div className="mx-2 mt-[-12px] md:mx-0 md:mt-0">
+        <div className="mx-2  md:mx-0 md:mt-0">
 
           <Label> Nome de Referência pessoal </Label>
           <Input 
@@ -1222,7 +1162,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           
           <Label> Whatsapp de Referência - Pessoal </Label>
           <Input 
@@ -1234,7 +1174,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
           
           <Label> Tipo de Referência - Pessoal </Label>
           <Select 
@@ -1246,7 +1186,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
           <Label> CEP - Referência - Pessoal </Label>
           <Input 
             type="number"
@@ -1259,7 +1199,7 @@ export function FomularioComponente() {
           />
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
 
           <Label> Rua - Referência - Pessoal </Label>
           <Input 
@@ -1270,7 +1210,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
 
           <Label> Bairro - Referência - Pessoal </Label>
           <Input 
@@ -1281,7 +1221,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 md:mt-0 md:mx-0">
+        <div className=" mx-2 sm:mt-2 md:mt-0 md:mx-0">
 
           <Label> Número Endereço - Referência - Pessoal </Label>
           <Input 
@@ -1292,7 +1232,7 @@ export function FomularioComponente() {
           
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Estado - Referência - Pessoal </Label>
 
@@ -1312,7 +1252,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-4 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-4 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Cidade - Referência - Pessoal </Label>
 
@@ -1333,13 +1273,112 @@ export function FomularioComponente() {
           <div className="flex items-center w-full">
             <div className="flex-grow border-t border-gray-300"></div>
             <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
+              Dados da Mãe
+            </h2>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+        </div>
+
+        <CampoInfo 
+          label="Nome da Mãe" 
+          name="nomeDaMae"
+          value={formulario.nomeDaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="CPF da Mãe"
+          name="cpfDaMae"
+          value={formulario.cpfDaMae}
+          onChange={criarOnChangeComMascara("cpfDaMae", limiteCpfNova)}
+        />
+
+        <CampoInfo 
+          label="Whatsapp da Mãe"
+          name="whatsappMae"
+          value={formulario.whatsappMae}
+          onChange={criarOnChangeComMascara("whatsappMae", limiteTelefoneNova)}
+        />
+
+        <CampoInfo 
+          label="CEP da Mãe"
+          name="cepMae"
+          value={formulario.cepMae}
+          onChange={criarOnChangeComMascara("cepMae", limiteCepNova)}
+          onBlur={ async () => {
+            if (formulario.cepMae?.length === 8) {
+              const dadosEndereco = await buscarCepNova(formulario.cepMae);
+
+              if (!dadosEndereco || dadosEndereco.erro === "true") return;
+
+              setFormulario( (prev) => ({
+                ...prev,
+                ruaMae: dadosEndereco.logradouro,
+                bairroMae: dadosEndereco.bairro,
+                estadoMae: dadosEndereco.uf,
+                cidadeMae: dadosEndereco.localidade
+              }))
+              
+            }
+          }}
+        />
+
+        <CampoInfo 
+          label="Rua da Mãe"
+          name="ruaMae"
+          value={formulario.ruaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Bairro da Mãe"
+          name="bairroMae"
+          value={formulario.bairroMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <CampoInfo 
+          label="Número da Casa da Mãe"
+          name="numeroCasaMae"
+          value={formulario.numeroCasaMae}
+          onChange={handleCampoInfoFormulario}
+        />
+
+        <SelectCampo 
+          label="Estado da Mãe"
+          value={formulario.estadoMae ?? ""}
+          onChange={(novoEstado) =>
+            setFormulario((prev) => ({
+              ...prev,
+              estadoMae: novoEstado,
+            }))
+          }
+          options={estados.map( (c) => ({ value: c, label: c }))}
+        />
+
+        <SelectCampo 
+          label="Cidade da Mãe"
+          value={formulario.cidadeMae ?? ""}
+          onChange={(novaCidade) =>
+            setFormulario((prev) => ({
+              ...prev,
+              cidadeMae: novaCidade,
+            }))
+          }
+          options={cidadesMae.map( (c) => ({ value: c, label: c }))}
+        />
+
+        <div className="flex items-center justify-center my-6">
+          <div className="flex items-center w-full">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
               Seus Documentos
             </h2>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Foto do Comprovante de Renda </Label>
           <input 
@@ -1351,7 +1390,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Foto do Comprovante de Endereço </Label>
           <input 
@@ -1363,7 +1402,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-6 sm:mb-[0px] md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Foto da identidade (FRENTE) </Label>
           <input 
@@ -1375,7 +1414,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-6 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Foto da identidade (VERSO) </Label>
           <input 
@@ -1387,7 +1426,7 @@ export function FomularioComponente() {
 
         </div>
 
-        <div className="mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+        <div className=" mx-2 sm:mt-2 mb-6 md:mt-0 md:mx-0 md:mb-0">
 
           <Label> Fotografia do titular segurando seu documento oficial </Label>
           <input 
@@ -1400,7 +1439,7 @@ export function FomularioComponente() {
         </div>
 
         <div className="flex flex-wrap w-full">
-          <div className="w-full mt-[-12px] mx-2 sm:mt-4 mb-6 md:mt-0 md:mx-0 md:mb-0">
+          <div className="w-full  mx-2 sm:mt-2 mb-6 md:mt-0 md:mx-0 md:mb-0">
 
             <Label> Carteira de Trabalho Digital (CTPS Digital) em PDF </Label>
             <input 
@@ -1417,7 +1456,7 @@ export function FomularioComponente() {
         </div>
 
       {mensagemErro && (
-        <div className="flex flex-wrap max-w-[340px] px-2 pb-6 mt-[-12px] sm:mt-0 sm:pb-0">
+        <div className="flex flex-wrap max-w-[340px] px-2 pb-6  sm:mt-0 sm:pb-0">
           <p className="text-[12px] text-red-600"> {mensagemErro} </p>
         </div>
       )}
@@ -1430,7 +1469,7 @@ export function FomularioComponente() {
 
       )}
 
-        <div className="col-span-2 mt-[-12px] mx-2 md:mt-0 md:mx-0">
+        <div className="col-span-2  mx-2 md:mt-0 md:mx-0">
 
           <div className="cursor-pointer">
           <button type="submit" className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center cursor-pointer w-full mt-2"> Enviar </button>
