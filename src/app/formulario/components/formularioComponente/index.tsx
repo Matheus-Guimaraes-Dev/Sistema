@@ -741,8 +741,10 @@ export function FomularioComponente() {
 
         <SelectOpcoes 
           label="Situação Profissional"
+          name="situacaoProfissional"
           value={formulario.situacaoProfissional}
           options={situacaoProfissionalOptions}
+          onChange={handleCampoInfoFormulario}
           placeholder="Selecionar..."
         />
 

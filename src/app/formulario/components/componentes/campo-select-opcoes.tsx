@@ -3,12 +3,12 @@ import React from "react";
 
 interface Option {
   label: string;
-  value: string;
+  value: string | undefined;
 }
 
 interface SelectProps {
   label: string;
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
   options: Option[];
   placeholder?: string;
