@@ -106,6 +106,7 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Data de Cadastro:</strong> {formatarData(cliente.data_cadastro) || ""} </p>
             <p> <strong>Valor Solicitado:</strong>{formatarDinheiro(cliente.valor_solicitado) || ""} </p>
             <p><strong>Chave Pix:</strong> {cliente.pix} </p>
+            <p><strong>Situação Profissional: </strong> {cliente.situacao_profissional || ""} </p>
             <p><strong>Consultor:</strong> {cliente.consultores?.nome_completo || ""} </p>
             <p><strong>Observação: </strong> {cliente.observacao || ""} </p>
           </div>
@@ -143,6 +144,46 @@ export default async function Detalhes( { params }: { params: { id: string } }) 
             <p><strong>Número Referência:</strong> {cliente.numero_referencia}</p>
             <p><strong>Estado Referência:</strong> {cliente.estado_referencia}</p>
             <p><strong>Cidade Referência:</strong> {cliente.cidade_referencia}</p>
+
+          </div>
+
+        </section>
+
+        <section className="grid md:grid-cols-2 bg-white shadow rounded-xl p-6 my-5">
+
+          <div>
+            <p><strong>Nome da Mãe:</strong> {cliente.nome_mae || "Não possui"} </p>
+            <p><strong>CPF da Mãe:</strong> {cliente.cpf_mae}</p>
+            <p><strong>Contato da Mãe:</strong> {cliente.whatsapp_mae || "Não possui"} </p>
+            <p><strong>Estado da Mãe:</strong> {cliente.estado_mae}</p>
+            <p><strong>Cidade da Mãe:</strong> {cliente.cidade_mae}</p>
+          </div>
+
+          <div>
+            <p><strong>CEP da Mãe:</strong> {cliente.cep_mae}</p>
+            <p><strong>Rua da Mãe:</strong> {cliente.rua_mae}</p>
+            <p><strong>Bairro da Mãe:</strong> {cliente.bairro_mae}</p>
+            <p><strong>Número Casa da Mãe:</strong> {cliente.numero_casa_mae}</p>
+
+          </div>
+
+        </section>
+
+        <section className="grid md:grid-cols-2 bg-white shadow rounded-xl p-6 my-5">
+
+          <div>
+            <p><strong>Nome do Pai:</strong> {cliente.nome_pai || "Não possui"} </p>
+            <p><strong>CPF do Pai:</strong> {cliente.cpf_pai}</p>
+            <p><strong>Contato do Pai:</strong> {cliente.whatsapp_pai || "Não possui"} </p>
+            <p><strong>Estado do Pai:</strong> {cliente.estado_pai}</p>
+            <p><strong>Cidade do Pai:</strong> {cliente.cidade_pai}</p>
+          </div>
+
+          <div>
+            <p><strong>CEP do Pai:</strong> {cliente.cep_pai}</p>
+            <p><strong>Rua do Pai:</strong> {cliente.rua_pai}</p>
+            <p><strong>Bairro do Pai:</strong> {cliente.bairro_pai}</p>
+            <p><strong>Número Casa do Pai:</strong> {cliente.numero_casa_pai}</p>
 
           </div>
 

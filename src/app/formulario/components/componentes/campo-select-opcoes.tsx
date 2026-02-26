@@ -19,7 +19,7 @@ interface SelectProps {
 
 export function SelectOpcoes({ label, name, value, onChange, options, placeholder = "", disabled = false, className = "" }: SelectProps) {
   return (
-    <div className="mx-2">
+    <div className="mx-2 md:mx-0">
       <label className="text-sm sm:text-base font-medium"> {label} </label>
       <select
         name={name}

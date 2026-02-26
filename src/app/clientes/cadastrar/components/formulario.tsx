@@ -13,10 +13,37 @@ import { Label } from "@/app/formulario/components/componentes/label";
 import { Select } from "../../componentes/select-cliente";
 import { useRef } from "react";
 import { Input } from "./input";
+import { SelectCampo } from "@/app/formulario/components/componentes/campo-select";
+import { CampoInfo } from "@/app/formulario/components/componentes/campo-info";
+import { FormarioInfos } from "@/app/formulario/components/types";
+import { buscarCepNova, limiteCepNova, limiteCpfNova, limiteTelefoneNova } from "@/funcoes-novas";
+import { SelectOpcoes } from "@/app/formulario/components/componentes/campo-select-opcoes";
 
 interface ConsultorBusca {
   id: number;
   nome_completo: string;
+}
+
+const estadoInicial: FormarioInfos = {
+  situacaoProfissional: "",
+  nomeDaMae: "",
+  cpfDaMae: "",
+  whatsappMae: "",
+  cepMae: "",
+  ruaMae: "",
+  bairroMae: "",
+  numeroCasaMae: "",
+  estadoMae: "",
+  cidadeMae: "",
+  nomeDoPai: "",
+  cpfDaPai: "",
+  whatsappPai: "",
+  cepPai: "",
+  ruaPai: "",
+  bairroPai: "",
+  numeroCasaPai: "",
+  estadoPai: "",
+  cidadePai: "",
 }
 
 export function Formulario() {
@@ -96,6 +123,42 @@ export function Formulario() {
   const cidadesReferencia = estadoReferencia in cidadesPorEstado
   ? cidadesPorEstado[estadoReferencia as keyof typeof cidadesPorEstado]
   : [];
+
+// ====================
+
+  const [formulario, setFormulario] = useState<FormarioInfos>(estadoInicial);
+  
+  const cidadesMae = formulario?.estadoMae ?? "" in cidadesPorEstado ? cidadesPorEstado[formulario.estadoMae as keyof typeof cidadesPorEstado] : [];
+
+  const cidadesPai = formulario?.estadoPai ?? "" in cidadesPorEstado ? cidadesPorEstado[formulario.estadoPai as keyof typeof cidadesPorEstado] : [];
+
+  // Função onde irá conseguir ver qual campo no formuário deve ser atualizado.
+    function handleCampoInfoFormulario(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+      const { name, value } = e.target;
+  
+      setFormulario( (anterior) => ({
+        ...anterior,
+        [name]: value,
+      }))
+  
+    }
+  
+    // Função onde irã conseguir aplicar a máscara no input. 
+    function criarOnChangeComMascara<K extends keyof FormarioInfos>(campo: K, mascara?: (v: string) => string) {
+      return (e: React.ChangeEvent<HTMLInputElement>) => {
+        const valorBruto = e.target.value;
+  
+        const valorFinal = mascara ? mascara(valorBruto) : valorBruto;
+  
+        setFormulario( (prev) => ({
+          ...prev,
+          [campo]: valorFinal
+        }));
+  
+      }
+    }
+
+//==========
 
   async function consultoresBuscando() {
 
@@ -376,7 +439,26 @@ export function Formulario() {
           cep_referencia: cepReferencia,
           rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
           bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
-          numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
+          numero_referencia: numeroReferencia.trim().toLocaleUpperCase(),
+          situacao_profissional: formulario.situacaoProfissional?.trim().toLocaleUpperCase(),
+          nome_mae: formulario.nomeDaMae?.trim().toLocaleUpperCase(),
+          cpf_mae: formulario.cpfDaMae?.trim().toLocaleUpperCase(),
+          whatsapp_mae: formulario.whatsappMae?.trim().toLocaleUpperCase(),
+          cep_mae: formulario.cepMae?.trim().toLocaleUpperCase(),
+          rua_mae: formulario.ruaMae?.trim().toLocaleUpperCase(),
+          bairro_mae: formulario.bairroMae?.trim().toLocaleUpperCase(),
+          numero_casa_mae: formulario.numeroCasaMae?.trim().toLocaleUpperCase(),
+          estado_mae: formulario.estadoMae?.trim().toLocaleUpperCase(),
+          cidade_mae: formulario.cidadeMae?.trim().toLocaleUpperCase(),
+          nome_pai: formulario.nomeDoPai?.trim().toLocaleUpperCase(),
+          cpf_pai: formulario.cpfDaPai?.trim().toLocaleUpperCase(),
+          whatsapp_pai: formulario.whatsappPai?.trim().toLocaleUpperCase(),
+          cep_pai: formulario.cepPai?.trim().toLocaleUpperCase(),
+          rua_pai: formulario.ruaPai?.trim().toLocaleUpperCase(),
+          bairro_pai: formulario.bairroPai?.trim().toLocaleUpperCase(),
+          numero_casa_pai: formulario.numeroCasaPai?.trim().toLocaleUpperCase(),
+          estado_pai: formulario.estadoPai?.trim().toLocaleUpperCase(),
+          cidade_pai: formulario.cidadePai?.trim().toLocaleUpperCase(),
         })
         .select()
 
@@ -435,6 +517,8 @@ export function Formulario() {
         setDocumentoFrente(null);
         setDocumentoVerso(null);
         setArquivo(null);
+
+        setFormulario(estadoInicial);
 
         rendaRef.current!.value = "";
         enderecoRef.current!.value = "";
@@ -618,6 +702,13 @@ export function Formulario() {
     { label: "Outro parente", value: "Outro parente" }
   ]
 
+    const situacaoProfissionalOptions = [
+    { label: "Trabalhador CLT", value: "CLT" },
+    { label: "Servidor Público", value: "SERVIDOR" },
+    { label: "Aposentado (INSS)", value: "APOSENTADO" },
+    { label: "Pessoa Jurídica - MEI", value: "MEI" }
+  ];
+
   return(
     <form className="grid md:grid-cols-3 bg-white shadow rounded-xl p-6 my-5 gap-2" onSubmit={enviarFormulario}>
 
@@ -630,6 +721,15 @@ export function Formulario() {
           required
         />
       </div>
+
+      <SelectOpcoes 
+        label="Situação Profissional"
+        name="situacaoProfissional"
+        value={formulario.situacaoProfissional}
+        options={situacaoProfissionalOptions}
+        onChange={handleCampoInfoFormulario}
+        placeholder="Selecionar..."
+      />
       
       <div>
         <Label> Email </Label>
@@ -1124,6 +1224,212 @@ export function Formulario() {
         </select>
 
       </div>
+
+      <div className="flex items-center justify-center my-6">
+                <div className="flex items-center w-full">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
+                    Dados da Mãe
+                  </h2>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+              </div>
+      
+              <CampoInfo 
+                label="Nome da Mãe" 
+                name="nomeDaMae"
+                value={formulario.nomeDaMae}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="CPF da Mãe"
+                name="cpfDaMae"
+                value={formulario.cpfDaMae}
+                onChange={criarOnChangeComMascara("cpfDaMae", limiteCpfNova)}
+              />
+      
+              <CampoInfo 
+                label="Whatsapp da Mãe"
+                name="whatsappMae"
+                value={formulario.whatsappMae}
+                onChange={criarOnChangeComMascara("whatsappMae", limiteTelefoneNova)}
+              />
+      
+              <CampoInfo 
+                label="CEP da Mãe"
+                name="cepMae"
+                value={formulario.cepMae}
+                onChange={criarOnChangeComMascara("cepMae", limiteCepNova)}
+                onBlur={ async () => {
+                  if (formulario.cepMae?.length === 8) {
+                    const dadosEndereco = await buscarCepNova(formulario.cepMae);
+      
+                    if (!dadosEndereco || dadosEndereco.erro === "true") return;
+      
+                    setFormulario( (prev) => ({
+                      ...prev,
+                      ruaMae: dadosEndereco.logradouro,
+                      bairroMae: dadosEndereco.bairro,
+                      estadoMae: dadosEndereco.uf,
+                      cidadeMae: dadosEndereco.localidade
+                    }))
+                    
+                  }
+                }}
+              />
+      
+              <CampoInfo 
+                label="Rua da Mãe"
+                name="ruaMae"
+                value={formulario.ruaMae}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="Bairro da Mãe"
+                name="bairroMae"
+                value={formulario.bairroMae}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="Número da Casa da Mãe"
+                name="numeroCasaMae"
+                value={formulario.numeroCasaMae}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <SelectCampo 
+                label="Estado da Mãe"
+                value={formulario.estadoMae ?? ""}
+                onChange={(novoEstado) =>
+                  setFormulario((prev) => ({
+                    ...prev,
+                    estadoMae: novoEstado,
+                  }))
+                }
+                options={estados.map( (c) => ({ value: c, label: c }))}
+              />
+      
+              <SelectCampo 
+                label="Cidade da Mãe"
+                value={formulario.cidadeMae ?? ""}
+                onChange={(novaCidade) =>
+                  setFormulario((prev) => ({
+                    ...prev,
+                    cidadeMae: novaCidade,
+                  }))
+                }
+                options={cidadesMae.map( (c) => ({ value: c, label: c }))}
+              />
+      
+              <div className="flex items-center justify-center my-6">
+                <div className="flex items-center w-full">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <h2 className="px-4 text-lg font-semibold text-gray-700 text-center whitespace-nowrap">
+                    Dados do Pai
+                  </h2>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+              </div>
+      
+              <CampoInfo 
+                label="Nome do Pai" 
+                name="nomeDoPai"
+                value={formulario.nomeDoPai}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="CPF do Pai"
+                name="cpfDaPai"
+                value={formulario.cpfDaPai}
+                onChange={criarOnChangeComMascara("cpfDaPai", limiteCpfNova)}
+              />
+      
+              <CampoInfo 
+                label="Whatsapp do Pai"
+                name="whatsappPai"
+                value={formulario.whatsappPai}
+                onChange={criarOnChangeComMascara("whatsappPai", limiteTelefoneNova)}
+              />
+      
+              <CampoInfo 
+                label="CEP do Pai"
+                name="cepPai"
+                value={formulario.cepPai}
+                onChange={criarOnChangeComMascara("cepPai", limiteCepNova)}
+                onBlur={ async () => {
+                  if (formulario.cepPai?.length === 8) {
+                    
+                    setLoading(true);
+      
+                    const dadosEndereco = await buscarCepNova(formulario.cepPai);
+      
+                    if (!dadosEndereco || dadosEndereco.erro === "true") {
+                      setLoading(false);
+                      return
+                    };
+      
+                    setFormulario( (prev) => ({
+                      ...prev,
+                      ruaPai: dadosEndereco.logradouro,
+                      bairroPai: dadosEndereco.bairro,
+                      estadoPai: dadosEndereco.uf,
+                      cidadePai: dadosEndereco.localidade
+                    }))
+      
+                    setLoading(false);
+                    
+                  }
+                }}
+              />
+      
+              <CampoInfo 
+                label="Rua do Pai"
+                name="ruaPai"
+                value={formulario.ruaPai}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="Bairro do Pai"
+                name="bairroPai"
+                value={formulario.bairroPai}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <CampoInfo 
+                label="Número da Casa do Pai"
+                name="numeroCasaPai"
+                value={formulario.numeroCasaPai}
+                onChange={handleCampoInfoFormulario}
+              />
+      
+              <SelectCampo 
+                label="Estado do Pai"
+                value={formulario.estadoPai ?? ""}
+                onChange={(novoEstado) =>
+                  setFormulario((prev) => ({
+                    ...prev,
+                    estadoPai: novoEstado,
+                  }))
+                }
+                options={estados.map( (c) => ({ value: c, label: c }))}
+              />
+      
+              <SelectCampo 
+                label="Cidade do Pai"
+                value={formulario.cidadePai ?? ""}
+                onChange={(novaCidade) =>
+                  setFormulario((prev) => ({
+                    ...prev,
+                    cidadePai: novaCidade,
+                  }))
+                }
+                options={cidadesPai.map( (c) => ({ value: c, label: c }))}
+              />
 
       <div>
         <Label> Observação </Label>

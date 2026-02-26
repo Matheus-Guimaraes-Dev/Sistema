@@ -32,14 +32,14 @@ export interface infoClientes {
   cpf_companheiro: string;
   whatsapp_companheiro: string;
   pix: string;
-  tipo_referencia: string,
+  tipo_referencia: string;
   nome_empresa: string;
   endereco_empresa: string;
   numero_rh_empresa: string;
   consultores: {
-    id: number,
+    id: number;
     nome_completo: string;
-  }
+  };
   valor_solicitado: string;
   observacao: string;
   cidade_referencia: string;
@@ -47,7 +47,26 @@ export interface infoClientes {
   cep_referencia: string;
   rua_referencia: string;
   bairro_referencia: string;
-  numero_referencia: string; 
+  numero_referencia: string;
+  situacao_profissional: string;
+  nome_mae: string;
+  cpf_mae: string;
+  whatsapp_mae: string;
+  cep_mae: string;
+  rua_mae: string;
+  bairro_mae: string;
+  numero_casa_mae: string;
+  estado_mae: string;
+  cidade_mae: string;
+  nome_pai: string;
+  cpf_pai: string;
+  whatsapp_pai: string;
+  cep_pai: string;
+  rua_pai: string;
+  bairro_pai: string;
+  numero_casa_pai: string;
+  estado_pai: string;
+  cidade_pai: string;
 }
 
 export interface PropsAlterar {

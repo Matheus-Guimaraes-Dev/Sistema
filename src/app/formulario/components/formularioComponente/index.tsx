@@ -296,7 +296,26 @@ export function FomularioComponente() {
         cep_referencia: cepReferencia,
         rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
         bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
-        numero_referencia: numeroReferencia.trim().toLocaleUpperCase()
+        numero_referencia: numeroReferencia.trim().toLocaleUpperCase(),
+        situacao_profissional: formulario.situacaoProfissional.trim().toLocaleUpperCase(),
+        nome_mae: formulario.nomeDaMae?.trim().toLocaleUpperCase(),
+        cpf_mae: formulario.cpfDaMae?.trim().toLocaleUpperCase(),
+        whatsapp_mae: formulario.whatsappMae?.trim().toLocaleUpperCase(),
+        cep_mae: formulario.cepMae?.trim().toLocaleUpperCase(),
+        rua_mae: formulario.ruaMae?.trim().toLocaleUpperCase(),
+        bairro_mae: formulario.bairroMae?.trim().toLocaleUpperCase(),
+        numero_casa_mae: formulario.numeroCasaMae?.trim().toLocaleUpperCase(),
+        estado_mae: formulario.estadoMae?.trim().toLocaleUpperCase(),
+        cidade_mae: formulario.cidadeMae?.trim().toLocaleUpperCase(),
+        nome_pai: formulario.nomeDoPai?.trim().toLocaleUpperCase(),
+        cpf_pai: formulario.cpfDaPai?.trim().toLocaleUpperCase(),
+        whatsapp_pai: formulario.whatsappPai?.trim().toLocaleUpperCase(),
+        cep_pai: formulario.cepPai?.trim().toLocaleUpperCase(),
+        rua_pai: formulario.ruaPai?.trim().toLocaleUpperCase(),
+        bairro_pai: formulario.bairroPai?.trim().toLocaleUpperCase(),
+        numero_casa_pai: formulario.numeroCasaPai?.trim().toLocaleUpperCase(),
+        estado_pai: formulario.estadoPai?.trim().toLocaleUpperCase(),
+        cidade_pai: formulario.cidadePai?.trim().toLocaleUpperCase(),
       }
 
       const { error } = await supabase
@@ -414,6 +433,9 @@ export function FomularioComponente() {
         setRuaReferencia("");
         setNumeroReferencia("");
         setBairroReferencia("");
+
+        setFormulario(estadoInicial);
+
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
@@ -478,6 +500,25 @@ export function FomularioComponente() {
           rua_referencia: ruaReferencia.trim().toLocaleUpperCase(),
           bairro_referencia: bairroReferencia.trim().toLocaleUpperCase(),
           numero_referencia: numeroReferencia.trim().toLocaleUpperCase(),
+          situacao_profissional: formulario.situacaoProfissional.trim().toLocaleUpperCase(),
+          nome_mae: formulario.nomeDaMae?.trim().toLocaleUpperCase(),
+          cpf_mae: formulario.cpfDaMae?.trim().toLocaleUpperCase(),
+          whatsapp_mae: formulario.whatsappMae?.trim().toLocaleUpperCase(),
+          cep_mae: formulario.cepMae?.trim().toLocaleUpperCase(),
+          rua_mae: formulario.ruaMae?.trim().toLocaleUpperCase(),
+          bairro_mae: formulario.bairroMae?.trim().toLocaleUpperCase(),
+          numero_casa_mae: formulario.numeroCasaMae?.trim().toLocaleUpperCase(),
+          estado_mae: formulario.estadoMae?.trim().toLocaleUpperCase(),
+          cidade_mae: formulario.cidadeMae?.trim().toLocaleUpperCase(),
+          nome_pai: formulario.nomeDoPai?.trim().toLocaleUpperCase(),
+          cpf_pai: formulario.cpfDaPai?.trim().toLocaleUpperCase(),
+          whatsapp_pai: formulario.whatsappPai?.trim().toLocaleUpperCase(),
+          cep_pai: formulario.cepPai?.trim().toLocaleUpperCase(),
+          rua_pai: formulario.ruaPai?.trim().toLocaleUpperCase(),
+          bairro_pai: formulario.bairroPai?.trim().toLocaleUpperCase(),
+          numero_casa_pai: formulario.numeroCasaPai?.trim().toLocaleUpperCase(),
+          estado_pai: formulario.estadoPai?.trim().toLocaleUpperCase(),
+          cidade_pai: formulario.cidadePai?.trim().toLocaleUpperCase(),
         })
         .select("id")
 
@@ -591,6 +632,9 @@ export function FomularioComponente() {
         setRuaReferencia("");
         setNumeroReferencia("");
         setBairroReferencia("");
+
+        setFormulario(estadoInicial);
+
         setComprovanteRenda(null);
         setComprovanteEndereco(null);
         setDocumentoFrente(null);
