@@ -1,5 +1,5 @@
 // src/components/Select.tsx
-import React from "react";
+import React, { ChangeEvent } from "react";
 
 interface Option {
   label: string;
@@ -8,22 +8,24 @@ interface Option {
 
 interface SelectProps {
   label: string;
+  name: string;
   value: string | undefined;
-  onChange: (value: string) => void;
+  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   options: Option[];
   placeholder?: string;
   className?: string;
   disabled?: boolean;
 }
 
-export function SelectOpcoes({ label, value, onChange, options, placeholder = "", disabled = false, className = "" }: SelectProps) {
+export function SelectOpcoes({ label, name, value, onChange, options, placeholder = "", disabled = false, className = "" }: SelectProps) {
   return (
-    <div>
+    <div className="mx-2">
       <label className="text-sm sm:text-base font-medium"> {label} </label>
       <select
+        name={name}
         className={`w-full h-9 border-2 border-[#002956] rounded focus:outline-[#4b8ed6] text-sm sm:text-base ${className}`}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((op) => (

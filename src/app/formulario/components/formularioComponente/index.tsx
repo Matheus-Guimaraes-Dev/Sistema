@@ -188,7 +188,7 @@ export function FomularioComponente() {
 
     console.log(formulario);
 
-    return;
+    // return;
 
     if (!nome.trim()) return toast.error("Digite o seu nome!");
     if (!email.trim()) return toast.error("Digite o seu email!");
@@ -231,6 +231,7 @@ export function FomularioComponente() {
     if (!numeroReferencia.trim()) return toast.error("Digite o número endereço da Referencia Pessoal");
     if (!estadoReferencia.trim()) return toast.error("Digite o estado da Referencia Pessoal");
     if (!cidadeReferencia.trim()) return toast.error("Digite a cidade da Referencia Pessoal");
+    if (!formulario.situacaoProfissional?.trim()) return toast.error("Digite a situação profissional");
 
     setLoading(true);
 
